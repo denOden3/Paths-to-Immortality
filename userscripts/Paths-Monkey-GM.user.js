@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.2.3
+// @version      0.3.0
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.2.3';
+  const VERSION = '0.3.0';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -47,6 +47,8 @@
   let refreshTimer = null;
   let pendingRequestId = null;
   let pendingRequestBody = null;
+  let pendingRequestKind = null;
+  let speakAsCharacter = get('speakAsCharacter',true);
   let lastNativeInset = 95;
   let previousFocus = null;
   let showFeed = false;
@@ -98,8 +100,16 @@
       left:220px;right:0;max-width:100%;padding:8px 12px 9px;border-top:1px solid var(--pm-stroke);
       background:linear-gradient(110deg,#271d28,#39262e);box-shadow:0 -4px 14px #0b080caa;
       pointer-events:auto}
+    #paths-monkey-root .pm-composer-line{display:flex;gap:10px;align-items:flex-start}
     #paths-monkey-root .pm-compose .pm-editor{display:block;resize:none;overflow-y:hidden;
-      height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
+      flex:1;min-width:0;height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
+    #paths-monkey-root .pm-mode-btn{min-height:40px;min-width:86px;background:#b73543;
+      border:1px solid #f09b8b;color:#fff5e8;border-radius:10px;padding:7px 10px;
+      font-weight:800;box-shadow:0 0 0 1px #f4c9a633}
+    #paths-monkey-root .pm-mode-btn.pm-dim{background:#322a33;color:#deccd1;
+      border-color:#806a7c;box-shadow:none;opacity:.72}
+    #paths-monkey-root .pm-oocBubble{border-style:dashed;background:#3a3444}
+    #paths-monkey-root .pm-oocBubble .pm-by{color:#d7bce5}
     #paths-monkey-root .pm-actions{margin-top:12px;display:flex;column-gap:16px;row-gap:10px;align-items:center;flex-wrap:wrap}
     #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;overflow-wrap:anywhere;margin-top:4px}
     #paths-monkey-root .pm-feedback:empty{display:none}
@@ -209,7 +219,7 @@
       <div class="pm-h">Reference shelves</div>
       <a class="pm-link" href="${CODEX_URL}" target="_blank" rel="noopener noreferrer">☁ Cloudveil World Codex ↗</a>
       <a class="pm-link" href="${GM_RULES_URL}" target="_blank" rel="noopener noreferrer">☯ Shared Narrator Protocol ↗</a>
-      <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Friend's shared website ↗</a>
+      <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Paths Web ↗</a>
       <div class="pm-divider"></div>
       <div class="pm-mute">Monkey only controls this HUD. ChatGPT still owns the actual narration and its blue Send button.</div>
     </aside>
@@ -219,7 +229,10 @@
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
-        <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose Xiao Lan's action"></textarea>
+        <div class="pm-composer-line">
+          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
+          <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
+        </div>
         <div class="pm-actions">
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Post Xiao Lan's action to the shared room">Post</button>
           <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
@@ -285,6 +298,19 @@
     $('room-section').classList.toggle('pm-hide', !account);
     $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
   }
+  function updateSpeakerToggle(){
+    const element=$('identity-toggle');
+    element.classList.toggle('pm-dim',!speakAsCharacter);
+    element.setAttribute('aria-pressed',String(speakAsCharacter));
+    element.title=speakAsCharacter?'Xiao Lan is acting. Tap for OOC player chat.':'OOC player is speaking. Tap for Xiao Lan actions.';
+    $('action').placeholder=speakAsCharacter?'What does Xiao Lan do?':'Hear ye, hear ye, the Jade Emperor has spoken!';
+  }
+  function setSpeaker(value){
+    speakAsCharacter=Boolean(value);
+    put('speakAsCharacter',speakAsCharacter);
+    pendingRequestId=null;pendingRequestBody=null;pendingRequestKind=null;
+    updateSpeakerToggle();
+  }
   function draftKey() { return 'draft.' + (selectedRoom?.id || 'unbound'); }
   function autoGrowAction() {
     const field=$('action');
@@ -301,6 +327,7 @@
     autoGrowAction();
     pendingRequestId = null;
     pendingRequestBody = null;
+    pendingRequestKind = null;
   }
   function authHeaders(token) {
     const h = { apikey: PUBLIC_KEY, Accept: 'application/json' };
@@ -432,10 +459,10 @@
     if (!messages.length) {el.textContent='The hall is quiet. Nothing posted yet.';return;}
     for (const msg of messages.slice(-12)) {
       const bubble=document.createElement('div');
-      bubble.className='pm-bubble'+(msg.kind==='narrator'?' pm-narrator':'');
+      bubble.className='pm-bubble'+(msg.kind==='narrator'?' pm-narrator':'')+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
       const character=members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
-      by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':character;
+      by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
       const content=document.createElement('div');content.textContent=msg.body;
       bubble.append(by,content);el.append(bubble);
     }
@@ -446,26 +473,28 @@
     const text=$('action').value.trim();
     if (!text) throw new Error('Write Xiao Lan\'s action first.');
     if (text.length>8000) throw new Error('Action is too long.');
-    if (!pendingRequestId || pendingRequestBody!==text) {
+    const kind=speakAsCharacter?'player':'ooc';
+    if (!pendingRequestId || pendingRequestBody!==text || pendingRequestKind!==kind) {
       pendingRequestId=(crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+'-'+Math.random());
       pendingRequestBody=text;
+      pendingRequestKind=kind;
     }
     try {
       await authed('POST','/rest/v1/messages',{
-        body:{room_id:selectedRoom.id,sender_id:account.user_id,body:text,client_message_id:pendingRequestId},
+        body:{room_id:selectedRoom.id,sender_id:account.user_id,body:text,kind,client_message_id:pendingRequestId},
         prefer:'return=minimal'
       });
     } catch(e) {
       if (e.code!=='23505') throw e;
       // The same message ID was already accepted. Do not post a second copy.
     }
-    $('action').value='';autoGrowAction();saveDraft();pendingRequestId=null;pendingRequestBody=null;
-    feedback('✓ Xiao Lan\'s action posted to the shared room.');
+    $('action').value='';autoGrowAction();saveDraft();pendingRequestId=null;pendingRequestBody=null;pendingRequestKind=null;
+    feedback(kind==='player'?'✓ Xiao Lan\'s action posted to Paths Web.':'✓ OOC chat posted to Paths Web.');
     await refreshScene();
   }
   function makeNarrateInstruction() {
     return 'Cloudveil GM: In Supabase Paths to Immortality, room '+selectedRoom.id+
-      ', fetch pending actions. Follow Notion Shared Narrator Protocol GM-SHARED-01, narrate once and publish the result there. Test only; no Notion edits.';
+      ', fetch pending CHARACTER actions (kind=player) since the last narration and IGNORE OOC chat (kind=ooc). Follow Notion Shared Narrator Protocol GM-SHARED-01, narrate once and publish the result there. Test only; no Notion edits.';
   }
   function copyText(value) {
     GM_setClipboard(value,'text');
@@ -637,7 +666,8 @@
   $('feed-refresh').onclick=()=>runTask(refreshScene);
   $('sidebar-toggle').onclick=()=>{showSidebar=!showSidebar;$('sidebar').classList.toggle('pm-open',showSidebar);};
   $('minimize').onclick=()=>setHudMode('paths',false);
-  $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;}});
+  $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
+  $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settings').classList.contains('pm-hide'))closeSettings();else if(e.key==='Escape'&&!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();});
@@ -648,7 +678,7 @@
     GM_registerMenuCommand('Collapse Paths HUD',()=>setHudMode('paths',false));
     GM_registerMenuCommand('Paths HUD: Connections',()=>{showPaths();openSettings();});
   }
-  setConnectedState();restoreDraft();renderFeed();
+  setConnectedState();restoreDraft();renderFeed();updateSpeakerToggle();
   setHudMode(hudMode,hudExpanded);
   // If Mizuhana is the selected script, allow a dropdown option to return here.
   const hudSwitcherObserver=new MutationObserver(extendMizuhanaPicker);
