@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.3.0
+// @version      0.3.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.3.0';
+  const VERSION = '0.3.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -103,6 +103,11 @@
     #paths-monkey-root .pm-composer-line{display:flex;gap:10px;align-items:flex-start}
     #paths-monkey-root .pm-compose .pm-editor{display:block;resize:none;overflow-y:hidden;
       flex:1;min-width:0;height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
+    #paths-monkey-root .pm-composer-line #pm-send{height:40px;min-height:40px;align-self:flex-start;
+      padding:8px 14px;flex-shrink:0;font-size:13px}
+    #paths-monkey-root .pm-actions #pm-narrate{background:#2479ea;border-color:#78b5ff;color:#fff;
+      box-shadow:0 1px 8px #1155bb55}
+    #paths-monkey-root .pm-actions #pm-narrate:hover{background:#176bde}
     #paths-monkey-root .pm-mode-btn{min-height:40px;min-width:86px;background:#b73543;
       border:1px solid #f09b8b;color:#fff5e8;border-radius:10px;padding:7px 10px;
       font-weight:800;box-shadow:0 0 0 1px #f4c9a633}
@@ -230,11 +235,11 @@
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
         <div class="pm-composer-line">
-          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
+          <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
         <div class="pm-actions">
-          <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Post Xiao Lan's action to the shared room">Post</button>
+          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
           <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Peek at shared room">Scene</button>
         </div>
@@ -303,7 +308,7 @@
     element.classList.toggle('pm-dim',!speakAsCharacter);
     element.setAttribute('aria-pressed',String(speakAsCharacter));
     element.title=speakAsCharacter?'Xiao Lan is acting. Tap for OOC player chat.':'OOC player is speaking. Tap for Xiao Lan actions.';
-    $('action').placeholder=speakAsCharacter?'What does Xiao Lan do?':'Hear ye, hear ye, the Jade Emperor has spoken!';
+    $('action').placeholder=speakAsCharacter?'What does Xiao Lan do?':'The Jade Emperor has spoken!';
   }
   function setSpeaker(value){
     speakAsCharacter=Boolean(value);
