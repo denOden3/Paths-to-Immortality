@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.2.1
+// @version      0.2.2
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.2.1';
+  const VERSION = '0.2.2';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -98,10 +98,11 @@
       left:220px;right:0;max-width:100%;padding:8px 12px 9px;border-top:1px solid var(--pm-stroke);
       background:linear-gradient(110deg,#271d28,#39262e);box-shadow:0 -4px 14px #0b080caa;
       pointer-events:auto}
-    #paths-monkey-root .pm-compose .pm-editor{display:block;resize:vertical;max-height:100px;
-      min-height:53px;font-size:14px}
+    #paths-monkey-root .pm-compose .pm-editor{display:block;resize:none;overflow-y:hidden;
+      height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
     #paths-monkey-root .pm-actions{margin-top:6px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-    #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;min-height:15px;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;overflow-wrap:anywhere;margin-top:4px}
+    #paths-monkey-root .pm-feedback:empty{display:none}
     #paths-monkey-root .pm-feed{position:absolute;right:10px;top:63px;width:min(320px,calc(100vw - 20px));
       max-height:45vh;overflow:auto;border:1px solid var(--pm-stroke);border-radius:12px;
       background:#261e28;box-shadow:0 10px 35px #000b;pointer-events:auto;padding:10px}
@@ -168,7 +169,7 @@
       #paths-monkey-root .pm-left.pm-open{display:block}
       #paths-monkey-root .pm-drawer-toggle{display:inline-block}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
-      #paths-monkey-root .pm-compose .pm-editor{min-height:46px;max-height:80px}
+      #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
       #paths-monkey-root .pm-actions{gap:5px}
       #paths-monkey-root .pm-btn.pm-mini{padding:5px 7px}
       #paths-monkey-root .pm-feed{top:60px;max-height:44vh}
@@ -186,11 +187,10 @@
       </div>
     </div>
     <div class="pm-hbar">
-      <button id="pm-sidebar-toggle" type="button" class="pm-btn pm-mini pm-drawer-toggle" aria-label="Open Paths panels">☰</button>
       <div class="pm-logo" aria-hidden="true">☯</div>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
-      <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Peek at shared room">Scene</button>
+      <button id="pm-sidebar-toggle" type="button" class="pm-btn pm-mini pm-drawer-toggle" aria-label="Open Paths information panels" title="Information panels">☰</button>
       <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
@@ -219,10 +219,11 @@
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
-        <textarea id="pm-action" class="pm-text pm-editor" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose Xiao Lan's action"></textarea>
+        <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose Xiao Lan's action"></textarea>
         <div class="pm-actions">
-          <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini">Post to shared room</button>
-          <button id="pm-narrate" type="button" class="pm-btn pm-mini">Prepare Narrate</button>
+          <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Post Xiao Lan's action to the shared room">Post</button>
+          <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
+          <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Peek at shared room">Scene</button>
         </div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
@@ -285,9 +286,19 @@
     $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
   }
   function draftKey() { return 'draft.' + (selectedRoom?.id || 'unbound'); }
+  function autoGrowAction() {
+    const field=$('action');
+    // Start at exactly one line, expanding only as text wraps or has newlines.
+    field.style.height='40px';
+    const maxHeight=window.matchMedia('(max-width:790px)').matches?112:124;
+    const desired=Math.max(40,Math.min(maxHeight,field.scrollHeight));
+    field.style.height=desired+'px';
+    field.style.overflowY=field.scrollHeight>maxHeight?'auto':'hidden';
+  }
   function saveDraft() { put(draftKey(), $('action').value); }
   function restoreDraft() {
     $('action').value = get(draftKey(), '');
+    autoGrowAction();
     pendingRequestId = null;
     pendingRequestBody = null;
   }
@@ -448,7 +459,7 @@
       if (e.code!=='23505') throw e;
       // The same message ID was already accepted. Do not post a second copy.
     }
-    $('action').value='';saveDraft();pendingRequestId=null;pendingRequestBody=null;
+    $('action').value='';autoGrowAction();saveDraft();pendingRequestId=null;pendingRequestBody=null;
     feedback('✓ Xiao Lan\'s action posted to the shared room.');
     await refreshScene();
   }
@@ -626,11 +637,11 @@
   $('feed-refresh').onclick=()=>runTask(refreshScene);
   $('sidebar-toggle').onclick=()=>{showSidebar=!showSidebar;$('sidebar').classList.toggle('pm-open',showSidebar);};
   $('minimize').onclick=()=>setHudMode('paths',false);
-  $('action').addEventListener('input',()=>{saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;}});
+  $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settings').classList.contains('pm-hide'))closeSettings();else if(e.key==='Escape'&&!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();});
-  window.addEventListener('resize',()=>{resizeNativeInset();});
+  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();});
   window.addEventListener('beforeunload',saveDraft);
   if(typeof GM_registerMenuCommand==='function') {
     GM_registerMenuCommand('Open Paths of Immortality HUD',showPaths);
