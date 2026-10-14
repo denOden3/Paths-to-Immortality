@@ -48,6 +48,13 @@ body.authOpen{overflow:hidden}
 .narratorSheet .publishNote{font-size:12px;color:var(--muted);margin-top:5px}
 .narratorSheet .narratorExit{width:100%;margin:4px auto 0}
 .narratorSummary{font-size:12px;color:var(--muted);padding:6px 2px}
+
+.bubble.owned{position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:pan-y}
+.bubble.selected{outline:3px solid var(--gold);outline-offset:1px;background:#60404b}
+.bubble.selected::before{content:"✓";position:absolute;right:5px;top:-12px;background:var(--gold);color:#241b20;width:23px;height:23px;display:grid;place-items:center;border-radius:50%;font-weight:900}
+.selectionBar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0;padding:8px;border:1px solid #a67d83;border-radius:11px;background:#352631}
+.selectionBar .btn{padding:7px 10px;min-height:35px;font-size:12px}.selectionBar .count{color:var(--gold);font-size:12px;font-weight:800;flex:1;min-width:75px}
+.editSheet textarea{min-height:110px;max-height:38dvh;margin:12px 0}
 </style>
 </head><body>
 <div class="app">
@@ -70,6 +77,11 @@ body.authOpen{overflow:hidden}
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong><button id="narrate" class="btn sm hidden" type="button">✦ Narrate</button><button id="invite" class="btn sm hidden">Invite</button></div>
 <div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
+<div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
+<span id="selectionCount" class="count">0 selected</span>
+<button id="selectionEdit" class="btn sm" type="button">Edit</button>
+<button id="selectionDelete" class="btn sm" type="button">Delete</button>
+<button id="selectionCancel" class="btn sm" type="button">Cancel</button></div>
 <div id="inviteBox" class="card hidden"><h3>One-use invite · expires after 48 hours</h3><p>Send this code privately to your friend. Anyone who receives it can use it once while it's valid.</p><div id="inviteText" class="code"></div><div class="buttons"><button id="copy" class="btn sm">Copy code</button><button id="closeInvite" class="btn sm">Hide</button></div></div>
 <div id="feed" class="feed" aria-live="polite"></div>
 </section>
@@ -104,10 +116,19 @@ body.authOpen{overflow:hidden}
 <button id="narratorClose" class="authExit narratorExit" type="button">Back to room</button>
 </section>
 </div>
+<div id="editOverlay" class="authOverlay hidden" role="presentation">
+<section id="editSheet" class="authSheet editSheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+<h2 id="editTitle">Edit your action</h2>
+<p>Changes appear for both players. Actions already resolved by the narrator are locked.</p>
+<textarea id="editBody" maxlength="8000" aria-label="Edit selected player action"></textarea>
+<div class="buttons"><button id="editCancel" class="btn" type="button">Cancel</button>
+<button id="editSave" class="btn primary" type="button">Save changes</button></div>
+</section></div>
 <script type="module">
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
+let roomMessages=[],selectedIds=new Set(),editId=null;
 const draftKey=()=>room?'paths.test.draft.'+room:'';
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
@@ -115,11 +136,65 @@ const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create'
 const show=where=>{for(const x of ['welcome','lobby','chat','composer'])$(x).classList.add('hidden');$(where).classList.remove('hidden');if(where==='chat')$('composer').classList.remove('hidden');};
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
-function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();}
+function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
 async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');$('invite').classList.toggle('hidden',!isOwner);$('narrate').classList.toggle('hidden',!isOwner);}
-async function fetchMessages(){if(!room)return;const active=room;const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);if(error)throw error;if(room!==active)return;const el=$('feed'),nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;el.replaceChildren();if(!data.length){const p=document.createElement('p');p.className='muted';p.textContent='The hall is quiet. Who will speak first?';el.append(p);return;}for(const m of data){const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'');const by=document.createElement('div');by.className='by';const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':(members.find(x=>x.user_id===m.sender_id)?.character_name||'Player');const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});by.append(name,date);const body=document.createElement('div');body.className='body';body.textContent=m.body;box.append(by,body);el.append(box);}if(nearBottom)el.scrollTop=el.scrollHeight;}
-async function openRoom(id){endLive();room=id;const {data,error}=await db.from('rooms').select('id,title').eq('id',id).single();if(error){room=null;throw error;}$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');try{$('msg').value=localStorage.getItem(draftKey())||'';}catch{$('msg').value='';}await fetchMembers();await fetchMessages();subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;if(status==='SUBSCRIBED')fetchMessages().catch(console.warn);});poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);}},18000);try{localStorage.setItem('paths.test.lastroom',id);}catch{}}
+
+const isMine=m=>m&&user&&m.sender_id===user.id&&m.kind==='player';
+function updateSelection(){
+  const all=new Set(roomMessages.map(x=>x.id));
+  for(const id of selectedIds)if(!all.has(id))selectedIds.delete(id);
+  $('selectionBar').classList.toggle('hidden',selectedIds.size===0);
+  $('selectionCount').textContent=selectedIds.size+' selected';
+  $('selectionEdit').disabled=selectedIds.size!==1||working;
+  $('selectionDelete').disabled=!selectedIds.size||working;
+  $('feed').querySelectorAll('.bubble[data-mid]').forEach(e=>{
+    const selected=selectedIds.has(e.dataset.mid);
+    e.classList.toggle('selected',selected);e.setAttribute('aria-pressed',String(selected));
+  });
+}
+function clearSelection(){selectedIds.clear();updateSelection();}
+function toggleSelected(m){
+  if(!isMine(m))return;
+  if(selectedIds.has(m.id))selectedIds.delete(m.id);else selectedIds.add(m.id);
+  updateSelection();
+}
+function installLongPress(box,m){
+  if(!isMine(m))return;
+  box.classList.add('owned');box.dataset.mid=m.id;box.tabIndex=0;box.setAttribute('role','button');
+  box.setAttribute('aria-label','Your action; long-press to select. Then tap other actions.');
+  let timer=null,held=false,startX=0,startY=0;
+  const stop=()=>{clearTimeout(timer);timer=null;};
+  box.addEventListener('pointerdown',e=>{if(e.button!==0)return;held=false;startX=e.clientX;startY=e.clientY;stop();timer=setTimeout(()=>{timer=null;held=true;toggleSelected(m);},480);});
+  box.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-startX)>16||Math.abs(e.clientY-startY)>16)stop();});
+  ['pointerup','pointercancel','pointerleave'].forEach(n=>box.addEventListener(n,stop));
+  box.addEventListener('contextmenu',e=>{e.preventDefault();stop();if(!held){held=true;toggleSelected(m);}});
+  box.addEventListener('click',e=>{if(held){held=false;e.preventDefault();return;}if(selectedIds.size)toggleSelected(m);});
+  box.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelected(m);}});
+}
+async function fetchMessages(){
+  if(!room)return;
+  const active=room;
+  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
+  if(error)throw error;if(room!==active)return;
+  roomMessages=data||[];
+  const el=$('feed'),nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
+  el.replaceChildren();
+  if(!roomMessages.length){
+    const p=document.createElement('p');p.className='muted';p.textContent='The hall is quiet. Who will speak first?';el.append(p);
+  }
+  for(const m of roomMessages){
+    const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'');
+    const by=document.createElement('div');by.className='by';
+    const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':(members.find(x=>x.user_id===m.sender_id)?.character_name||'Player');
+    const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(m.edited_at?' · edited':'');
+    by.append(name,date);
+    const body=document.createElement('div');body.className='body';body.textContent=m.body;
+    box.append(by,body);installLongPress(box,m);el.append(box);
+  }
+  updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;
+}
+async function openRoom(id){endLive();room=id;const {data,error}=await db.from('rooms').select('id,title').eq('id',id).single();if(error){room=null;throw error;}$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');try{$('msg').value=localStorage.getItem(draftKey())||'';}catch{$('msg').value='';}await fetchMembers();await fetchMessages();subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;if(status==='SUBSCRIBED')fetchMessages().catch(console.warn);});poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);}},18000);try{localStorage.setItem('paths.test.lastroom',id);}catch{}}
 
 const PROTOCOL_URL='https://app.notion.com/p/3f9b0ac52efe817ba56ed1d5112268b7';
 const WORLD_URL='https://app.notion.com/p/3f7b0ac52efe81258310c96057391e18';
@@ -207,12 +282,51 @@ $('publishNarrator').onclick=()=>safe(async()=>{
   notice('✦ The Heavenly Voice has spoken. Both players can now read the narration.','good');
 });
 
+
+function closeEdit(){
+ $('editOverlay').classList.add('hidden');editId=null;
+ if($('authOverlay').classList.contains('hidden')&&$('narratorOverlay').classList.contains('hidden'))document.body.classList.remove('authOpen');
+}
+function openEdit(){
+ if(selectedIds.size!==1)return;
+ const m=roomMessages.find(x=>x.id===Array.from(selectedIds)[0]);
+ if(!isMine(m))throw Error('Only your own player actions may be edited.');
+ editId=m.id;$('editBody').value=m.body;
+ $('editOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('editBody').focus();
+}
+$('selectionCancel').onclick=clearSelection;
+$('selectionEdit').onclick=()=>safe(openEdit);
+$('editCancel').onclick=closeEdit;
+$('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit();});
+$('editSave').onclick=()=>safe(async()=>{
+ if(!room||!editId)throw Error('Choose a message first.');
+ const text=$('editBody').value.trim();
+ if(!text||text.length>8000)throw Error('Enter 1 to 8000 characters.');
+ $('editSave').disabled=true;
+ try{
+   const {error}=await db.rpc('edit_own_message',{p_message_id:editId,p_new_body:text});
+   if(error)throw error;
+   closeEdit();clearSelection();await fetchMessages();notice('Action edited.','good');
+ }finally{$('editSave').disabled=false;}
+});
+$('selectionDelete').onclick=async()=>{
+ const ids=Array.from(selectedIds);
+ if(!room||!ids.length)return;
+ if(!confirm('Permanently delete '+ids.length+' selected message'+(ids.length===1?'':'s')+'?'))return;
+ await safe(async()=>{
+   const {data,error}=await db.rpc('delete_own_messages',{p_room_id:room,p_message_ids:ids});
+   if(error)throw error;
+   clearSelection();await fetchMessages();
+   notice(data+' message'+(data===1?'':'s')+' deleted.','good');
+ });
+};
+
 function openAuthDialog(){$('authError').textContent='';$('authError').classList.add('hidden');$('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('google').focus();}
 function closeAuthDialog(){$('authOverlay').classList.add('hidden');document.body.classList.remove('authOpen');$('guest').focus();}
 $('guest').onclick=openAuthDialog;
 $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
 $('google').onclick=()=>safe(async()=>{const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
 $('guestTrial').onclick=()=>safe(async()=>{const {data,error}=await db.auth.signInAnonymously();if(error)throw Error('Temporary guest sign-in unavailable. Check that Anonymous Sign-Ins are enabled in Supabase. '+error.message);user=data.user;closeAuthDialog();await lobby();});
 
