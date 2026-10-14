@@ -92,7 +92,7 @@ body.authOpen{overflow:hidden}
 <section id="narratorSheet" class="authSheet narratorSheet" role="dialog" aria-modal="true" aria-labelledby="narratorTitle" aria-describedby="narratorDescription" tabindex="-1">
 <h2 id="narratorTitle">✦ The Heavenly Voice</h2>
 <p id="narratorDescription">Manual ChatGPT bridge · Test 2A · Only the room owner can publish narrator replies.</p>
-<div id="narratorSummary" class="narratorSummary" aria-live="polite"></div>
+<div id="narratorSummary" class="narratorSummary" aria-live="polite"></div><div id="narratorError" class="authMessage hidden" role="alert"></div>
 <div class="nstep">1 · Copy the combined scene request</div>
 <textarea id="narratorPrompt" class="promptBox" readonly aria-label="Combined ChatGPT narration prompt"></textarea>
 <div class="buttons"><button id="copyNarratorPrompt" class="btn primary" type="button">Copy scene prompt</button><a id="openChatGPT" class="btn" target="_blank" rel="noopener noreferrer" href="https://chatgpt.com/">Open ChatGPT ↗</a></div>
@@ -113,7 +113,7 @@ const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.classN
 const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator'])$(id).disabled=v;};
 const show=where=>{for(const x of ['welcome','lobby','chat','composer'])$(x).classList.add('hidden');$(where).classList.remove('hidden');if(where==='chat')$('composer').classList.remove('hidden');};
-async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}}finally{busy(false);}}
+async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
@@ -127,6 +127,7 @@ function narratorDraftKey(){return room?'paths.test.narrator.'+room:null;}
 function hideNarrator(){
   if(!$('narratorOverlay'))return;
   $('narratorOverlay').classList.add('hidden');
+  $('narratorError').classList.add('hidden');
   if($('authOverlay').classList.contains('hidden'))document.body.classList.remove('authOpen');
   narratorSnapshot=null;
 }
@@ -150,6 +151,7 @@ function narratorGuide(roomName,pendingActions,lastNarration){
   ].join('\n\n');
 }
 async function openNarrator(){
+  $('narratorError').textContent='';$('narratorError').classList.add('hidden');
   if(!room||!user)throw Error('Enter a room first.');
   const currentRoom=room;
   if(!members.some(m=>m.user_id===user.id&&m.role==='owner'))throw Error('Only the room owner can prepare and publish narration.');
