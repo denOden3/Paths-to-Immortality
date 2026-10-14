@@ -48,3 +48,11 @@ The copied prompt contains the authoritative Shared Narrator Protocol Notion pag
 - Other players' messages and Narrator messages cannot be edited or deleted using these controls.
 - To protect story continuity, any player action followed by a Narrator message is locked from changes. Edits show an “edited” indicator to the other player; deletions may take up to one polling interval (~18 seconds) to disappear on other phones if DELETE realtime notifications aren't delivered.
 - Deletion is permanent. This Test Room is noncanonical. We have not yet added a recycle bin, undo or scene archiving. The player's identity is checked in database-side RPCs; ordinary clients cannot directly update/delete the table.
+
+## Character actions versus OOC chat
+
+The browser application is called **Paths Web** (not the Paths HUD). Choose Character or Player · OOC before posting. OOC messages remain visible in chat, are marked with a distinct style, and are excluded from pending actions supplied to the narrator. Existing messages retain their original `player` kind and are treated as character actions.
+
+Long-press your own bubble to select messages. The first selection action is **OOC**: it changes selected character messages to OOC. When all selected bubbles already are OOC, that control changes to **Character**, allowing correction back to story mode. This type switch is limited to messages that have not been followed by a Narrator turn; the server verifies ownership. Edits and deletion of OOC chat remain possible afterward, while narrated character actions stay locked.
+
+This is an early prototype: verify the character/OOC switch from both phones before using it for canonical scenes. End Scene and Notion novel compilation are **not** implemented yet.
