@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths Monkey — GM HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.1.0
+// @version      0.1.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.1.0';
+  const VERSION = '0.1.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -512,13 +512,15 @@
   window.addEventListener('beforeunload',saveDraft);
   if(typeof GM_registerMenuCommand==='function') GM_registerMenuCommand('Open Paths Monkey Settings',openSettings);
   setConnectedState();restoreDraft();renderFeed();
+  setTimeout(resizeNativeInset,350);
+  setTimeout(resizeNativeInset,1250);
+  const layoutChecker=setInterval(resizeNativeInset,1800);
   const checker=setInterval(()=>{
-    resizeNativeInset();
     if(account && selectedRoom && document.visibilityState==='visible' && !busy) {
       refreshScene().catch((e)=>{ $('connection').textContent='⚠ '+e.message; });
     }
   },12000);
-  window.addEventListener('pagehide',()=>clearInterval(checker),{once:true});
+  window.addEventListener('pagehide',()=>{clearInterval(checker);clearInterval(layoutChecker);},{once:true});
   if(account) runTask(async()=>{
     try{await loadRooms();if(selectedRoom)await refreshScene();}
     catch(err){feedback('Saved guest session needs attention: '+err.message,true);}
