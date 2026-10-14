@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.2.3**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -54,3 +54,11 @@ To hide or remove the new HUD without affecting Mizuhana, disable Paths Monkey i
 ## v0.2.3 — Action-button spacing
 
 The three Paths HUD controls (Post, Narrate, Scene) now have larger gaps on mobile and desktop. No changes to the existing room connection, narration mechanics, Mizuhana source or saved data. Message long-press editing is provided on the **shared GitHub Pages website**, not yet inside the Monkey Scene peek.
+
+## v0.3.0 — Xiao Lan / OOC one-button mode
+
+- In **Paths HUD** (the Tampermonkey interface), tap the **Xiao Lan** button beside the one-line action field. **Bright = Xiao Lan character action**; **dim = your OOC player chat**. The same button remains visible in both states, and your choice is kept in the userscript's own storage.
+- OOC placeholder: **Hear ye, hear ye, the Jade Emperor has spoken!**
+- **Post** sends the selected message type to Supabase; the Scene peek distinguishes OOC and Narrator bubbles. **Narrate** explicitly asks the GM to ignore OOC messages.
+- The friend-facing GitHub Pages application is called **Paths Web**, never another HUD. Paths Web has a separate two-option Character / Player · OOC switch, and its long-press selection menu begins with **OOC** (or **Character** when switching already-OOC messages back).
+- Existing Mizuhana scripts and saved states remain untouched. The one-time GM pairing ritual and automatic Notion scene compilation are not yet built.
