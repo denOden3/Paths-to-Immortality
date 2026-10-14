@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.2.0
+// @version      0.2.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.2.0';
+  const VERSION = '0.2.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -75,7 +75,6 @@
     #paths-monkey-root .pm-logo{background:#632732;border:1px solid #98505d;border-radius:10px;
       height:34px;width:34px;display:grid;place-items:center;font-size:21px;flex-shrink:0}
     #paths-monkey-root .pm-title{font-size:14px;font-weight:800;line-height:1.12;letter-spacing:.01em;flex:1}
-    #paths-monkey-root .pm-sub{display:block;font-size:10px;font-weight:500;color:var(--pm-gold);margin-top:3px}
     #paths-monkey-root .pm-compact-version{font-size:10px;color:var(--pm-gold)}
     #paths-monkey-root .pm-btn{min-height:32px;border:1px solid var(--pm-stroke);border-radius:9px;
       padding:6px 10px;background:#3e303a;color:var(--pm-ink);font-weight:700}
@@ -101,11 +100,7 @@
       pointer-events:auto}
     #paths-monkey-root .pm-compose .pm-editor{display:block;resize:vertical;max-height:100px;
       min-height:53px;font-size:14px}
-    #paths-monkey-root .pm-composebar{display:flex;align-items:center;justify-content:space-between;
-      gap:8px;margin-bottom:6px}
     #paths-monkey-root .pm-actions{margin-top:6px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-    #paths-monkey-root .pm-composestatus{font-size:10px;color:var(--pm-muted);flex:1}
-    #paths-monkey-root .pm-tip{font-size:10px;color:var(--pm-muted);margin-top:5px}
     #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;min-height:15px;overflow-wrap:anywhere}
     #paths-monkey-root .pm-feed{position:absolute;right:10px;top:63px;width:min(320px,calc(100vw - 20px));
       max-height:45vh;overflow:auto;border:1px solid var(--pm-stroke);border-radius:12px;
@@ -145,14 +140,10 @@
       z-index:3;display:flex;align-items:center;border:1px solid #b2787d;
       background:#281d27;color:#fff3e6;border-radius:999px;box-shadow:0 7px 22px #0008;
       max-width:calc(100vw - 24px)}
-    #paths-monkey-root .pm-picker .pm-picker-main,
-    #paths-monkey-root .pm-picker .pm-picker-chevron{border:0;background:none;color:#fff3e6;
-      font-size:14px;font-weight:800;cursor:pointer;min-height:43px;white-space:nowrap}
-    #paths-monkey-root .pm-picker .pm-picker-main{padding:9px 8px 9px 17px;max-width:75vw;
-      overflow:hidden;text-overflow:ellipsis;touch-action:pan-y;}
-    #paths-monkey-root .pm-picker .pm-picker-chevron{padding:9px 14px 9px 8px;color:#ffd39c}
-    #paths-monkey-root .pm-picker .pm-picker-main:focus-visible,
-    #paths-monkey-root .pm-picker .pm-picker-chevron:focus-visible{outline:2px solid #ffd39c;outline-offset:2px}
+    #paths-monkey-root .pm-picker .pm-picker-main{border:0;background:none;color:#fff3e6;
+      font-size:14px;font-weight:800;cursor:pointer;min-height:43px;white-space:nowrap;
+      padding:9px 17px;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;touch-action:pan-y;}
+    #paths-monkey-root .pm-picker .pm-picker-main:focus-visible{outline:2px solid #ffd39c;outline-offset:2px}
     #paths-monkey-root .pm-picker-menu{position:absolute;top:calc(100% + 7px);left:50%;
       transform:translateX(-50%);background:#302431;border:1px solid #ad8085;border-radius:13px;
       padding:7px;min-width:min(285px,calc(100vw - 24px));box-shadow:0 8px 25px #000b;
@@ -180,7 +171,6 @@
       #paths-monkey-root .pm-compose .pm-editor{min-height:46px;max-height:80px}
       #paths-monkey-root .pm-actions{gap:5px}
       #paths-monkey-root .pm-btn.pm-mini{padding:5px 7px}
-      #paths-monkey-root .pm-tip{display:none}
       #paths-monkey-root .pm-feed{top:60px;max-height:44vh}
     }
   `);
@@ -189,8 +179,7 @@
   root.id = 'paths-monkey-root';
   root.innerHTML = `
     <div id="pm-picker" class="pm-picker pm-hide" aria-label="HUD picker">
-      <button id="pm-picker-main" class="pm-picker-main" type="button" title="Open Paths HUD. Hold for the HUD list.">☯ Paths of Immortality</button>
-      <button id="pm-picker-chevron" class="pm-picker-chevron" type="button" aria-expanded="false" aria-haspopup="menu" aria-label="Choose HUD">▾</button>
+      <button id="pm-picker-main" class="pm-picker-main" type="button" aria-expanded="false" aria-haspopup="menu" title="Tap to open Paths HUD; long-press to switch HUDs.">☯ Paths of Immortality</button>
       <div id="pm-picker-menu" class="pm-picker-menu pm-hide" role="menu">
         <button id="pm-select-paths" type="button" class="pm-picker-option" role="menuitem">☯ Paths of Immortality</button>
         <button id="pm-select-mizuhana" type="button" class="pm-picker-option" role="menuitem">🌺 Mizuhana</button>
@@ -199,7 +188,7 @@
     <div class="pm-hbar">
       <button id="pm-sidebar-toggle" type="button" class="pm-btn pm-mini pm-drawer-toggle" aria-label="Open Paths panels">☰</button>
       <div class="pm-logo" aria-hidden="true">☯</div>
-      <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the whole HUD into its launcher"><span class="pm-title">Paths to Immortality</span><span class="pm-sub">☯ GM HUD · tap to collapse</span></button>
+      <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
       <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Peek at shared room">Scene</button>
       <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
@@ -229,16 +218,13 @@
       <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div>
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
-      <div class="pm-composebar"><strong>✦ Xiao Lan's action</strong><span id="pm-composestatus" class="pm-pill">Offline</span></div>
       <div id="pm-compose-inner">
         <textarea id="pm-action" class="pm-text pm-editor" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose Xiao Lan's action"></textarea>
         <div class="pm-actions">
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini">Post to shared room</button>
           <button id="pm-narrate" type="button" class="pm-btn pm-mini">Prepare Narrate</button>
-          <span class="pm-composestatus">Native ChatGPT composer stays below ↓</span>
         </div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
-        <div class="pm-tip">Actions go directly to Supabase. Narrate prepares a short command; you press ChatGPT's blue Send yourself.</div>
       </div>
     </section>
     <div id="pm-settings" class="pm-backdrop pm-hide" role="presentation">
@@ -292,7 +278,6 @@
     $('room-title').textContent = selectedRoom?.title || 'Not connected';
     $('connection').textContent = !account ? 'Monkey guest not connected' : !selectedRoom ? 'Guest connected · invite needed' : 'Supabase linked · scene available';
     $('auth-status').textContent = account ? 'Monkey guest connected' : 'Not connected';
-    $('composestatus').textContent = isInRoom ? '● Linked' : '○ Offline';
     $('send').disabled = busy || !isInRoom;
     $('narrate').disabled = busy || !isInRoom;
     $('signin-section').classList.toggle('pm-hide', !!account);
@@ -544,17 +529,14 @@
 
   function closePickerMenu() {
     $('picker-menu').classList.add('pm-hide');
-    $('picker-chevron').setAttribute('aria-expanded','false');
+    $('picker-main').setAttribute('aria-expanded','false');
   }
   function openPickerMenu() {
     const hasMizuhana=!!document.querySelector('#mizuhana-hud, #mizuhana-launcher, #mizu-hud-switcher');
     $('select-mizuhana').disabled=!hasMizuhana;
     $('select-mizuhana').title=hasMizuhana?'Switch to your Mizuhana HUD':'Mizuhana is not loaded on this page';
     $('picker-menu').classList.remove('pm-hide');
-    $('picker-chevron').setAttribute('aria-expanded','true');
-  }
-  function togglePickerMenu() {
-    if($('picker-menu').classList.contains('pm-hide'))openPickerMenu(); else closePickerMenu();
+    $('picker-main').setAttribute('aria-expanded','true');
   }
   function closeAllPanels() {
     $('settings').classList.add('pm-hide');
@@ -626,7 +608,6 @@
     showPaths();
   });
   $('picker-main').addEventListener('contextmenu',e=>{e.preventDefault();openPickerMenu();});
-  $('picker-chevron').onclick=togglePickerMenu;
   $('select-paths').onclick=showPaths;
   $('select-mizuhana').onclick=switchToMizuhana;
   $('collapse-title').onclick=()=>setHudMode('paths',false);
