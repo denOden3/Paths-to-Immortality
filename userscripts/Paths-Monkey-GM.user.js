@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.2.2
+// @version      0.2.3
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.2.2';
+  const VERSION = '0.2.3';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -100,7 +100,7 @@
       pointer-events:auto}
     #paths-monkey-root .pm-compose .pm-editor{display:block;resize:none;overflow-y:hidden;
       height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
-    #paths-monkey-root .pm-actions{margin-top:6px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+    #paths-monkey-root .pm-actions{margin-top:12px;display:flex;column-gap:16px;row-gap:10px;align-items:center;flex-wrap:wrap}
     #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;overflow-wrap:anywhere;margin-top:4px}
     #paths-monkey-root .pm-feedback:empty{display:none}
     #paths-monkey-root .pm-feed{position:absolute;right:10px;top:63px;width:min(320px,calc(100vw - 20px));
@@ -170,7 +170,7 @@
       #paths-monkey-root .pm-drawer-toggle{display:inline-block}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
       #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
-      #paths-monkey-root .pm-actions{gap:5px}
+      #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
       #paths-monkey-root .pm-btn.pm-mini{padding:5px 7px}
       #paths-monkey-root .pm-feed{top:60px;max-height:44vh}
     }
