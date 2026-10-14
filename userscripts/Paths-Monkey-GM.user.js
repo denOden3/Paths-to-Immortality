@@ -54,6 +54,7 @@
   let hudExpanded = get('hudExpanded', true);
   let hudMode = get('hudMode', 'paths');
   let pickerHoldTimer = null;
+  let pickerStart = null;
   let suppressPickerClick = false;
 
   GM_addStyle(`
@@ -193,7 +194,6 @@
       <div id="pm-picker-menu" class="pm-picker-menu pm-hide" role="menu">
         <button id="pm-select-paths" type="button" class="pm-picker-option" role="menuitem">☯ Paths of Immortality</button>
         <button id="pm-select-mizuhana" type="button" class="pm-picker-option" role="menuitem">🌺 Mizuhana</button>
-        <button id="pm-select-chat" type="button" class="pm-picker-option" role="menuitem">◌ Hide all HUDs (plain ChatGPT)</button>
       </div>
     </div>
     <div class="pm-hbar">
@@ -609,11 +609,17 @@
     if(e.button!==0)return;
     clearTimeout(pickerHoldTimer);
     suppressPickerClick=false;
+    pickerStart={x:e.clientX,y:e.clientY};
     pickerHoldTimer=setTimeout(()=>{pickerHoldTimer=null;suppressPickerClick=true;openPickerMenu();},480);
   });
-  $('picker-main').addEventListener('pointermove',(e)=>{if(e.buttons!==1){clearTimeout(pickerHoldTimer);pickerHoldTimer=null;}});
+  $('picker-main').addEventListener('pointermove',(e)=>{
+    if(!pickerHoldTimer||!pickerStart)return;
+    if(Math.abs(e.clientX-pickerStart.x)>18||Math.abs(e.clientY-pickerStart.y)>18){
+      clearTimeout(pickerHoldTimer);pickerHoldTimer=null;
+    }
+  });
   for(const event of ['pointerup','pointercancel','pointerleave']){
-    $('picker-main').addEventListener(event,()=>{clearTimeout(pickerHoldTimer);pickerHoldTimer=null;});
+    $('picker-main').addEventListener(event,()=>{clearTimeout(pickerHoldTimer);pickerHoldTimer=null;pickerStart=null;});
   }
   $('picker-main').addEventListener('click',e=>{
     if(suppressPickerClick){suppressPickerClick=false;e.preventDefault();return;}
@@ -623,7 +629,6 @@
   $('picker-chevron').onclick=togglePickerMenu;
   $('select-paths').onclick=showPaths;
   $('select-mizuhana').onclick=switchToMizuhana;
-  $('select-chat').onclick=()=>setHudMode('chat',false);
   $('collapse-title').onclick=()=>setHudMode('paths',false);
 
   $('settings-toggle').onclick=openSettings;
