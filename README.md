@@ -40,3 +40,11 @@ The website is public static code, but the chat data is protected using Supabase
 5. Both players should receive a distinct Narrator bubble in realtime.
 
 The copied prompt contains the authoritative Shared Narrator Protocol Notion page link and compact fallback rules. ChatGPT must still actually retrieve the Notion page if available; a link does not automatically sync Notion. If any new player actions or Narrator posts arrive during handoff, publishing is rejected and the prompt must be refreshed. A draft of the pasted narration remains in the current browser if an error occurs.
+
+## Player-owned message editing (website)
+
+- On the shared-room website, **long-press one of your own player messages** to enter selection mode; then tap other messages of yours to select several.
+- **Edit** becomes available when exactly one of your messages is selected. **Delete** permanently removes all selected messages after confirmation. **Cancel** exits selection mode.
+- Other players' messages and Narrator messages cannot be edited or deleted using these controls.
+- To protect story continuity, any player action followed by a Narrator message is locked from changes. Edits show an “edited” indicator to the other player; deletions may take up to one polling interval (~18 seconds) to disappear on other phones if DELETE realtime notifications aren't delivered.
+- Deletion is permanent. This Test Room is noncanonical. We have not yet added a recycle bin, undo or scene archiving. The player's identity is checked in database-side RPCs; ordinary clients cannot directly update/delete the table.
