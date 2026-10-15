@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d">
-<title>Paths to Immortality · Cloudveil Test Room v0.4.1</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
+<title>Paths to Immortality · Cloudveil Session v0.5.0</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -84,14 +84,36 @@ body.authOpen{overflow:hidden}
 </style>
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.4.1</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.5.0</div></header>
 <div class="content">
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
 <div class="card"><h2>Welcome, wandering cultivator!</h2>
 <p>Step into the Jianghu and forge your own path toward immortality.</p>
-<button id="guest" class="btn primary">Step forth to the Jianghu!</button></div>
-<div class="footer">☁ A Cloudveil Sect experiment · Stories await beyond the gate</div>
+<button id="guest" class="btn primary">Step forth to the Jianghu!</button>
+<p id="gateHint" class="muted">A private invitation is needed to join a shared session.</p>
+</div>
+<div class="footer">☁ Every cultivator begins somewhere</div>
+</section>
+<section id="intro" class="scroll hidden" aria-label="Shared session introduction">
+<div class="card">
+<div class="muted" style="font-size:12px;letter-spacing:.05em">YOUR JIANGHU INVITATION</div>
+<h2 id="introTitle">Your story begins</h2>
+<p id="introDate" class="muted"></p>
+<p id="introPlace" class="muted"></p>
+<div id="introText" style="white-space:pre-wrap;padding:12px;border:1px solid var(--border);border-radius:12px"></div>
+<h3 id="introPlayer" style="margin-top:18px"></h3>
+<div id="introAssigned" class="card hidden"></div>
+<div id="introGuest" class="hidden">
+<p>Choose a guest role your host has approved for this session.</p>
+<div id="introRoles" class="buttons"></div>
+<p id="introRoleInfo" class="muted"></p>
+<label for="introGuestName">Name your temporary character</label>
+<input id="introGuestName" maxlength="40" autocomplete="off" placeholder="Your character's name">
+</div>
+<div class="buttons"><button id="introEnter" type="button" class="btn primary">Step forth to your immortal path!</button></div>
+<p id="introFeedback" class="muted" role="status" aria-live="polite">Your invitation is private and can only be redeemed once.</p>
+</div>
 </section>
 <section id="lobby" class="scroll hidden">
 <div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms of Cloudveil</h2><button id="signout" class="btn sm">Sign out</button></div>
@@ -186,21 +208,26 @@ body.authOpen{overflow:hidden}
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
-let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,currentView='welcome',toolsReturnView='welcome';
+let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
+let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,selectedGuestRole='',activeCharacter='';
+const ownMember=()=>members.find(m=>m.user_id===user?.id);
+const ownCharacters=()=>{const m=ownMember();return (m?.allowed_characters?.length?m.allowed_characters:[m?.character_name]).filter(Boolean);};
+const clearInviteAddress=()=>{inviteCode='';try{history.replaceState(null,'',location.pathname+location.hash);}catch{}};
+
 const draftKey=()=>room?'paths.test.draft.'+room:'';
 const modeKey=()=>room?'paths.mode.'+room:'';
 function characterNameFor(id){
   return members.find(m=>m.user_id===id)?.character_name||'Character';
 }
 function playerNameFor(id){
-  const character=characterNameFor(id);
-  // Nickname for Xu Yi's player; other members retain an honest generic label.
-  return character.trim().toLowerCase()==='xu yi'?'Puuchan':'Player';
+  const m=members.find(x=>x.user_id===id);
+  return m?.player_alias||(m?.character_name?.toLowerCase()==='xu yi'?'Puuchan':'Player');
 }
 function updateSpeakerDisplay(){
   const isCharacter=chatMode==='player';
-  const ownCharacter=characterNameFor(user?.id);
-  const character=ownCharacter==='Character'?'Xu Yi':ownCharacter;
+  const choices=ownCharacters();
+  if(!choices.includes(activeCharacter))activeCharacter=choices[0]||'Character';
+  const character=activeCharacter;
   const label=isCharacter?'🎭 '+character:'💬 '+playerNameFor(user?.id);
   $('modeSpeaker').textContent=label;
   $('modeSpeaker').classList.toggle('oocActive',!isCharacter);
@@ -213,15 +240,22 @@ function setChatMode(mode){
   if(mode!=='player'&&mode!=='ooc')return;
   chatMode=mode;
   updateSpeakerDisplay();
-  if(pendingMode!==chatMode){pending=null;pendingMode=null;pendingText=null;}
+  if(pendingMode!==chatMode||pendingCharacter!==activeCharacter){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}
   try{if(room)localStorage.setItem(modeKey(),mode);}catch{}
 }
-$('modeSpeaker').onclick=()=>setChatMode(chatMode==='player'?'ooc':'player');
+$('modeSpeaker').onclick=()=>{
+  const choices=ownCharacters();
+  if(chatMode==='ooc'){setChatMode('player');activeCharacter=choices[0]||activeCharacter;}
+  else if(choices.length>1&&choices.indexOf(activeCharacter)<choices.length-1){
+    activeCharacter=choices[choices.indexOf(activeCharacter)+1];pending=null;pendingCharacter=null;
+  }else setChatMode('ooc');
+  updateSpeakerDisplay();
+};
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke'])$(id).disabled=v;};
 const show=where=>{
-  for(const x of ['welcome','lobby','chat','tools','composer'])$(x).classList.add('hidden');
+  for(const x of ['welcome','intro','lobby','chat','tools','composer'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   currentView=where;
@@ -273,7 +307,7 @@ async function safe(fn){if(working)return;busy(true);clear();try{await fn();}cat
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
-async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
+async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role,player_alias,allowed_characters,guest_role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
 $('ownerTools').classList.toggle('hidden',!isOwner);
 if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
 updateSpeakerDisplay();}
@@ -318,7 +352,7 @@ function installLongPress(box,m){
 async function fetchMessages(){
   if(!room)return;
   const active=room;
-  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
+  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
   if(error)throw error;if(room!==active)return;
   roomMessages=data||[];
   const el=$('feed'),nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
@@ -329,7 +363,7 @@ async function fetchMessages(){
   for(const m of roomMessages){
     const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'')+(m.kind==='ooc'?' ooc':'');
     const by=document.createElement('div');by.className='by';
-    const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):characterNameFor(m.sender_id);
+    const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):(m.character_name||characterNameFor(m.sender_id));
     const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(m.edited_at?' · edited':'');
     by.append(name,date);
     const body=document.createElement('div');body.className='body';body.textContent=m.body;
@@ -478,7 +512,52 @@ $('selectionDelete').onclick=async()=>{
 
 function openAuthDialog(){$('authError').textContent='';$('authError').classList.add('hidden');$('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('google').focus();}
 function closeAuthDialog(){$('authOverlay').classList.add('hidden');document.body.classList.remove('authOpen');$('guest').focus();}
-$('guest').onclick=openAuthDialog;
+async function loadInvitePreview(){
+ if(!/^[0-9a-f]{48}$/.test(inviteCode))throw Error('This invitation link is incomplete.');
+ const {data,error}=await db.rpc('preview_scene_invitation',{p_code:inviteCode});
+ if(error)throw error;
+ if(!data)throw Error('This invitation has expired or has already been claimed.');
+ invitePreview=data;
+ $('introTitle').textContent=data.title||'Private Jianghu session';
+ $('introDate').textContent=data.scene_date?('📅 '+data.scene_date):'Date to be confirmed';
+ $('introPlace').textContent=data.location?('📍 '+data.location):'Location to be confirmed';
+ $('introText').textContent=data.opening||'The scene has not yet been described by the host.';
+ $('introPlayer').textContent='Invited player: '+data.player_alias;
+ $('introAssigned').classList.toggle('hidden',data.invite_type!=='assigned');
+ $('introGuest').classList.toggle('hidden',data.invite_type!=='guest');
+ $('introFeedback').textContent='One invitation, one participant. Please keep this link private.';
+ if(data.invite_type==='assigned'){
+  $('introAssigned').textContent='Your character'+(data.characters.length>1?'s':'')+': '+data.characters.join(' · ');
+ }else{
+  const roles=$('introRoles');roles.replaceChildren();selectedGuestRole='';
+  for(const role of data.roles){
+   const b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent=role;
+   b.onclick=()=>{selectedGuestRole=role;for(const btn of roles.children)btn.classList.toggle('primary',btn===b);
+     $('introRoleInfo').textContent='Role: '+role+'. Your actions must respect this role and the current scene.';};
+   roles.appendChild(b);
+  }
+ }
+ show('intro');
+}
+$('guest').onclick=()=>safe(async()=>{
+ if(inviteCode){await loadInvitePreview();}else openAuthDialog();
+});
+$('introEnter').onclick=()=>safe(async()=>{
+ if(!invitePreview||!inviteCode)throw Error('Open your valid invitation link first.');
+ if(invitePreview.invite_type==='guest'&&(!selectedGuestRole||!$('introGuestName').value.trim()))
+  throw Error('Choose a guest role and name your character.');
+ // An anonymous Supabase identity is only created when a participant enters a valid invitation.
+ if(!user){const {data,error}=await db.auth.signInAnonymously();
+  if(error)throw Error('Guest entry unavailable: '+error.message);user=data.user;}
+ const {data,error}=await db.rpc('redeem_scene_invitation',{
+  p_code:inviteCode,p_role:invitePreview.invite_type==='guest'?selectedGuestRole:null,
+  p_character_name:invitePreview.invite_type==='guest'?$('introGuestName').value.trim():null
+ });
+ if(error)throw error;
+ clearInviteAddress();invitePreview=null;
+ await openRoom(data);
+ notice('Welcome to your shared Jianghu session!','good');
+});
 $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
@@ -498,21 +577,24 @@ async function send(){await safe(async()=>{
  if(!navigator.onLine)throw Error('You are offline; your draft has been kept.');
  const body=$('msg').value.trim();if(!body)throw Error('Write a message first.');
  const kind=chatMode;
- if(!pending||pendingMode!==kind||pendingText!==body){
-   pending=crypto.randomUUID();pendingMode=kind;pendingText=body;
+ const selectedCharacter=kind==='player'?(activeCharacter||ownCharacters()[0]):null;
+ if(!pending||pendingMode!==kind||pendingText!==body||pendingCharacter!==selectedCharacter){
+   pending=crypto.randomUUID();pendingMode=kind;pendingText=body;pendingCharacter=selectedCharacter;
  }
  const id=pending;
- const {error}=await db.from('messages').insert({room_id:room,sender_id:user.id,body,kind,client_message_id:id});
- if(error){
-   if(error.code==='23505'){
-     const {data:prior}=await db.from('messages').select('id,kind,body').eq('room_id',room).eq('client_message_id',id).maybeSingle();
-     if(!prior||prior.body!==body||prior.kind!==kind)throw error;
-   }else throw error;
- }
- $('msg').value='';pending=null;pendingMode=null;pendingText=null;saveDraft();await fetchMessages();
+ const {error}=await db.rpc('post_scene_message',{
+  p_room_id:room,p_body:body,p_kind:kind,p_character:selectedCharacter,p_client_message_id:id
+ });
+ if(error)throw error;
+ $('msg').value='';pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
 });}
-$('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
+$('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
 window.addEventListener('beforeunload',saveDraft);window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
-async function boot(){try{const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});$('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();if(error)console.warn(error);user=data?.user||null;if(user){await lobby();const last=localStorage.getItem('paths.test.lastroom');if(last)try{await openRoom(last);}catch(e){console.warn(e);await lobby();}}else show('welcome');}catch(e){console.error(e);$('networkStatus').textContent='Unavailable';notice('The webpage could not load its chat library. Check your internet connection and try reloading: '+e.message,'error');}}
+async function boot(){try{const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});$('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();if(error)console.warn(error);user=data?.user||null;if(inviteCode){
+  // Even a signed-in owner sees the same entrance when using a personalized invitation.
+  $('gateHint').textContent='Your private session invitation is ready. Continue to read the introduction.';
+  show('welcome');
+ }else if(user){await lobby();const last=localStorage.getItem('paths.test.lastroom');if(last)try{await openRoom(last);}catch(e){console.warn(e);await lobby();}}
+ else show('welcome');}catch(e){console.error(e);$('networkStatus').textContent='Unavailable';notice('The webpage could not load its chat library. Check your internet connection and try reloading: '+e.message,'error');}}
 boot();
 </script></body></html>
