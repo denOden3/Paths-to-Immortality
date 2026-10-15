@@ -1,13 +1,27 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d">
-<title>Paths to Immortality · Cloudveil Test Room v0.3.2</title>
+<title>Paths to Immortality · Cloudveil Test Room v0.4.0</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
 .app{max-width:820px;margin:auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(circle at 95% 0%,#3c2731 0%,transparent 48%),var(--bg)}
 .head{display:flex;gap:11px;align-items:center;padding:12px 14px;background:#211b23;border-bottom:1px solid var(--border);flex-shrink:0}
-.sig{font-size:25px;display:grid;place-items:center;width:41px;height:41px;background:#612a33;border-radius:12px}
+.sig{font-size:25px;display:grid;place-items:center;width:41px;height:41px;background:#612a33;border-radius:12px;color:var(--text);border:1px solid #986a76;flex-shrink:0;cursor:pointer}
+.sig:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.toolsPage{padding-bottom:28px}
+.toolCard{border:1px solid var(--border);border-radius:14px;padding:15px;background:var(--panel);margin-bottom:12px}
+.toolCard h3{font-size:16px;margin:0 0 7px;color:var(--gold)}
+.toolCard p{font-size:13px;color:var(--muted);margin:5px 0 12px}
+.toolPageHeader{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:13px}
+.toolPageHeader h2{font-size:20px;margin:0}
+.speakerRow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.speakerToggle{min-width:125px;min-height:39px;padding:7px 15px;font-size:14px;font-weight:800;
+ border:1px solid #f0a079;border-radius:11px;background:#a73745;color:#fff;flex-shrink:0}
+.speakerToggle.oocActive{background:#544456;border-color:#a992ac;color:#f3e4f1}
+.speakerToggle:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.speakerModeHint{font-size:12px;color:var(--muted)}
+
 .head h1{font-size:21px;margin:0;letter-spacing:.035em;line-height:1.18}.state{margin-left:auto;color:var(--gold);font-size:11px;text-align:right;max-width:118px;overflow-wrap:anywhere}
 .content{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px}.scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:12px}
 .card{border:1px solid var(--border);border-radius:14px;padding:16px;background:var(--panel);margin-bottom:13px}.card h2{font-size:18px;margin:0 0 7px}.card h3{font-size:15px;margin:0 0 6px}.card p{color:var(--muted);font-size:13px;margin:4px 0 12px}
@@ -70,7 +84,7 @@ body.authOpen{overflow:hidden}
 </style>
 </head><body>
 <div class="app">
-<header class="head"><div class="sig" aria-hidden="true">☯</div><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.3.2</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.4.0</div></header>
 <div class="content">
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
@@ -88,9 +102,6 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
-<details id="ownerTools" class="ownerTools hidden"><summary>Room tools</summary>
-<div class="buttons"><button id="invite" class="btn sm" type="button">Generate invitation code</button></div></details>
-<button id="narrate" class="hidden" type="button" tabindex="-1" aria-hidden="true"></button>
 <div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
@@ -98,14 +109,29 @@ body.authOpen{overflow:hidden}
 <button id="selectionEdit" class="btn sm" type="button">Edit</button>
 <button id="selectionDelete" class="btn sm" type="button">Delete</button>
 <button id="selectionCancel" class="btn sm" type="button">Cancel</button></div>
-<div id="inviteBox" class="card hidden"><h3>One-use invite · expires after 48 hours</h3><p>Send this code privately to your friend. Anyone who receives it can use it once while it's valid.</p><div id="inviteText" class="code"></div><div class="buttons"><button id="copy" class="btn sm">Copy code</button><button id="closeInvite" class="btn sm">Hide</button></div></div>
+
 <div id="feed" class="feed" aria-live="polite"></div>
+</section>
+<section id="tools" class="scroll toolsPage hidden" aria-label="Paths Web tools">
+<div class="toolPageHeader"><h2>☯ Paths Web Tools</h2><button id="toolsBack" class="btn sm" type="button">← Back</button></div>
+<div class="toolCard"><h3>Session</h3><div id="toolRoomTitle" class="muted">No room selected</div>
+<div id="toolConnection" class="muted" style="margin-top:5px">Not connected to a room</div></div>
+<div id="ownerTools" class="toolCard hidden"><h3>Room administration</h3>
+<p>Only the room owner can create private invitations or publish experimental narration.</p>
+<div class="buttons"><button id="invite" class="btn sm" type="button">Generate invitation code</button></div>
+<div id="inviteBox" class="card hidden"><h3>One-use invite · expires after 48 hours</h3><p>Send this code privately to your friend. Anyone who receives it can use it once while it's valid.</p><div id="inviteText" class="code"></div><div class="buttons"><button id="copy" class="btn sm">Copy code</button><button id="closeInvite" class="btn sm">Hide</button></div></div>
+<div class="buttons"><button id="narrate" class="btn sm" type="button">✦ Narrator test tools</button></div>
+</div>
+<div class="toolCard"><h3>About this test</h3>
+<p>Paths Web is the shared player chat. Story narration is controlled separately from Paths HUD inside ChatGPT.</p>
+<p>Messages marked OOC stay visible in chat but do not become character actions.</p>
+</div>
 </section>
 </div>
 <div id="composer" class="compose hidden">
-<div id="modeRow" class="modeRow" role="group" aria-label="Choose character or out-of-character chat">
-<button id="modeCharacter" class="btn sm active" type="button" aria-pressed="true">🎭 Xu Yi</button>
-<button id="modeOoc" class="btn sm" type="button" aria-pressed="false">💬 Puuchan</button>
+<div class="speakerRow">
+<button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Speaking as Xu Yi. Tap to switch to Puuchan.">🎭 Xu Yi</button>
+<span class="speakerModeHint" id="speakerModeHint">Character action</span>
 </div><div class="send"><textarea id="msg" maxlength="8000" placeholder="What does Xu Yi do?" aria-label="Xu Yi character action or Puuchan chat"></textarea><button id="send" class="btn primary">Send</button></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
 </div>
 <div id="authOverlay" class="authOverlay hidden" role="presentation">
@@ -148,32 +174,66 @@ body.authOpen{overflow:hidden}
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
-let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null;
+let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,currentView='welcome',toolsReturnView='welcome';
 const draftKey=()=>room?'paths.test.draft.'+room:'';
 const modeKey=()=>room?'paths.mode.'+room:'';
+function characterNameFor(id){
+  return members.find(m=>m.user_id===id)?.character_name||'Character';
+}
+function playerNameFor(id){
+  const character=characterNameFor(id);
+  // Nickname for Xu Yi's player; other members retain an honest generic label.
+  return character.trim().toLowerCase()==='xu yi'?'Puuchan':'Player';
+}
+function updateSpeakerDisplay(){
+  const isCharacter=chatMode==='player';
+  const ownCharacter=characterNameFor(user?.id);
+  const character=ownCharacter==='Character'?'Xu Yi':ownCharacter;
+  const label=isCharacter?'🎭 '+character:'💬 '+playerNameFor(user?.id);
+  $('modeSpeaker').textContent=label;
+  $('modeSpeaker').classList.toggle('oocActive',!isCharacter);
+  $('modeSpeaker').setAttribute('aria-pressed',String(isCharacter));
+  $('modeSpeaker').setAttribute('aria-label','Speaking as '+label.replace(/^[🎭💬] /u,'')+'. Tap to switch speaker.');
+  $('speakerModeHint').textContent=isCharacter?'Character action':'Out of character';
+  $('msg').placeholder=isCharacter?'What does '+character+' do?':'Let your voice be heard';
+}
 function setChatMode(mode){
   if(mode!=='player'&&mode!=='ooc')return;
   chatMode=mode;
-  $('modeCharacter').classList.toggle('active',mode==='player');
-  $('modeOoc').classList.toggle('active',mode==='ooc');
-  $('modeOoc').classList.toggle('oocMode',mode==='ooc');
-  $('modeCharacter').setAttribute('aria-pressed',String(mode==='player'));
-  $('modeOoc').setAttribute('aria-pressed',String(mode==='ooc'));
-  $('msg').placeholder=mode==='player'?'What does Xu Yi do?':'Let your voice be heard';
+  updateSpeakerDisplay();
   if(pendingMode!==chatMode){pending=null;pendingMode=null;pendingText=null;}
   try{if(room)localStorage.setItem(modeKey(),mode);}catch{}
 }
-$('modeCharacter').onclick=()=>setChatMode('player');
-$('modeOoc').onclick=()=>setChatMode('ooc');
+$('modeSpeaker').onclick=()=>setChatMode(chatMode==='player'?'ooc':'player');
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator'])$(id).disabled=v;};
-const show=where=>{for(const x of ['welcome','lobby','chat','composer'])$(x).classList.add('hidden');$(where).classList.remove('hidden');if(where==='chat')$('composer').classList.remove('hidden');};
+const show=where=>{
+  for(const x of ['welcome','lobby','chat','tools','composer'])$(x).classList.add('hidden');
+  $(where).classList.remove('hidden');
+  if(where==='chat')$('composer').classList.remove('hidden');
+  currentView=where;
+};
+function openTools(){
+  if(currentView==='tools')return;
+  toolsReturnView=currentView;
+  $('toolRoomTitle').textContent=room?$('roomTitle').textContent:'No room selected';
+  $('toolConnection').textContent=!user?'Not signed in':room?'Connected to private room':'Signed in · no room selected';
+  show('tools');
+}
+function backFromTools(){
+  const target=toolsReturnView==='chat'&&room?'chat':toolsReturnView==='lobby'&&user?'lobby':'welcome';
+  show(target);
+}
+$('toolsOpen').onclick=()=>currentView==='tools'?backFromTools():openTools();
+$('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
-async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');$('ownerTools').classList.toggle('hidden',!isOwner);if(!isOwner)$('ownerTools').open=false;}
+async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
+$('ownerTools').classList.toggle('hidden',!isOwner);
+updateSpeakerDisplay();}
 
 const isMine=m=>m&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
 function updateSelection(){
@@ -226,7 +286,7 @@ async function fetchMessages(){
   for(const m of roomMessages){
     const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'')+(m.kind==='ooc'?' ooc':'');
     const by=document.createElement('div');by.className='by';
-    const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 Player ('+(members.find(x=>x.user_id===m.sender_id)?.character_name||'Unknown')+') · OOC':(members.find(x=>x.user_id===m.sender_id)?.character_name||'Player');
+    const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):characterNameFor(m.sender_id);
     const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(m.edited_at?' · edited':'');
     by.append(name,date);
     const body=document.createElement('div');body.className='body';body.textContent=m.body;
@@ -383,7 +443,7 @@ $('google').onclick=()=>safe(async()=>{const redirectTo=window.location.origin+w
 $('guestTrial').onclick=()=>safe(async()=>{const {data,error}=await db.auth.signInAnonymously();if(error)throw Error('Temporary guest sign-in unavailable. Check that Anonymous Sign-Ins are enabled in Supabase. '+error.message);user=data.user;closeAuthDialog();await lobby();});
 
 $('signout').onclick=()=>safe(async()=>{endLive();const {error}=await db.auth.signOut();if(error)throw error;user=null;room=null;show('welcome');$('networkStatus').textContent='Ready';});
-$('create').onclick=()=>safe(async()=>{const title=$('roomName').value.trim(),name=$('createName').value.trim();if(!title||!name)throw Error('Enter a room name and your character name.');const {data,error}=await db.rpc('create_room',{p_title:title,p_character_name:name});if(error)throw error;await openRoom(data);notice('Private room created! Tap Invite to obtain a one-use code.','good');});
+$('create').onclick=()=>safe(async()=>{const title=$('roomName').value.trim(),name=$('createName').value.trim();if(!title||!name)throw Error('Enter a room name and your character name.');const {data,error}=await db.rpc('create_room',{p_title:title,p_character_name:name});if(error)throw error;await openRoom(data);notice('Private room created. Tap ☯ for room administration and invitations.','good');});
 $('join').onclick=()=>safe(async()=>{const code=$('joinCode').value.trim().toLowerCase(),name=$('joinName').value.trim();if(!code||!name)throw Error('Enter your invitation and character name.');const {data,error}=await db.rpc('join_room',{p_invite_code:code,p_character_name:name});if(error)throw error;$('joinCode').value='';await openRoom(data);notice('Successfully joined the private room.','good');});
 $('back').onclick=()=>safe(lobby);
 $('invite').onclick=()=>safe(async()=>{const {data,error}=await db.rpc('create_room_invite',{p_room_id:room});if(error)throw error;$('inviteText').textContent=data;$('inviteBox').classList.remove('hidden');notice('Invitation ready. Copy the code and send it to your friend privately.','good');});
