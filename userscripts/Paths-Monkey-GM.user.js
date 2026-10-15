@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.2
+// @version      0.7.3
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.2';
+  const VERSION = '0.7.3';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -94,6 +94,14 @@
     #paths-monkey-root.pm-admin .pm-left{bottom:var(--pm-native,95px)}
     #paths-monkey-root.pm-admin .pm-compose{display:none}
     #paths-monkey-root .pm-session-list summary{cursor:pointer;min-height:42px;font-weight:800;color:var(--pm-gold);padding:9px 0}
+    #paths-monkey-root .pm-session-list #pm-refresh-ongoing{width:34px;min-width:34px;text-align:center;padding:5px;margin:0 0 6px auto}
+    #paths-monkey-root .pm-admin-group > summary{font-size:16px;font-weight:800;cursor:pointer;min-height:44px;padding:8px 0}
+    #paths-monkey-root .pm-admin-group + .pm-admin-group{border-top:1px solid var(--pm-stroke);margin-top:16px;padding-top:12px}
+    #paths-monkey-root .pm-registry{display:none;position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);overflow-y:auto;background:var(--pm-bg);pointer-events:auto;padding:18px}
+    #paths-monkey-root.pm-registry-open .pm-registry{display:block}
+    #paths-monkey-root.pm-registry-open .pm-left{display:none}
+    #paths-monkey-root .pm-player-card{border:1px solid var(--pm-stroke);border-radius:10px;padding:12px;margin:12px 0}
+    #paths-monkey-root .pm-player-card input{margin:8px 0}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
     #paths-monkey-root.pm-creating #pm-room-section{display:none}
     #paths-monkey-root:not(.pm-creating) #pm-room-management-content > #pm-pair-new-room{display:none}
@@ -171,6 +179,7 @@
     /* Mizuhana remains mounted but cannot cover Paths when Paths is selected. */
     html.pm-paths-selected #mizuhana-hud {visibility:hidden !important;pointer-events:none !important;}
     #paths-monkey-root.pm-collapsed .pm-hbar,
+    #paths-monkey-root.pm-collapsed .pm-registry,
     #paths-monkey-root.pm-collapsed .pm-left,
     #paths-monkey-root.pm-collapsed .pm-compose,
     #paths-monkey-root.pm-collapsed .pm-feed,
@@ -230,11 +239,12 @@
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
     <section id="pm-sidebar" class="pm-left" aria-label="Admin page" aria-hidden="true" tabindex="-1">
-      <h2 class="pm-name">Administration</h2>
-      <button id="pm-manage-rooms" class="pm-btn pm-sidebar-action" type="button">📂 Create a New Room</button>
-      <details id="pm-ongoing-sessions" class="pm-session-list" open><summary>Ongoing Sessions</summary><button id="pm-refresh-ongoing" class="pm-btn pm-mini" type="button">Refresh sessions</button><div id="pm-ongoing-list" class="pm-mute">Connect your HUD to load ongoing rooms.</div></details>
+<details id="pm-administration-group" class="pm-admin-group" open><summary>Administration</summary>
+      <button id="pm-manage-rooms" class="pm-btn pm-sidebar-action" type="button">＋ Create a New Room</button>
+      <details id="pm-ongoing-sessions" class="pm-session-list" open><summary>Ongoing Sessions</summary><button id="pm-refresh-ongoing" class="pm-btn pm-mini" type="button" aria-label="Refresh ongoing sessions" title="Refresh ongoing sessions">↻</button><div id="pm-ongoing-list" class="pm-mute">Connect your HUD to load ongoing rooms.</div></details>
+<button id="pm-open-registry" class="pm-btn pm-sidebar-action" type="button">Players Registry</button></details>
       <div id="pm-admin-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
-      <div class="pm-h">Current session</div>
+      <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session</summary>
       <div id="pm-room-title" class="pm-name">Not connected</div>
       <div id="pm-connection" class="pm-mute">Connect Monkey to Supabase</div>
       <div class="pm-divider"></div>
@@ -243,15 +253,18 @@
       <div id="pm-people" class="pm-mute">Participants not loaded</div>
       <div class="pm-divider"></div>
       <div class="pm-h">Heavenly calendar</div>
-      <div class="pm-mute">Use confirmed scene date only.</div>
+      <div id="pm-calendar" class="pm-mute">No confirmed scene date loaded.</div></details>
       <div class="pm-divider"></div>
       <div class="pm-h">Reference shelves</div>
       <a class="pm-link" href="${CODEX_URL}" target="_blank" rel="noopener noreferrer">☁ Cloudveil World Codex ↗</a>
       <a class="pm-link" href="${GM_RULES_URL}" target="_blank" rel="noopener noreferrer">📜 Narration Rules ↗</a>
       <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Paths Web ↗</a>
-      <div class="pm-divider"></div>
-      <div class="pm-mute">Monkey only controls this HUD. ChatGPT still owns the actual narration and its blue Send button.</div>
     </section>
+    <section id="pm-registry" class="pm-registry" aria-label="Players Registry" aria-hidden="true">
+    <div class="pm-row"><h2 class="pm-name">Players Registry</h2><button id="pm-registry-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-registry-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh players">↻</button></div>
+    <p class="pm-mute">Register names, rename player records, and see their ongoing rooms. Invitations control entry.</p>
+    <label for="pm-registry-name" class="pm-label">New player name</label><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register player</button>
+    <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div>
@@ -363,7 +376,7 @@
   }
   function setBusy(value) {
     busy = value;
-    for (const name of ['send', 'connect', 'join', 'reload-rooms', 'narrate', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite']) {
+    for (const name of ['send', 'connect', 'join', 'reload-rooms', 'narrate', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite','registry-add','registry-refresh']) {
       const el = $(name);
       if (el) el.disabled = value;
     }
@@ -372,7 +385,7 @@
     if (busy) return;
     setBusy(true);
     try { await task(); }
-    catch (err) { feedback(err.message || String(err), true); console.warn('[Paths Monkey]', err); }
+    catch (err) { if(root.classList.contains('pm-registry-open'))$('registry-status').textContent=err.message||String(err);feedback(err.message || String(err), true); console.warn('[Paths Monkey]', err); }
     finally { setBusy(false);setConnectedState(); }
   }
   function setConnectedState() {
@@ -514,7 +527,7 @@
       body:{p_room_id:selectedRoom.id,p_date:sceneDate,p_location:place,p_opening:intro}
     });
     if(success!==true)throw new Error('Saving scene introduction could not be confirmed.');
-    feedback('✓ Scene introduction saved for '+selectedRoom.title);
+    $('calendar').textContent=sceneDate;feedback('✓ Scene introduction saved for '+selectedRoom.title);
   }
   async function createSessionInvitation(){
     if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');
@@ -562,6 +575,7 @@
     // Only the invite preview exposes these fields to recipients; owner data is loaded via a secure RPC below.
     const data=await authed('POST','/rest/v1/rpc/get_scene_introduction_as_owner',{body:{p_room_id:selectedRoom.id}});
     if(data&&typeof data==='object'){
+      $('calendar').textContent=data.scene_date||'No confirmed scene date loaded.';
       $('scene-date').value=data.scene_date||'';
       $('scene-place').value=data.location||'';
       $('scene-intro').value=data.opening||'';
@@ -618,7 +632,7 @@
     $('invite-output').classList.add('pm-hide');$('invite-link').value='';
     await refreshScene();
     if(paired)await loadSceneIntro();
-    feedback('Connected to '+info.title);
+    feedback('');
     setInfoVisible(false);
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
   }
@@ -775,6 +789,7 @@
   }
   function setInfoVisible(visible){
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
+    closeRegistry();
     showSidebar=visible;
     root.classList.toggle('pm-admin',visible);
     $('sidebar').classList.toggle('pm-open',visible);
@@ -785,6 +800,31 @@
     resizeHudBody();
   }
   function toggleSidebar(){setInfoVisible(true);if(account)runTask(loadRooms);}
+  function closeRegistry(){root.classList.remove('pm-registry-open');$('registry').setAttribute('aria-hidden','true');}
+  async function openRegistry(){
+    setInfoVisible(true);root.classList.add('pm-registry-open');$('registry').setAttribute('aria-hidden','false');$('registry-back').focus();await refreshRegistry();
+  }
+  async function refreshRegistry(){
+    if(!account||!paired){$('registry-list').replaceChildren();$('registry-status').textContent='Pair your HUD in Settings to manage players.';return;}
+    $('registry-status').textContent='Loading players…';
+    const data=await authed('POST','/rest/v1/rpc/hud_player_registry',{body:{p_id:null,p_alias:null}});
+    if(!account||!paired)return;renderRegistry(data||[]);$('registry-status').textContent=(data||[]).length+' players registered.';
+  }
+  function renderRegistry(items){
+    const list=$('registry-list');list.replaceChildren();if(!items.length){list.textContent='No players registered yet.';return;}
+    for(const player of items){
+      const card=document.createElement('article');card.className='pm-player-card';const name=document.createElement('strong');name.textContent=player.alias;
+      const status=document.createElement('p');status.className='pm-mute';status.textContent=player.in_session?'In a session':'Not in a session';
+      for(const scene of player.sessions||[]){const line=document.createElement('div');line.className='pm-mute';line.textContent=scene.title+' · '+(scene.characters||[]).join(', ');status.append(line);}
+      const field=document.createElement('input');field.className='pm-text';field.value=player.alias;field.maxLength=45;field.setAttribute('aria-label','Player name for '+player.alias);
+      const save=document.createElement('button');save.className='pm-btn pm-mini';save.type='button';save.textContent='Save name';save.onclick=()=>runTask(()=>saveRegistryPlayer(player.id,field.value));card.append(name,status,field,save);list.append(card);
+    }
+  }
+  async function saveRegistryPlayer(id,alias){
+    if(!account||!paired)throw new Error('Pair your HUD before managing players.');alias=alias.trim();if(!alias||alias.length>45)throw new Error('Enter a player name (1–45 characters).');
+    const data=await authed('POST','/rest/v1/rpc/hud_player_registry',{body:{p_id:id,p_alias:alias}});
+    renderRegistry(data||[]);$('registry-status').textContent=id?'Player name saved.':'Player registered.';if(!id)$('registry-name').value='';
+  }
   function openSettings() {
     previousFocus=document.activeElement;
     $('settings').classList.remove('pm-hide');setConnectedState();$('settings-close').focus();
@@ -798,6 +838,7 @@
     if(!confirm('Forget ONLY the temporary Paths Monkey identity and its room links? Your Google login on the Paths website and all existing messages will remain.'))return;
     saveDraft();
     account=null;paired=false;rooms=[];members=[];messages=[];selectedRoom=null;
+    $('registry-list').replaceChildren();$('registry-status').textContent='';closeRegistry();
     remove('account');remove('room');$('room-list').textContent='No rooms loaded';renderOngoingSessions();renderFeed();
     restoreDraft();setConnectedState();feedback('Monkey guest reset. Existing shared room data is untouched.');
   }
@@ -847,7 +888,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.29+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.39+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -891,6 +932,10 @@
   $('logo-toggle').onclick=toggleSidebar;
   $('manage-rooms').onclick=()=>openRoomPage('create');
   $('refresh-ongoing').onclick=()=>runTask(loadRooms);
+  $('open-registry').onclick=()=>runTask(openRegistry);
+  $('registry-back').onclick=()=>{closeRegistry();$('open-registry').focus();};
+  $('registry-refresh').onclick=()=>runTask(refreshRegistry);
+  $('registry-add').onclick=()=>runTask(()=>saveRegistryPlayer(null,$('registry-name').value));
   $('rooms-page-close').onclick=closeRoomPage;
   $('rooms-page-done').onclick=closeRoomPage;
   $('rooms-page').addEventListener('click',e=>{if(e.target===$('rooms-page'))closeRoomPage();});
@@ -932,6 +977,7 @@
     if(e.key!=='Escape')return;
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
     else if(!$('settings').classList.contains('pm-hide'))closeSettings();
+    else if(root.classList.contains('pm-registry-open'))closeRegistry();
     else if(!showSidebar)toggleSidebar();
     else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
   });

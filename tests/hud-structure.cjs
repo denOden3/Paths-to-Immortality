@@ -21,4 +21,16 @@ vm.runInContext("selectedRoom.session_state='ended';setInfoVisible(false);",cont
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
 vm.runInContext(listCode+`;rooms=[{id:'a',title:'Active room',session_state:'active'},{id:'e',title:'Ended room',session_state:'ended'}];renderOngoingSessions();`,context);
 assert.equal(document.getElementById('pm-ongoing-list').querySelectorAll('button').length,1);assert.equal(document.getElementById('pm-ongoing-list').textContent,'Active room');
+const admin=document.getElementById('pm-administration-group'),current=document.getElementById('pm-current-session-group');
+assert.equal(admin.tagName,'DETAILS');assert.equal(current.tagName,'DETAILS');assert.equal(admin.parentElement,current.parentElement);
+for(const id of ['pm-manage-rooms','pm-ongoing-sessions','pm-open-registry'])assert.ok(admin.contains(document.getElementById(id)));
+for(const id of ['pm-people','pm-calendar'])assert.ok(current.contains(document.getElementById(id)));
+assert.equal(document.getElementById('pm-refresh-ongoing').textContent,'↻');assert.ok(document.getElementById('pm-refresh-ongoing').getAttribute('aria-label'));
+assert.ok(document.getElementById('pm-manage-rooms').textContent.startsWith('＋'));
+assert.ok(!template.includes('Monkey only controls this HUD.'));assert.ok(!source.includes("feedback('Connected to '+info.title)"));
+vm.runInContext(`renderRegistry([{id:'one',alias:'<img src=x>',in_session:true,sessions:[{title:'Trial room',characters:['Xu Yi']}]},{id:'two',alias:'Friend',in_session:false,sessions:[]}]);`,context);
+assert.equal(document.getElementById('pm-registry-list').querySelectorAll('img').length,0);
+assert.equal(document.getElementById('pm-registry-list').querySelectorAll('article').length,2);
+assert.ok(document.getElementById('pm-registry-list').textContent.includes('In a session'));assert.ok(document.getElementById('pm-registry-list').textContent.includes('Not in a session'));assert.ok(document.getElementById('pm-registry-list').textContent.includes('Xu Yi'));
+vm.runInContext("root.classList.add('pm-registry-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-registry-open'),'symbol returns from Registry');
 console.log('PASS: HUD controls, event targets, Admin/chat routing, composer gating, symbol return and ongoing-session filtering');

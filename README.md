@@ -1,3 +1,13 @@
+# Paths HUD v0.7.3 — Collapsible administration and Players Registry
+
+Administration and Current Session are sibling collapsible sections. Administration contains ＋ Create a New Room, Ongoing Sessions with a compact accessible ↻ button, and Players Registry. Current Session contains Characters and Heavenly Calendar. The transient Connected to room message and old Monkey explanation are removed.
+
+Players Registry is a full HUD page for registering player names, renaming existing records and viewing ongoing-room membership and characters. Names remain linked to the same player ID and character history. The new hud_player_registry RPC authorizes the actual owner or an actively paired HUD, denies unpaired/player/anonymous access, and limits reads/writes to that owner. Web Players remains read-only. No player categories or delete action are added.
+
+Applied database definition: db/hud-player-registry.sql. Transactional checks cover renames, existing membership/history, duplicate names, validation, foreign records and revoked HUD denial. HUD DOM checks cover section structure, icons, Registry cards, safe text and navigation. Web stays v0.7.5.
+
+---
+
 # Paths HUD v0.7.2 — Admin home and ongoing chatrooms
 
 Administration is the default HUD page with no action composer. It offers Create a New Room and a collapsible Ongoing Sessions list. Active-room buttons open a full-width chatroom and its composer; ☯ returns to Admin. Session tools opens the existing introduction, invitations and lifecycle controls. Creation uses a dedicated form view. Ended/unavailable scenes hide the composer. The Admin list refreshes on return, manually, and every 12 seconds while visible. Web stays v0.7.5; no database changes.
