@@ -468,7 +468,7 @@
     if(typeof id!=='string')throw new Error('Could not confirm new room creation.');
     await loadRooms();
     const item=rooms.find(x=>x.id===id);if(!item)throw new Error('Room created; refresh the list.');
-    await chooseRoom(item);feedback('Room created under your owner account.');closeSettings();
+    await chooseRoom(item);feedback('Room created under your owner account.');closeRoomPage();
   }
   async function makeIdentity() {
     if (account) throw new Error('Monkey already has an identity. Use it or reset explicitly.');
