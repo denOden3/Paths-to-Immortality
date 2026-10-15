@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.2**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -62,3 +62,10 @@ The three Paths HUD controls (Post, Narrate, Scene) now have larger gaps on mobi
 - **Post** sends the selected message type to Supabase; the Scene peek distinguishes OOC and Narrator bubbles. **Narrate** explicitly asks the GM to ignore OOC messages.
 - The friend-facing GitHub Pages application is called **Paths Web**, never another HUD. Paths Web has a separate two-option Character / Player · OOC switch, and its long-press selection menu begins with **OOC** (or **Character** when switching already-OOC messages back).
 - Existing Mizuhana scripts and saved states remain untouched. The one-time GM pairing ritual and automatic Notion scene compilation are not yet built.
+
+## v0.3.2 — Desktop title and misclick-safe speaker control
+
+- Desktop at 900 CSS px and wider: **Paths to Immortality** title scales to 20 px while mobile keeps its compact title.
+- Composer top row remains **action textarea → Send**. Lower action row is **Narrate · Scene · Xiao Lan**, with Xiao Lan pushed to the right but offset inward from Send instead of directly beneath it. Narrow layouts reduce the offset before wrapping.
+- The identity toggle still controls actual Supabase `player` versus `ooc` messages. Scene stays as the current read-only room-message peek for checking other players' actions; a future session panel could replace it after reliable narration integration.
+- Mizuhana stable/testing scripts, settings and saves are unchanged.
