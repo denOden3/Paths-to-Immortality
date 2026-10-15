@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.3
+// @version      0.7.4
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.3';
+  const VERSION = '0.7.4';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -97,7 +97,10 @@
     #paths-monkey-root .pm-session-list #pm-refresh-ongoing{width:34px;min-width:34px;text-align:center;padding:5px;margin:0 0 6px auto}
     #paths-monkey-root .pm-admin-group > summary{font-size:16px;font-weight:800;cursor:pointer;min-height:44px;padding:8px 0}
     #paths-monkey-root .pm-admin-group + .pm-admin-group{border-top:1px solid var(--pm-stroke);margin-top:16px;padding-top:12px}
+    #paths-monkey-root .pm-roomlogs,
     #paths-monkey-root .pm-registry{display:none;position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);overflow-y:auto;background:var(--pm-bg);pointer-events:auto;padding:18px}
+    #paths-monkey-root.pm-roomlogs-open .pm-roomlogs{display:block}
+    #paths-monkey-root.pm-roomlogs-open .pm-left{display:none}
     #paths-monkey-root.pm-registry-open .pm-registry{display:block}
     #paths-monkey-root.pm-registry-open .pm-left{display:none}
     #paths-monkey-root .pm-player-card{border:1px solid var(--pm-stroke);border-radius:10px;padding:12px;margin:12px 0}
@@ -179,6 +182,7 @@
     /* Mizuhana remains mounted but cannot cover Paths when Paths is selected. */
     html.pm-paths-selected #mizuhana-hud {visibility:hidden !important;pointer-events:none !important;}
     #paths-monkey-root.pm-collapsed .pm-hbar,
+    #paths-monkey-root.pm-collapsed .pm-roomlogs,
     #paths-monkey-root.pm-collapsed .pm-registry,
     #paths-monkey-root.pm-collapsed .pm-left,
     #paths-monkey-root.pm-collapsed .pm-compose,
@@ -241,15 +245,15 @@
     <section id="pm-sidebar" class="pm-left" aria-label="Admin page" aria-hidden="true" tabindex="-1">
 <details id="pm-administration-group" class="pm-admin-group" open><summary>Administration</summary>
       <button id="pm-manage-rooms" class="pm-btn pm-sidebar-action" type="button">＋ Create a New Room</button>
-      <details id="pm-ongoing-sessions" class="pm-session-list" open><summary>Ongoing Sessions</summary><button id="pm-refresh-ongoing" class="pm-btn pm-mini" type="button" aria-label="Refresh ongoing sessions" title="Refresh ongoing sessions">↻</button><div id="pm-ongoing-list" class="pm-mute">Connect your HUD to load ongoing rooms.</div></details>
+      <button id="pm-open-roomlogs" class="pm-btn pm-sidebar-action" type="button">Room Logs</button>
 <button id="pm-open-registry" class="pm-btn pm-sidebar-action" type="button">Players Registry</button></details>
       <div id="pm-admin-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session</summary>
       <div id="pm-room-title" class="pm-name">Not connected</div>
-      <div id="pm-connection" class="pm-mute">Connect Monkey to Supabase</div>
+      <div class="pm-session-list"><div class="pm-row"><span class="pm-h">Active sessions</span><button id="pm-refresh-ongoing" class="pm-btn pm-mini" type="button" aria-label="Refresh active sessions" title="Refresh active sessions">↻</button></div><div id="pm-ongoing-list" class="pm-mute">Connect your HUD to load active rooms.</div></div>
       <div class="pm-divider"></div>
       <div class="pm-h">Characters</div>
-      <div class="pm-mute">Your character: <strong>Xiao Lan</strong></div>
+      <label for="pm-character-session" class="pm-mute">Choose an active session</label><select id="pm-character-session" class="pm-text"><option value="">Choose a session</option></select>
       <div id="pm-people" class="pm-mute">Participants not loaded</div>
       <div class="pm-divider"></div>
       <div class="pm-h">Heavenly calendar</div>
@@ -260,6 +264,7 @@
       <a class="pm-link" href="${GM_RULES_URL}" target="_blank" rel="noopener noreferrer">📜 Narration Rules ↗</a>
       <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Paths Web ↗</a>
     </section>
+    <section id="pm-roomlogs" class="pm-roomlogs" aria-label="Room Logs" aria-hidden="true"><div class="pm-row"><h2 class="pm-name">Room Logs</h2><button id="pm-roomlogs-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-roomlogs-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh room logs">↻</button></div><div id="pm-roomlogs-detail" role="status"></div><div id="pm-roomlogs-list"></div></section>
     <section id="pm-registry" class="pm-registry" aria-label="Players Registry" aria-hidden="true">
     <div class="pm-row"><h2 class="pm-name">Players Registry</h2><button id="pm-registry-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-registry-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh players">↻</button></div>
     <p class="pm-mute">Register names, rename player records, and see their ongoing rooms. Invitations control entry.</p>
@@ -385,14 +390,13 @@
     if (busy) return;
     setBusy(true);
     try { await task(); }
-    catch (err) { if(root.classList.contains('pm-registry-open'))$('registry-status').textContent=err.message||String(err);feedback(err.message || String(err), true); console.warn('[Paths Monkey]', err); }
+    catch (err) { if(root.classList.contains('pm-registry-open'))$('registry-status').textContent=err.message||String(err);if(root.classList.contains('pm-roomlogs-open'))$('roomlogs-detail').textContent=err.message||String(err);feedback(err.message || String(err), true); console.warn('[Paths Monkey]', err); }
     finally { setBusy(false);setConnectedState(); }
   }
   function setConnectedState() {
     const isInRoom = !!(account && selectedRoom&&selectedRoom.session_state!=='ended');
     if(!isInRoom&&!showSidebar)setInfoVisible(true);
     $('room-title').textContent = selectedRoom?.title || 'No room selected';
-    $('connection').textContent = !account ? 'Monkey not connected' : paired ? (selectedRoom?'Trusted HUD · linked to owner':'Trusted HUD · select a room') : (!selectedRoom?'Monkey identity ready · pairing needed':'Guest access · pairing recommended');
     $('send').disabled = busy || !isInRoom;
     $('narrate').disabled = busy || !isInRoom;
     $('signin-section').classList.toggle('pm-hide', !!account);
@@ -405,7 +409,6 @@
     $('pair-state').textContent=paired?'✓ Owner has authorized this HUD':'Awaiting owner approval · get a temporary code';
     $('session-status').textContent=selectedRoom?.session_state==='ended'?'Session ended · reset it to start afresh.':'Ongoing session · no story time limit';
     for(const id of ['make-invite','save-scene','end-session'])$(id).disabled=busy||!selectedRoom||selectedRoom.session_state==='ended';
-    $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
   }
   function updateSpeakerToggle(){
     const element=$('identity-toggle');
@@ -584,7 +587,7 @@
   async function loadRooms() {
     if (!account) return;
     await refreshPairing();
-    const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at,session_state,session_generation&order=created_at.desc');
+    const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at,ended_at,session_state,session_generation&order=created_at.desc');
     rooms = Array.isArray(data) ? data : [];
     const box = $('room-list');box.replaceChildren();
     if (!rooms.length) { box.textContent='No rooms yet. Pair the HUD or use a legacy invitation.'; }
@@ -600,7 +603,7 @@
       if (found) selectedRoom=found;
       else { saveDraft(); selectedRoom=null; members=[]; messages=[]; put('room',null); }
     }
-    renderOngoingSessions();setConnectedState();
+    renderOngoingSessions();renderRoomLogs();setConnectedState();
   }
   async function join() {
     if (!account) throw new Error('Connect Monkey guest first.');
@@ -640,14 +643,15 @@
     if (!selectedRoom || !account) return;
     const id=selectedRoom.id;
     const [p,m,r]=await Promise.all([
-      authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role&room_id=eq.'+encodeURIComponent(id)),
+      authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role,allowed_characters&room_id=eq.'+encodeURIComponent(id)),
       authed('GET','/rest/v1/messages?select=id,sender_id,kind,body,created_at,character_name&room_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc&limit=24'),
       authed('GET','/rest/v1/rooms?select=id,session_state,session_generation&id=eq.'+encodeURIComponent(id))
     ]);
     if (!selectedRoom || selectedRoom.id!==id) return;
     if(!r?.[0]){saveDraft();selectedRoom=null;members=[];messages=[];put('room',null);setInfoVisible(true);setConnectedState();renderFeed();return;}
-    selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);rooms=rooms.map(x=>x.id===id?{...x,...r[0]}:x);renderOngoingSessions();
+    selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);rooms=rooms.map(x=>x.id===id?{...x,...r[0]}:x);renderOngoingSessions();renderRoomLogs();
     members=Array.isArray(p)?p:[];
+    if($('character-session').value===id)renderCharacterParticipants(members);
     renderKickPlayers();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
@@ -656,8 +660,46 @@
   function renderOngoingSessions(){
     const list=$('ongoing-list');list.replaceChildren();
     const active=rooms.filter(x=>x.session_state==='active');
-    if(!active.length){list.textContent=account?'No ongoing sessions. Create a new room to begin.':'Connect your HUD in Settings to load sessions.';return;}
+    updateCharacterSessionPicker(active);
+    if(!active.length){list.textContent=account?'No active sessions. Create a new room to begin.':'Connect your HUD in Settings to load sessions.';return;}
     for(const item of active){const button=document.createElement('button');button.type='button';button.className='pm-btn';button.textContent=item.title;button.onclick=()=>runTask(()=>chooseRoom(item));list.append(button);}
+  }
+  let participantRequest=0;
+  function updateCharacterSessionPicker(active){
+    const select=$('character-session'),previous=select.value;
+    const target=active.some(x=>x.id===previous)?previous:active.some(x=>x.id===selectedRoom?.id)?selectedRoom.id:active[0]?.id||'';
+    select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=active.length?'Choose a session':'No active sessions';select.append(empty);
+    for(const item of active){const option=document.createElement('option');option.value=item.id;option.textContent=item.title;option.selected=item.id===target;select.append(option);}if(!target)empty.selected=true;
+    if(target)loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});
+    if(!target){participantRequest++;$('people').textContent='No active session selected.';}
+  }
+  function renderCharacterParticipants(items){
+    const host=$('people');host.replaceChildren();
+    if(!items.length){host.textContent='No participants loaded for this session.';return;}
+    for(const member of items){const line=document.createElement('div');const chars=member.allowed_characters?.length?member.allowed_characters:[member.character_name];line.textContent=(member.player_alias||(member.role==='owner'?'Jade Emperor':'Player'))+' · '+chars.filter(Boolean).join(', ');host.append(line);}
+  }
+  async function loadCharacterParticipants(){
+    const id=$('character-session').value,request=++participantRequest;if(!id||!account){$('people').textContent='No active session selected.';return;}
+    $('people').textContent='Loading participants…';
+    try{const data=await authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role,allowed_characters&room_id=eq.'+encodeURIComponent(id));
+    if(request!==participantRequest||$('character-session').value!==id)return;renderCharacterParticipants(Array.isArray(data)?data:[]);}
+    catch(e){if(request===participantRequest&&$('character-session').value===id)$('people').textContent=e.message;}
+  }
+  function renderRoomLogs(){
+    const host=$('roomlogs-list');host.replaceChildren();
+    if(!rooms.length){host.textContent=account?'No rooms recorded yet.':'Connect your HUD in Settings to load room logs.';return;}
+    for(const [state,title] of [['active','Ongoing'],['ended','Concluded']]){
+      const group=rooms.filter(x=>x.session_state===state);if(!group.length)continue;const heading=document.createElement('h3');heading.className='pm-h';heading.textContent=title;host.append(heading);
+      for(const item of group){const button=document.createElement('button');button.className='pm-btn pm-sidebar-action';button.type='button';button.textContent=item.title+' · '+title;button.onclick=()=>runTask(()=>openLoggedRoom(item.id));host.append(button);}
+    }
+  }
+  function closeRoomLogs(){root.classList.remove('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','true');}
+  async function openRoomLogs(){setInfoVisible(true);root.classList.add('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','false');$('roomlogs-back').focus();$('roomlogs-detail').replaceChildren();if(account)await loadRooms();else renderRoomLogs();}
+  async function openLoggedRoom(id){
+    await loadRooms();const item=rooms.find(x=>x.id===id);if(!item){$('roomlogs-detail').textContent='This room is no longer available.';return;}
+    if(item.session_state==='active'){await chooseRoom(item);return;}
+    const host=$('roomlogs-detail');host.replaceChildren();const heading=document.createElement('h3');heading.textContent='Scene ended';const name=document.createElement('p');name.textContent=item.title;host.append(heading,name);
+    if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}host.scrollIntoView?.({block:'nearest'});
   }
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
@@ -789,7 +831,7 @@
   }
   function setInfoVisible(visible){
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
-    closeRegistry();
+    closeRegistry();closeRoomLogs();
     showSidebar=visible;
     root.classList.toggle('pm-admin',visible);
     $('sidebar').classList.toggle('pm-open',visible);
@@ -838,7 +880,7 @@
     if(!confirm('Forget ONLY the temporary Paths Monkey identity and its room links? Your Google login on the Paths website and all existing messages will remain.'))return;
     saveDraft();
     account=null;paired=false;rooms=[];members=[];messages=[];selectedRoom=null;
-    $('registry-list').replaceChildren();$('registry-status').textContent='';closeRegistry();
+    $('registry-list').replaceChildren();$('registry-status').textContent='';closeRegistry();$('roomlogs-list').replaceChildren();$('roomlogs-detail').replaceChildren();closeRoomLogs();
     remove('account');remove('room');$('room-list').textContent='No rooms loaded';renderOngoingSessions();renderFeed();
     restoreDraft();setConnectedState();feedback('Monkey guest reset. Existing shared room data is untouched.');
   }
@@ -888,7 +930,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.39+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.49+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -932,6 +974,10 @@
   $('logo-toggle').onclick=toggleSidebar;
   $('manage-rooms').onclick=()=>openRoomPage('create');
   $('refresh-ongoing').onclick=()=>runTask(loadRooms);
+  $('open-roomlogs').onclick=()=>runTask(openRoomLogs);
+  $('roomlogs-back').onclick=()=>{closeRoomLogs();$('open-roomlogs').focus();};
+  $('roomlogs-refresh').onclick=()=>runTask(async()=>{$('roomlogs-detail').replaceChildren();await loadRooms();});
+  $('character-session').onchange=()=>loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});
   $('open-registry').onclick=()=>runTask(openRegistry);
   $('registry-back').onclick=()=>{closeRegistry();$('open-registry').focus();};
   $('registry-refresh').onclick=()=>runTask(refreshRegistry);
@@ -977,6 +1023,7 @@
     if(e.key!=='Escape')return;
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
     else if(!$('settings').classList.contains('pm-hide'))closeSettings();
+    else if(root.classList.contains('pm-roomlogs-open'))closeRoomLogs();
     else if(root.classList.contains('pm-registry-open'))closeRegistry();
     else if(!showSidebar)toggleSidebar();
     else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
@@ -1003,7 +1050,7 @@
   const checker=setInterval(()=>{
     if(account&&showSidebar&&document.visibilityState==='visible'&&!busy){runTask(loadRooms);return;}
     if(account && selectedRoom && document.visibilityState==='visible' && !busy) {
-      refreshScene().catch((e)=>{ $('connection').textContent='⚠ '+e.message; });
+      refreshScene().catch((e)=>feedback(e.message,true));
     }
   },12000);
   window.addEventListener('pagehide',()=>{clearInterval(checker);clearInterval(layoutChecker);hudSwitcherObserver.disconnect();},{once:true});

@@ -2,7 +2,11 @@
 
 Standalone **Paths of Immortality HUD** Tampermonkey userscript for the Paths world. The source lives in the Paths repository and does not modify Mizuhana's scripts or saves.
 
-## HUD v0.7.3
+## HUD v0.7.4
+
+Administration → Room Logs lists ongoing and concluded rooms. Open an ongoing room to enter chat; concluded rooms show Scene ended. Current Session now contains active-room chat buttons. Its Characters picker shows the players and all characters participating in the chosen active session without changing your chatroom. Removed the Trusted HUD linked-to-owner status line.
+
+## Previous HUD v0.7.3
 
 Administration and Current Session now collapse independently. Use ＋ Create a New Room, the small ↻ refresh button, or Players Registry under Administration. Registry can register/rename players and show their ongoing rooms and characters. It requires your paired HUD. Current Session groups character information and the saved scene date. Removed the Connected to room notice and old Monkey explanation.
 
@@ -20,7 +24,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.3**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.4**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 

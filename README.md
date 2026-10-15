@@ -1,3 +1,11 @@
+# Paths HUD v0.7.4 — Room Logs and session participant picker
+
+Administration now links to Room Logs, a HUD body page grouped by Ongoing and Concluded. Opening ongoing entries joins their chat; concluded entries show Scene ended and the recorded end time. Status is refreshed before opening an entry. Current Session holds active-room chat buttons and a separate Characters session selector, showing player aliases and all allowed characters per participant. Inspecting participants does not change the selected chatroom, drafts or speaker. Polling refreshes the active list and participant picker; outdated participant responses are discarded. Removed the Trusted HUD linked-to-owner line.
+
+Existing room/member APIs supply these views; no database changes. DOM checks cover grouping, active-only choices, player/multiple-character display and Admin navigation. Web stays v0.7.5.
+
+---
+
 # Paths HUD v0.7.3 — Collapsible administration and Players Registry
 
 Administration and Current Session are sibling collapsible sections. Administration contains ＋ Create a New Room, Ongoing Sessions with a compact accessible ↻ button, and Players Registry. Current Session contains Characters and Heavenly Calendar. The transient Connected to room message and old Monkey explanation are removed.
