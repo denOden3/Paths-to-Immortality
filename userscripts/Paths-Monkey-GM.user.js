@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.4.2
+// @version      0.5.0
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.4.2';
+  const VERSION = '0.5.0';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -309,6 +309,35 @@
           <button id="pm-reload-rooms" type="button" class="pm-btn">Refresh room list</button>
           <div class="pm-h">My rooms</div>
           <div id="pm-room-list" class="pm-mute">No room selected</div>
+          <div id="pm-session-tools" class="pm-pair-block pm-hide">
+            <div class="pm-h">📜 Scene introduction</div>
+            <p>One room = one session. These details appear on each player's private invitation.</p>
+            <label class="pm-label" for="pm-scene-date">In-world date</label>
+            <input id="pm-scene-date" class="pm-text" maxlength="90" placeholder="Year 312 · Early Spring, 2nd">
+            <label class="pm-label" for="pm-scene-place">Current location</label>
+            <input id="pm-scene-place" class="pm-text" maxlength="150" placeholder="Cloudveil Sect · Examination Grounds">
+            <label class="pm-label" for="pm-scene-intro">Opening situation (up to 2500 characters)</label>
+            <textarea id="pm-scene-intro" class="pm-text" maxlength="2500" rows="3" placeholder="Describe where the invited players begin. Keep unplayed events provisional."></textarea>
+            <button id="pm-save-scene" class="pm-btn" type="button">Save scene introduction</button>
+            <div class="pm-divider"></div>
+            <div class="pm-h">✉ Invite a registered player</div>
+            <p>Enter a nickname you've approved, then assign characters or selectable guest roles. Every invitation is private, single-use, and valid for 48 hours.</p>
+            <label class="pm-label" for="pm-invite-player">Player nickname</label>
+            <input id="pm-invite-player" class="pm-text" maxlength="45" placeholder="Puuchan">
+            <label class="pm-label" for="pm-invite-kind">Invitation type</label>
+            <select id="pm-invite-kind" class="pm-text">
+              <option value="assigned">Assigned player — fixed character(s)</option>
+              <option value="guest">Temporary player — choose a guest role</option>
+            </select>
+            <label class="pm-label" id="pm-invite-list-label" for="pm-invite-list">Assigned characters (one per line)</label>
+            <textarea id="pm-invite-list" class="pm-text" maxlength="400" rows="3" placeholder="Xu Yi"></textarea>
+            <button id="pm-make-invite" class="pm-btn pm-primary" type="button">Generate private invitation</button>
+            <div id="pm-invite-output" class="pm-hide">
+              <label class="pm-label" for="pm-invite-link">Private one-use invitation link</label>
+              <textarea id="pm-invite-link" class="pm-text" rows="3" readonly></textarea>
+              <button id="pm-copy-invite" class="pm-btn" type="button">Copy invitation link</button>
+            </div>
+          </div>
         </div>
         <div class="pm-divider"></div>
         <button id="pm-close-panel" class="pm-btn">Done</button>
@@ -467,6 +496,31 @@
     const item=rooms.find(x=>x.id===id);if(!item)throw new Error('Room created; refresh the list.');
     await chooseRoom(item);feedback('Room created under your owner account.');closeRoomPage();
   }
+  async function saveSceneIntroduction(){
+    if(!paired||!selectedRoom)throw new Error('Select an owner room first.');
+    const sceneDate=$('scene-date').value.trim(),place=$('scene-place').value.trim(),intro=$('scene-intro').value.trim();
+    if(!sceneDate||!place||!intro)throw new Error('Provide the scene date, location, and opening description first.');
+    const success=await authed('POST','/rest/v1/rpc/set_scene_introduction_as_owner',{
+      body:{p_room_id:selectedRoom.id,p_date:sceneDate,p_location:place,p_opening:intro}
+    });
+    if(success!==true)throw new Error('Saving scene introduction could not be confirmed.');
+    feedback('✓ Scene introduction saved for '+selectedRoom.title);
+  }
+  async function createSessionInvitation(){
+    if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');
+    const player=$('invite-player').value.trim(),kind=$('invite-kind').value;
+    const names=$('invite-list').value.split(/[\n,]+/).map(x=>x.trim()).filter(Boolean);
+    if(!player||!names.length)throw new Error('Enter the player nickname and at least one character or role.');
+    if(names.length>8)throw new Error('Maximum eight character or role options per invitation.');
+    const token=await authed('POST','/rest/v1/rpc/create_scene_invitation_as_owner',{
+      body:{p_room_id:selectedRoom.id,p_player_alias:player,p_invite_type:kind,p_characters:names}
+    });
+    if(typeof token!=='string'||!/^[0-9a-f]{48}$/.test(token))
+      throw new Error('Supabase did not generate a valid invitation.');
+    const link='https://denoden3.github.io/Paths-to-Immortality/?invite='+encodeURIComponent(token);
+    $('invite-link').value=link;$('invite-output').classList.remove('pm-hide');
+    feedback('Private invitation created for '+player+'. Send the link securely; it is one-use.');
+  }
   async function makeIdentity() {
     if (account) throw new Error('Monkey already has an identity. Use it or reset explicitly.');
     const r = await http('POST','/auth/v1/signup',{body:{data:{app:'Paths Monkey'},gotrue_meta_security:{}}});
@@ -476,6 +530,16 @@
     feedback('Monkey identity created. Request a pairing code for approval on Paths Web.');
     await loadRooms();
     setConnectedState();
+  }
+  async function loadSceneIntro(){
+    if(!paired||!selectedRoom)return;
+    // Only the invite preview exposes these fields to recipients; owner data is loaded via a secure RPC below.
+    const data=await authed('POST','/rest/v1/rpc/get_scene_introduction_as_owner',{body:{p_room_id:selectedRoom.id}});
+    if(data&&typeof data==='object'){
+      $('scene-date').value=data.scene_date||'';
+      $('scene-place').value=data.location||'';
+      $('scene-intro').value=data.opening||'';
+    }
   }
   async function loadRooms() {
     if (!account) return;
@@ -523,7 +587,10 @@
     members=[]; messages=[];
     restoreDraft();
     setConnectedState();
+    $('session-tools').classList.toggle('pm-hide',!paired);
+    $('invite-output').classList.add('pm-hide');$('invite-link').value='';
     await refreshScene();
+    if(paired)await loadSceneIntro();
     feedback('Connected to '+info.title);
     showSidebar=false;$('sidebar').classList.remove('pm-open');
     $('logo-toggle').setAttribute('aria-expanded','false');
@@ -653,6 +720,7 @@
     $('logo-toggle').setAttribute('aria-expanded','false');
     $('rooms-page').classList.remove('pm-hide');
     $('rooms-page-status').textContent=paired?'Trusted HUD · room ownership authorized':account?'Monkey connected · owner pairing not complete':'Connect the Monkey under ⚙ Settings first';
+    $('session-tools').classList.toggle('pm-hide',!paired||!selectedRoom);
     setConnectedState();
     $('rooms-page-close').focus();
     if(account)runTask(loadRooms);
@@ -789,6 +857,17 @@
   };
   $('pair-refresh').onclick=()=>runTask(refreshPairedRooms);
   $('pair-create-room').onclick=()=>runTask(createOwnerRoom);
+  $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
+  $('invite-kind').onchange=()=>{
+    const guest=$('invite-kind').value==='guest';
+    $('invite-list-label').textContent=guest?'Selectable guest roles (one per line)':'Assigned characters (one per line)';
+    $('invite-list').placeholder=guest?'Applicant\nSpectator':'Xu Yi';
+  };
+  $('make-invite').onclick=()=>runTask(createSessionInvitation);
+  $('copy-invite').onclick=()=>{
+    const link=$('invite-link').value;
+    if(link){GM_setClipboard(link,'text');feedback('Invitation copied. Send it privately to the intended player.');}
+  };
   $('reload-rooms').onclick=()=>runTask(loadRooms);
   $('join').onclick=()=>runTask(join);
   $('forget').onclick=resetIdentity;
