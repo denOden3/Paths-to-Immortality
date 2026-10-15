@@ -62,3 +62,11 @@ This is an early prototype: verify the character/OOC switch from both phones bef
 - The web player's Character/OOC composer selector is labeled **Xu Yi** / **Puuchan** (the underlying message types remain `player` / `ooc`). Character placeholder is `What does Xu Yi do?`; OOC placeholder is `Let your voice be heard`.
 - The **Narrate** and **Invite** buttons are no longer in the chat header. The owner-only invitation generator is preserved in a collapsed **Room tools** section, until the planned invitation-link and GM-pairing workflows replace it. The Web narration button is hidden; the experimental ChatGPT narration workflow runs on Paths HUD instead.
 - Message selection, OOC reclassification, realtime chat, Google/guest accounts and all existing rooms remain unchanged.
+
+## Paths Web v0.4.0 — Tools page and character/player identity
+
+- Tap the **☯ yin-yang icon** beside Paths to Immortality to open a separate **Paths Web Tools** page. Use **← Back** or tap ☯ again to return without leaving the room or interrupting the active message subscription.
+- The room owner sees **Room administration**, where invitations and the experimental manual Narrator bridge have moved. Ordinary members do not see these controls. The main chat header contains only room navigation and title.
+- Paths Web has a single speaker-toggle button. For Xu Yi's membership it switches between **🎭 Xu Yi** (character action) and **💬 Puuchan** (out-of-character player chat). Other room members display their actual character name and a generic Player label for OOC messages.
+- New chat bubbles use **Xu Yi** or **Puuchan** according to their stored message type. Underlying Supabase author identity never changes. Previously written OOC messages by Xu Yi display as Puuchan too.
+- These changes do not affect Paths HUD or Mizuhana. Invitation links and automatic novel compilation remain future features.
