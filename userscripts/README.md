@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.6.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -107,3 +107,7 @@ Tap **Generate private invitation** and **Copy invitation link**. Send the link 
 ## v0.6.0 — New player portal
 
 Update this script to get **Copy invitation code** beside Copy invitation link. The updated website accepts either. Assigned invitations offer established character checkboxes; guest invitations offer ONE named pre-established temporary character or a character previously played by the same registered player. Guest entries now use `Character name | Description | Objective`, with no free-form name field on the website. Player aliases and invitation categories must agree with the Jade Emperor’s player registry. The trusted HUD pairing does not need to be repeated.
+
+## v0.7.0 — Unified invitations and session controls
+
+Update the existing script; the pairing remains valid. Rooms & sessions now has **Kick player from the room**, **End session**, and **Reset session** with confirmation. End preserves messages; Reset erases the ongoing chat and scene introduction and requires fresh invitation codes. Both return players to the starting page once their connected tab checks access. All players now use the same invitation flow and character checkboxes. Enter character options as `Name | Description | Objective` (description/objective optional); there is no invitation category selector.

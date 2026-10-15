@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.6.0
+// @version      0.7.0
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.6.0';
+  const VERSION = '0.7.0';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -310,6 +310,9 @@
           <div class="pm-h">My rooms</div>
           <div id="pm-room-list" class="pm-mute">No room selected</div>
           <div id="pm-session-tools" class="pm-pair-block pm-hide">
+            <div class="pm-h">☯ Session control</div><p id="pm-session-status" class="pm-mute"></p>
+            <label class="pm-label" for="pm-kick-player">Player in this room</label><select id="pm-kick-player" class="pm-text"><option value="">Select a player</option></select><button id="pm-kick-player-button" class="pm-btn" type="button">Kick player from the room</button>
+            <div class="pm-row"><button id="pm-end-session" class="pm-btn" type="button">End session</button><button id="pm-reset-session" class="pm-btn" type="button">Reset session</button></div><div class="pm-divider"></div>
             <div class="pm-h">📜 Scene introduction</div>
             <p>One room = one session. These details appear on each player's private invitation.</p>
             <label class="pm-label" for="pm-scene-date">In-world date</label>
@@ -321,15 +324,10 @@
             <button id="pm-save-scene" class="pm-btn" type="button">Save scene introduction</button>
             <div class="pm-divider"></div>
             <div class="pm-h">✉ Invite a registered player</div>
-            <p>Enter a nickname you've approved, then offer established characters or pre-established temporary characters. Every invitation is private, single-use, and valid for 48 hours.</p>
+            <p>Enter a nickname you've approved, then offer their available characters. Every invitation is private, single-use, and valid for 48 hours.</p>
             <label class="pm-label" for="pm-invite-player">Player nickname</label>
             <input id="pm-invite-player" class="pm-text" maxlength="45" placeholder="Puuchan">
-            <label class="pm-label" for="pm-invite-kind">Invitation type</label>
-            <select id="pm-invite-kind" class="pm-text">
-              <option value="assigned">Established player — select character(s)</option>
-              <option value="guest">Temporary player — choose ONE character</option>
-            </select>
-            <label class="pm-label" id="pm-invite-list-label" for="pm-invite-list">Established characters offered (one per line)</label>
+            <label class="pm-label" id="pm-invite-list-label" for="pm-invite-list">Characters: Name | Description | Objective (one per line)</label>
             <textarea id="pm-invite-list" class="pm-text" maxlength="400" rows="3" placeholder="Xu Yi"></textarea>
             <button id="pm-make-invite" class="pm-btn pm-primary" type="button">Generate private invitation</button>
             <div id="pm-invite-output" class="pm-hide">
@@ -358,7 +356,7 @@
   }
   function setBusy(value) {
     busy = value;
-    for (const name of ['send', 'connect', 'join', 'reload-rooms', 'narrate', 'feed-refresh']) {
+    for (const name of ['send', 'connect', 'join', 'reload-rooms', 'narrate', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite']) {
       const el = $(name);
       if (el) el.disabled = value;
     }
@@ -368,10 +366,10 @@
     setBusy(true);
     try { await task(); }
     catch (err) { feedback(err.message || String(err), true); console.warn('[Paths Monkey]', err); }
-    finally { setBusy(false); }
+    finally { setBusy(false);setConnectedState(); }
   }
   function setConnectedState() {
-    const isInRoom = !!(account && selectedRoom);
+    const isInRoom = !!(account && selectedRoom&&selectedRoom.session_state!=='ended');
     $('room-title').textContent = selectedRoom?.title || 'Not connected';
     $('connection').textContent = !account ? 'Monkey not connected' : paired ? (selectedRoom?'Trusted HUD · linked to owner':'Trusted HUD · select a room') : (!selectedRoom?'Monkey identity ready · pairing needed':'Guest access · pairing recommended');
     $('send').disabled = busy || !isInRoom;
@@ -384,6 +382,8 @@
     $('session-tools').classList.toggle('pm-hide',!paired||!selectedRoom);
     $('legacy-invite').classList.toggle('pm-hide',paired);
     $('pair-state').textContent=paired?'✓ Owner has authorized this HUD':'Awaiting owner approval · get a temporary code';
+    $('session-status').textContent=selectedRoom?.session_state==='ended'?'Session ended · reset it to start afresh.':'Ongoing session · no story time limit';
+    for(const id of ['make-invite','save-scene','end-session'])$(id).disabled=busy||!selectedRoom||selectedRoom.session_state==='ended';
     $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
   }
   function updateSpeakerToggle(){
@@ -514,25 +514,30 @@
       {body:{p_room_id:selectedRoom.id}});
     if(!saved||!saved.scene_date||!saved.location||!saved.opening)
       throw new Error('Save the scene date, location, and opening description before inviting a player.');
-    const player=$('invite-player').value.trim(),kind=$('invite-kind').value;
-    const lines=$('invite-list').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-    const details=kind==='guest'?lines.map(line=>{
-      const p=line.split('|').map(x=>x.trim());
-      return {name:p[0]||'',description:p[1]||'',goal:p[2]||''};
-    }):[];
-    const names=kind==='guest'?details.map(x=>x.name):lines;
-    if(!player||!names.length)throw new Error('Enter the player nickname and at least one character or role.');
-    if(names.length>8)throw new Error('Maximum eight character or role options per invitation.');
-    if(kind==='guest'&&details.some(d=>!d.description||!d.goal))
-      throw new Error('For each temporary character, enter Name | Short description | Objective.');
-    const token=await authed('POST','/rest/v1/rpc/create_detailed_scene_invitation_as_owner',{
-      body:{p_room_id:selectedRoom.id,p_player_alias:player,p_invite_type:kind,p_characters:names,p_role_details:details}
-    });
+    const player=$('invite-player').value.trim();
+    const details=$('invite-list').value.split(/\n+/).map(x=>x.trim()).filter(Boolean).map(line=>{const parts=line.split('|').map(x=>x.trim());return {name:parts[0]||'',description:parts[1]||'',goal:parts[2]||''};});
+    if(!player||!details.length||details.length>8)throw new Error('Enter a player nickname and 1–8 character options.');
+    const token=await authed('POST','/rest/v1/rpc/create_player_invitation',{body:{p_room_id:selectedRoom.id,p_player_alias:player,p_character_details:details}});
     if(typeof token!=='string'||!/^[0-9a-f]{48}$/.test(token))
       throw new Error('Supabase did not generate a valid invitation.');
     const link='https://denoden3.github.io/Paths-to-Immortality/?invite='+encodeURIComponent(token);
     $('invite-code').value=token;$('invite-link').value=link;$('invite-output').classList.remove('pm-hide');
     feedback('Private invitation created for '+player+'. Send the link securely; it is one-use.');
+  }
+  function renderKickPlayers(){
+    const select=$('kick-player'),previous=select.value;select.replaceChildren();const first=document.createElement('option');first.value='';first.textContent='Select a player';select.append(first);
+    for(const m of members.filter(x=>x.role!=='owner')){const option=document.createElement('option');option.value=m.user_id;option.textContent=(m.player_alias||m.character_name)+' · '+m.character_name;select.append(option);}
+    if([...select.options].some(x=>x.value===previous))select.value=previous;
+  }
+  async function controlSession(action){
+    if(!paired||!selectedRoom)throw new Error('Select an owner room first.');
+    const target=action==='kick'?$('kick-player').value:null;if(action==='kick'&&!target)throw new Error('Select a player to remove.');
+    const prompt=action==='reset'?'Reset this session? This erases its chat messages and scene introduction, removes all players and invalidates all invitations. Character reminders are kept.':action==='end'?'End this session? Players lose access and all invitations stop working. Messages are kept.':'Remove the selected player from this room and invalidate their pending invitations?';
+    if(!confirm(prompt))return;
+    const ok=await authed('POST','/rest/v1/rpc/control_session',{body:{p_room_id:selectedRoom.id,p_action:action,p_user_id:target}});if(ok!==true)throw new Error('The server did not confirm this action.');
+    if(action==='reset'){messages=[];$('scene-date').value='';$('scene-place').value='';$('scene-intro').value='';}
+    $('invite-output').classList.add('pm-hide');$('invite-link').value='';$('invite-code').value='';
+    await loadRooms();await refreshScene();feedback(action==='reset'?'Session reset. Save a new introduction and issue fresh invitations.':action==='end'?'Session ended. Players return to the starting page.':'Player removed.');
   }
   async function makeIdentity() {
     if (account) throw new Error('Monkey already has an identity. Use it or reset explicitly.');
@@ -557,14 +562,14 @@
   async function loadRooms() {
     if (!account) return;
     await refreshPairing();
-    const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at&order=created_at.desc');
+    const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at,session_state,session_generation&order=created_at.desc');
     rooms = Array.isArray(data) ? data : [];
     const box = $('room-list');box.replaceChildren();
     if (!rooms.length) { box.textContent='No rooms yet. Pair the HUD or use a legacy invitation.'; }
     for (const item of rooms) {
       const b=document.createElement('button');
       b.type='button';b.className='pm-btn';b.style.cssText='display:block;width:100%;margin:5px 0;text-align:left';
-      b.textContent='☁ '+item.title;
+      b.textContent='☁ '+item.title+(item.session_state==='ended'?' · Ended':'');
       b.onclick=()=>runTask(()=>chooseRoom(item));
       box.appendChild(b);
     }
@@ -595,7 +600,7 @@
   }
   async function chooseRoom(info) {
     saveDraft();
-    selectedRoom={id:info.id,title:info.title};
+    selectedRoom={...info};
     put('room',selectedRoom);
     members=[]; messages=[];
     restoreDraft();
@@ -612,12 +617,15 @@
   async function refreshScene() {
     if (!selectedRoom || !account) return;
     const id=selectedRoom.id;
-    const [p,m]=await Promise.all([
-      authed('GET','/rest/v1/room_members?select=user_id,character_name,role&room_id=eq.'+encodeURIComponent(id)),
-      authed('GET','/rest/v1/messages?select=id,sender_id,kind,body,created_at&room_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc&limit=24')
+    const [p,m,r]=await Promise.all([
+      authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role&room_id=eq.'+encodeURIComponent(id)),
+      authed('GET','/rest/v1/messages?select=id,sender_id,kind,body,created_at,character_name&room_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc&limit=24'),
+      authed('GET','/rest/v1/rooms?select=id,session_state,session_generation&id=eq.'+encodeURIComponent(id))
     ]);
     if (!selectedRoom || selectedRoom.id!==id) return;
+    if(r?.[0]){selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);}
     members=Array.isArray(p)?p:[];
+    renderKickPlayers();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
     renderFeed();
@@ -630,7 +638,7 @@
       const bubble=document.createElement('div');
       bubble.className='pm-bubble'+(msg.kind==='narrator'?' pm-narrator':'')+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
-      const character=members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
+      const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
       by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
       const content=document.createElement('div');content.textContent=msg.body;
       bubble.append(by,content);el.append(bubble);
@@ -871,11 +879,9 @@
   $('pair-refresh').onclick=()=>runTask(refreshPairedRooms);
   $('pair-create-room').onclick=()=>runTask(createOwnerRoom);
   $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
-  $('invite-kind').onchange=()=>{
-    const guest=$('invite-kind').value==='guest';
-    $('invite-list-label').textContent=guest?'Temporary characters: Name | Description | Objective (one per line)':'Established characters offered (one per line)';
-    $('invite-list').placeholder=guest?'Applicant | Another candidate at the examination | Complete the second-day trial':'Xu Yi';
-  };
+  $('kick-player-button').onclick=()=>runTask(()=>controlSession('kick'));
+  $('end-session').onclick=()=>runTask(()=>controlSession('end'));
+  $('reset-session').onclick=()=>runTask(()=>controlSession('reset'));
   $('make-invite').onclick=()=>runTask(createSessionInvitation);
   $('copy-invite-code').addEventListener('click',()=>{const code=$('invite-code').value;if(code){GM_setClipboard(code);feedback('Private invitation code copied.');}});
   $('copy-invite').onclick=()=>{

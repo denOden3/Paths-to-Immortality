@@ -1,3 +1,38 @@
+# Paths Web / HUD v0.7.0 — Invitation gate and session controls
+
+**Website:** https://denoden3.github.io/Paths-to-Immortality/
+
+Starting page → **Step forth** → two equal identity buttons:
+
+- **The Jade Emperor (The Administrator):** Google authentication. Only the existing, server-authorised administrator account enters Administration. Other accounts are signed out locally and silently returned to the starting page. The header has the ☯ symbol beside the title and no Sign in button.
+- **A Wandering Cultivator (A Player):** invitation-code popup. Code or private URL → **Generate scene** → Intro only if valid, unused, and unexpired. Invalid/expired/used codes silently return to the starting page. Previewing does not consume a code; beginning the journey consumes it.
+
+All players use the same greeting and multi-character checkboxes. The established/temporary distinction and standalone Characters Log are removed from the UI and selection rules. Server records remain private. Available choices combine this invitation's offered characters and the player's earlier characters. Selected names have reminder buttons below the scene information: description, objective, and previous scene when recorded. No Notion history has been imported.
+
+An authenticated browser can resume only its still-accessible ongoing room. Ended/kicked/reset membership is checked on return, before posting, and about every four seconds while the tab is visible. Offline or suspended browsers return to the start when they reconnect/resume and the check completes; previously downloaded text cannot be remotely erased while a device is offline.
+
+## HUD → Rooms & sessions → Session control
+
+| Control | Result |
+| --- | --- |
+| Kick player from the room | Remove that player's room membership and invalidate their pending invitations for this room; messages stay. |
+| End session | Close entry/posting, remove player memberships and invalidate every room invitation; keep the messages for the owner. |
+| Reset session | Confirm deletion of the ongoing chat and scene introduction, remove player memberships and invalidate all room invitations; keep the room shell and private character reminder history. Save a new introduction and issue fresh codes. |
+
+Invitations now use `Character name | Description | Objective` per line; description/objective are optional. All invitation generation and lifecycle operations are server-authorised for the permanent owner or their paired HUD. Ending/resetting does not affect the trusted pairing. Ending does not automatically archive to Notion.
+
+## Verification
+
+`tests/portal-permissions.sql`: integration tests within a rolled-back transaction, covering unified multi-character entry, invitation validity/privacy, owner-only controls, denial of reads/writes after kick/end, retained end transcripts, complete reset, fresh invitations, and retained character reminders. Test fixtures require the existing administrator, its active HUD delegation, and at least two unused anonymous test identities.
+
+DOM/structure checks: install `linkedom` in a temporary directory and run `PORTAL_DOM_MODULE=/absolute/path/to/node_modules/linkedom node tests/portal-dom.cjs` and `node tests/hud-structure.cjs` with the same environment variable. Checks cover identity gating, silent code rejection, wrong-account signout, previews, unified controls, reminder text, access loss and HUD event targets. JavaScript syntax checks also pass. Android Firefox rendering/touch behavior still needs a device check.
+
+SQL files in `db/` document the additive production changes; do not rerun them on an upgraded database. Legacy category columns remain solely for storage/backward compatibility and no longer determine access, greetings or selection limits.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web v0.6.0 — Player entrances and Jade Emperor administration
 
 **Live website:** https://denoden3.github.io/Paths-to-Immortality/

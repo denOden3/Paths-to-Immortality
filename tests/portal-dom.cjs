@@ -3,36 +3,29 @@ const {parseHTML}=require(process.env.PORTAL_DOM_MODULE||'/tmp/paths-qa/node_mod
 const html=fs.readFileSync('index.html','utf8'),{document}=parseHTML(html);
 const storage=new Map(),location={search:'',pathname:'/Paths-to-Immortality/',hash:'',origin:'https://denoden3.github.io'};
 const code=html.split('<script type="module">')[1].split('</script>')[0].replace(/\nboot\(\);\s*$/,'');
-const sandbox={document,location,history:{replaceState(){}},window:{addEventListener(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},navigator:{onLine:true},URL,URLSearchParams,console,crypto:require('crypto').webcrypto,confirm:()=>false,setInterval:()=>0,clearInterval(){},setTimeout,clearTimeout,assert};
+const memory={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)};
+const sandbox={document,location,history:{replaceState(){}},window:{addEventListener(){}},localStorage:memory,sessionStorage:memory,navigator:{onLine:true},URL,URLSearchParams,console,crypto:require('crypto').webcrypto,confirm:()=>false,setInterval:()=>1,clearInterval(){},setTimeout,clearTimeout,assert};
 const context=vm.createContext(sandbox);vm.runInContext(code,context);
 vm.runInContext(`(async()=>{
  const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(new Set(ids).size,ids.length,'duplicate IDs');
- for(const match of ${JSON.stringify(code)}.matchAll(/\$\('([^']+)'\)/g)){assert.ok($(match[1]),'missing element '+match[1]);}
- applyPresentation();show('welcome');
- assert.equal($('guest').parentElement.lastElementChild.id,'guest','text remains below Step forth');
- assert.equal($('welcome').children.length,1);
- assert.equal($('playerGreeting').textContent,DEFAULT_PRESENTATION.temporaryCopy);
- assert.equal(parseInvitation('A'.repeat(48)),'a'.repeat(48));
- assert.equal(parseInvitation('https://denoden3.github.io/Paths-to-Immortality/?invite='+'b'.repeat(48)),'b'.repeat(48));
- assert.throws(()=>parseInvitation('invalid'));
- let payload={player_alias:'Puuchan',player_kind:'established',characters:['Xu Yi','Second PC'],title:'Cloudveil trial',scene_date:'Early Spring, 2nd',location:'Courtyard',opening:'The trial begins.'};
- db={rpc:async name=>({data:payload,error:null})};$('sessionCode').value='a'.repeat(48);await generateSession();
- assert.equal(currentView,'intro');assert.equal($('playerWelcome').textContent,'Welcome back, Puuchan!');
- assert.equal($('playerGreeting').textContent,'Are you ready to continue your journey to the Jianghu?');
- assert.equal($('characterChoices').querySelectorAll('input[type=checkbox]').length,2);
- assert.equal($('characterChoices').querySelectorAll('input[type=radio]').length,0);
- assert.equal($('introTitle').textContent,'Cloudveil trial');
- payload={player_alias:'Guest friend',player_kind:'temporary',roles:['Applicant'],role_details:[{name:'Applicant',description:'A hopeful',goal:'Pass'}],previous_characters:[{name:'Old friend',description:'A returning character',goal:'Visit'}],title:'Guest scene',opening:'Welcome.'};
- await generateSession();assert.equal($('playerWelcome').textContent,'Welcome, Guest friend!');
- assert.equal($('characterChoices').querySelectorAll('input[type=radio]').length,2);
- assert.equal($('characterChoices').querySelectorAll('input[type=checkbox]').length,0);
- assert.ok($('characterChoices').textContent.includes('Previously played'));
- $('sessionCode').value='c'.repeat(48);invalidateScene();assert.ok($('sceneResult').classList.contains('hidden'));
- portalIdentity={is_admin:false};show('intro');assert.ok($('navAdmin').classList.contains('hidden'));assert.ok($('toolsOpen').classList.contains('hidden'));
- portalIdentity={is_admin:true};show('administration');assert.ok(!$('navAdmin').classList.contains('hidden'));
- for(const tab of ['starting','intro','chat']){adminTab=tab;renderEditor();assert.ok($('playerPreview').children.length>1,'preview empty: '+tab);}
- presentationDraft.startTitle='<img src=x onerror=alert(1)>';adminTab='starting';renderPreview();assert.equal($('playerPreview').querySelectorAll('img').length,0,'preview HTML injection');
- user={id:'qa-user'};portalIdentity={alias:'Puuchan',kind:'established'};db={rpc:async()=>({data:[{character:'Xu Yi',kind:'established',scene_title:'Scene A',scene_date:'Early Spring, 2nd',location:'Courtyard',room_id:null},{character:'Xu Yi',kind:'established',scene_title:'Scene B',scene_date:'Early Spring, 3rd',location:'Hall',room_id:null}]})};
- await showCharacterLog();assert.equal($('logEntries').querySelectorAll('article').length,1);assert.ok($('logEntries').textContent.includes('Scene A'));assert.ok($('logEntries').textContent.includes('Scene B'));
- console.log('PASS: entrance text, identity greetings, invitation parsing, established checkboxes, temporary radios/history, stale-code reset, admin visibility, three previews, injection safety, grouped Characters Log');
+ for(const m of ${JSON.stringify(code)}.matchAll(/\$\('([^']+)'\)/g))assert.ok($(m[1]),'missing element '+m[1]);
+ applyPresentation();show('welcome');assert.equal($('guest').parentElement.lastElementChild.id,'guest');assert.equal($('welcome').children.length,1);assert.equal($('accountAccess'),null);assert.ok(!$('toolsOpen').classList.contains('hidden'));
+ db={};await enterPortal();assert.equal(currentView,'identityGate');assert.equal(document.querySelectorAll('.identityChoice').length,2);
+ show('intro');assert.equal(currentView,'welcome','Intro opened without invitation');
+ openCodeDialog();assert.ok(!$('codeOverlay').classList.contains('hidden'));
+ assert.equal(parseInvitation('A'.repeat(48)),'a'.repeat(48));assert.equal(parseInvitation('https://denoden3.github.io/Paths-to-Immortality/?invite='+'b'.repeat(48)),'b'.repeat(48));
+ db={rpc:async()=>({data:null})};$('sessionCode').value='expired';await generateSession();assert.equal(currentView,'welcome');assert.ok($('notice').classList.contains('hidden'),'invalid code exposed reason');
+ let payload={player_alias:'Puuchan',characters:['Xu Yi','Second PC'],character_details:[{name:'Xu Yi',description:'A thoughtful cultivator',goal:'Learn'}],previous_characters:[{name:'Xu Yi',scene_title:'The trial',scene_date:'Early Spring, 2nd'},{name:'Old PC',description:'An old friend'}],title:'Cloudveil trial',scene_date:'Early Spring, 3rd',location:'Courtyard',opening:'A new trial.'};
+ db={rpc:async()=>({data:payload,error:null})};$('sessionCode').value='a'.repeat(48);await generateSession();assert.equal(currentView,'intro');assert.equal($('playerWelcome').textContent,'Welcome, Puuchan!');assert.equal($('characterChoices').querySelectorAll('input[type=checkbox]').length,3);assert.equal($('characterChoices').querySelectorAll('input[type=radio]').length,0);assert.ok($('codeOverlay').classList.contains('hidden'));
+ $('characterChoices').querySelector('input').checked=true;renderCharacterReminders();assert.equal($('characterReminders').children.length,1);$('characterReminders').firstChild.onclick();assert.ok($('characterReminderInfo').textContent.includes('A thoughtful cultivator'));assert.ok($('characterReminderInfo').textContent.includes('The trial'));
+ assert.equal($('navCharacters'),null);assert.equal($('registerKind'),null);
+ portalIdentity={is_admin:true};show('administration');for(const tab of ['starting','intro','chat']){adminTab=tab;renderEditor();assert.ok($('playerPreview').children.length>1);}
+ presentationDraft.playerTitle='<img src=x onerror=alert(1)> {player}';adminTab='intro';renderPreview();assert.equal($('playerPreview').querySelectorAll('img').length,0);
+ let signedOut=false;portalIdentity={is_admin:false};user={id:'wrong-google-account'};db={auth:{signOut:async()=>{signedOut=true;}}};await finishAdministratorSignIn();assert.ok(signedOut);assert.equal(user,null);assert.equal(currentView,'welcome');
+ // A kicked, ended, or reset participant must lose the visible chat and its composer.
+ for(const record of [null,{id:'room',session_state:'ended',session_generation:'old'},{id:'room',session_state:'active',session_generation:'new'}]){
+ room='room';activeGeneration='old';user={id:'player'};portalIdentity={is_admin:false};show('chat');db={from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:record,error:null})})};await checkOngoingSession();assert.equal(currentView,'welcome');assert.ok($('composer').classList.contains('hidden'));assert.equal(room,null);
+ }
+ room='room';activeGeneration='same';db={from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{id:'room',session_state:'active',session_generation:'same'}})})};assert.equal(await checkOngoingSession(),true);
+ console.log('PASS: identity gate, no header login, restored symbol, code-only Intro, silent invalid code return, unified checkboxes/reminders, no categories/log, admin previews, wrong-account signout, and kicked/ended/reset room eviction');
 })()`,context).catch(e=>{console.error(e);process.exitCode=1;});
