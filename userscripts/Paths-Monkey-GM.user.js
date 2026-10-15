@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.3.1
+// @version      0.3.2
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.3.1';
+  const VERSION = '0.3.2';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -116,6 +116,12 @@
     #paths-monkey-root .pm-oocBubble{border-style:dashed;background:#3a3444}
     #paths-monkey-root .pm-oocBubble .pm-by{color:#d7bce5}
     #paths-monkey-root .pm-actions{margin-top:12px;display:flex;column-gap:16px;row-gap:10px;align-items:center;flex-wrap:wrap}
+    #paths-monkey-root .pm-actions #pm-identity-toggle{margin-left:auto;
+      margin-right:clamp(0px, calc(100vw - 310px), 76px)}
+    /* Desktop: give the full HUD a legible title while preserving mobile controls. */
+    @media(min-width:900px){
+      #paths-monkey-root .pm-hbar .pm-title{font-size:20px;line-height:1.15;letter-spacing:.018em}
+    }
     #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;overflow-wrap:anywhere;margin-top:4px}
     #paths-monkey-root .pm-feedback:empty{display:none}
     #paths-monkey-root .pm-feed{position:absolute;right:10px;top:63px;width:min(320px,calc(100vw - 20px));
@@ -239,9 +245,9 @@
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
         <div class="pm-actions">
-          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
           <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Peek at shared room">Scene</button>
+          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
         </div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
