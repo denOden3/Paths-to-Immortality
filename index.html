@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.1</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.2</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,9 +85,10 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.1</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.2</div></header>
 <div class="content">
-<nav id="portalNav" class="hidden" aria-label="Session navigation"><button id="navSessions" class="btn sm hidden">Rooms &amp; sessions</button><button id="navAdmin" class="btn sm hidden">☯ Administration</button></nav>
+<div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
+<nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms &amp; sessions</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
 <div class="card"><h2>Welcome, wandering cultivator!</h2>
@@ -105,12 +106,13 @@ body.authOpen{overflow:hidden}
 <div id="characterReminders" class="characterReminders" aria-label="Character reminders"></div><div id="characterReminderInfo" class="card hidden" role="status"></div>
 <div class="beginRow"><button id="introEnter" class="btn primary" type="button">Begin your journey!</button></div></div>
 </section>
-<section id="administration" class="scroll hidden" aria-label="Jade Emperor administration">
-<div class="portalHero"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
-<div class="card"><h3>Player registry</h3><div class="grid"><div><label for="registerAlias">Player name</label><input id="registerAlias" maxlength="45" placeholder="e.g. Puuchan"></div></div><div class="buttons"><button id="registerPlayer" class="btn primary">Save player</button><button id="refreshPlayers" class="btn">Refresh registry</button></div><div id="registeredPlayers"></div></div>
-<div class="card"><h3>Session administration</h3><div class="buttons"><button id="adminRooms" class="btn">Rooms &amp; sessions</button><button id="adminConnections" class="btn">HUD pairing &amp; tools</button></div><label for="adminSceneRoom">Edit a session introduction</label><select id="adminSceneRoom"><option value="">Choose a session</option></select><label for="adminSceneDate">In-world date</label><input id="adminSceneDate" maxlength="90"><label for="adminSceneLocation">Location</label><input id="adminSceneLocation" maxlength="150"><label for="adminSceneOpening">Opening situation</label><textarea id="adminSceneOpening" maxlength="2500"></textarea><div class="buttons"><button id="saveAdminScene" class="btn primary">Save scene introduction</button></div></div>
+<section id="administration" class="scroll hidden" role="tabpanel" aria-labelledby="navAdmin">
+
+<div class="card"><h3>Session administration</h3><div class="buttons"><button id="adminConnections" class="btn">HUD pairing &amp; tools</button></div><label for="adminSceneRoom">Edit a session introduction</label><select id="adminSceneRoom"><option value="">Choose a session</option></select><label for="adminSceneDate">In-world date</label><input id="adminSceneDate" maxlength="90"><label for="adminSceneLocation">Location</label><input id="adminSceneLocation" maxlength="150"><label for="adminSceneOpening">Opening situation</label><textarea id="adminSceneOpening" maxlength="2500"></textarea><div class="buttons"><button id="saveAdminScene" class="btn primary">Save scene introduction</button></div></div>
 </section>
-<section id="lobby" class="scroll hidden">
+<section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="card"><h3>Players</h3><div class="grid"><div><label for="registerAlias">Player name</label><input id="registerAlias" maxlength="45" placeholder="e.g. Puuchan"></div></div><div class="buttons"><button id="registerPlayer" class="btn primary">Save player</button><button id="refreshPlayers" class="btn">Refresh players</button></div><div id="registeredPlayers"></div></div>
+</section>
+<section id="lobby" class="scroll hidden" role="tabpanel" aria-labelledby="navSessions">
 <div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms of Cloudveil</h2></div>
 <div class="card"><h3>Your rooms</h3><div id="roomList" class="muted">Loading rooms…</div></div>
 <div class="grid"><div id="ownerRoomRecovery" class="card hidden"><h3>Owner recovery · create a room</h3><p>The first player creates the room.</p><label for="createName">Your character</label><input id="createName" value="Xiao Lan" maxlength="40"><label for="roomName">Room title</label><input id="roomName" value="Cloudveil Test Hall" maxlength="80"><div class="buttons"><button id="create" class="btn primary">Create private room</button></div></div>
@@ -255,14 +257,14 @@ const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','registerPlayer','saveAdminScene'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
-  for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration'])$(x).classList.add('hidden');
+  for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   currentView=where;
   closeHeaderMenu(false);
   $('portalNav').classList.toggle('hidden',!portalIdentity.is_admin||['welcome','identityGate'].includes(where));
-  $('navSessions').classList.toggle('hidden',!portalIdentity.is_admin);
-  $('navAdmin').classList.toggle('hidden',!portalIdentity.is_admin);
+  $('adminGreeting').classList.toggle('hidden',!portalIdentity.is_admin||!['administration','lobby','adminPlayers'].includes(where));
+  for(const [id,panel] of [['navAdmin','administration'],['navSessions','lobby'],['navPlayers','adminPlayers']]){const tab=$(id),active=where===panel;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
   $('toolsOpen').classList.remove('hidden');$('toolsOpen').title='Open navigation';$('toolsOpen').setAttribute('aria-label',$('toolsOpen').title);
 
 };
@@ -600,7 +602,7 @@ function applyPresentation(){
 }
 function updateGreeting(data){const g=greeting(presentation,data?.player_alias||portalIdentity.alias);$('playerWelcome').textContent=g.title;$('playerGreeting').textContent=g.copy;}
 async function loadPresentation(){const {data,error}=await db.from('portal_presentation').select('settings').eq('id',true).single();if(error)throw error;presentation=cleanPresentation(data.settings);applyPresentation();}
-async function refreshPortalIdentity(){portalIdentity={is_admin:false};if(user){const {data,error}=await db.rpc('portal_context');if(error)throw error;portalIdentity=data||portalIdentity;}$('navAdmin').classList.toggle('hidden',!portalIdentity.is_admin);$('toolsOpen').classList.remove('hidden');$('toolsOpen').title='Open navigation';$('toolsOpen').setAttribute('aria-label',$('toolsOpen').title);updateGreeting();}
+async function refreshPortalIdentity(){portalIdentity={is_admin:false};if(user){const {data,error}=await db.rpc('portal_context');if(error)throw error;portalIdentity=data||portalIdentity;}$('toolsOpen').classList.remove('hidden');$('toolsOpen').title='Open navigation';$('toolsOpen').setAttribute('aria-label',$('toolsOpen').title);updateGreeting();}
 async function enterPortal(){if(!db)throw Error('The entrance is still loading.');clear();show('identityGate');}
 function openCodeDialog(){invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
 function closeCodeDialog(){$('codeOverlay').classList.add('hidden');document.body.classList.remove('authOpen');}
@@ -662,7 +664,7 @@ async function returnFromPage(){
  closeHeaderMenu(false);
  if(currentView==='tools'){backFromTools();return;}
  if(currentView==='chat'&&portalIdentity.is_admin){await lobby();return;}
- if(currentView==='lobby'&&portalIdentity.is_admin){await openAdministration();return;}
+ if(['lobby','adminPlayers'].includes(currentView)&&portalIdentity.is_admin){await openAdministration();return;}
  const target=['administration','intro'].includes(currentView)?'identityGate':'welcome';
  returnToStart({preserveResume:true});show(target);
 }
@@ -673,17 +675,18 @@ $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const but
 async function portalSignout(){endLive();if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
-$('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);
+$('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);$('navPlayers').onclick=()=>safe(async()=>{if(!portalIdentity.is_admin)returnToStart();else{await refreshRegistry();show('adminPlayers');}});
+$('portalNav').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const tabs=[...$('portalNav').querySelectorAll('[role=tab]')],index=tabs.indexOf(document.activeElement);const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();tabs[next].click();tabs[next].scrollIntoView?.({block:'nearest',inline:'nearest'});});
 $('chooseAdministrator').onclick=()=>safe(chooseAdministrator);
 $('choosePlayer').onclick=()=>safe(async()=>{if(await resumeOngoingSession())return;openCodeDialog();});
 $('closeCode').onclick=returnToStart;$('codeOverlay').addEventListener('click',e=>{if(e.target===$('codeOverlay'))returnToStart();});
 async function refreshRegistry(){const {data,error}=await db.rpc('portal_manage_player');if(error)throw error;registry=data||[];const host=$('registeredPlayers');host.replaceChildren();for(const p of registry){const row=el('div','adminPlayer');row.append(el('span','',p.alias));host.append(row);}if(!registry.length)host.append(el('p','muted','Players are registered here or when you issue a HUD invitation.'));}
 async function openAdministration(){
  if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
- await refreshRegistry();const {data,error}=await db.from('rooms').select('id,title').order('created_at',{ascending:false});if(error)throw error;const select=$('adminSceneRoom');select.replaceChildren(el('option','','Choose a session'));select.firstChild.value='';for(const r of data||[]){const o=el('option','',r.title);o.value=r.id;select.append(o);}show('administration');
+ const {data,error}=await db.from('rooms').select('id,title').order('created_at',{ascending:false});if(error)throw error;const select=$('adminSceneRoom');select.replaceChildren(el('option','','Choose a session'));select.firstChild.value='';for(const r of data||[]){const o=el('option','',r.title);o.value=r.id;select.append(o);}show('administration');
 }
 $('registerPlayer').onclick=()=>safe(async()=>{const alias=$('registerAlias').value.trim();if(!alias)throw Error('Enter a player name.');const {error}=await db.rpc('portal_manage_player',{p_alias:alias});if(error)throw error;await refreshRegistry();$('registerAlias').value='';notice('Player registry saved. Use the same name when issuing invitations.','good');});
-$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminRooms').onclick=()=>safe(lobby);$('adminConnections').onclick=()=>safe(async()=>{if(!room){await lobby();notice('Open an owner session, then return to Administration → HUD pairing & tools.');return;}openTools();});
+$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminConnections').onclick=()=>safe(async()=>{if(!room){await lobby();notice('Open an owner session, then return to Administration → HUD pairing & tools.');return;}openTools();});
 $('adminSceneRoom').onchange=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)return;const {data,error}=await db.rpc('get_scene_introduction_as_owner',{p_room_id:id});if(error)throw error;$('adminSceneDate').value=data.scene_date||'';$('adminSceneLocation').value=data.location||'';$('adminSceneOpening').value=data.opening||'';});
 $('saveAdminScene').onclick=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)throw Error('Choose a session first.');const {data,error}=await db.rpc('set_scene_introduction_as_owner',{p_room_id:id,p_date:$('adminSceneDate').value.trim(),p_location:$('adminSceneLocation').value.trim(),p_opening:$('adminSceneOpening').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving.');notice('Scene introduction saved for this session.','good');});
 

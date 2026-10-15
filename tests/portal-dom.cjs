@@ -20,6 +20,11 @@ vm.runInContext(`(async()=>{
  $('characterChoices').querySelector('input').checked=true;renderCharacterReminders();assert.equal($('characterReminders').children.length,1);$('characterReminders').firstChild.onclick();assert.ok($('characterReminderInfo').textContent.includes('A thoughtful cultivator'));assert.ok($('characterReminderInfo').textContent.includes('The trial'));
  assert.equal($('navCharacters'),null);assert.equal($('registerKind'),null);
  portalIdentity={is_admin:true};user={id:'owner'};show('administration');
+ assert.equal($('adminGreeting').nextElementSibling.id,'portalNav','welcome must precede tabs');
+ assert.equal([...$('portalNav').children].map(x=>x.id).join(','),'navAdmin,navSessions,navPlayers','tab order');
+ assert.ok($('adminPlayers').contains($('registerAlias')),'registry is outside Players panel');
+ for(const [view,selected] of [['administration','navAdmin'],['lobby','navSessions'],['adminPlayers','navPlayers']]){show(view);assert.ok(!$('adminGreeting').classList.contains('hidden'));assert.equal($(selected).getAttribute('aria-selected'),'true');for(const panel of ['administration','lobby','adminPlayers'])assert.equal($(panel).classList.contains('hidden'),panel!==view,'panel isolation');}
+ show('administration');
  for(const id of ['tabStarting','tabIntro','tabChat','savePresentation','playerPreview','pageEditor','navSignout','signout'])assert.equal($(id),null,'removed editor or inline signout remains: '+id);
  assert.ok($('headerMenuOverlay').contains($('menuSignout')));openHeaderMenu();assert.equal($('toolsOpen').getAttribute('aria-expanded'),'true');assert.ok(!$('headerMenuOverlay').classList.contains('hidden'));assert.equal($('headerMenu').querySelectorAll('button').length,2);
  closeHeaderMenu();assert.equal($('toolsOpen').getAttribute('aria-expanded'),'false');assert.ok($('headerMenuOverlay').classList.contains('hidden'));
@@ -30,5 +35,5 @@ vm.runInContext(`(async()=>{
  room='room';activeGeneration='old';user={id:'player'};portalIdentity={is_admin:false};show('chat');db={from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:record,error:null})})};await checkOngoingSession();assert.equal(currentView,'welcome');assert.ok($('composer').classList.contains('hidden'));assert.equal(room,null);
  }
  room='room';activeGeneration='same';db={from:()=>({select(){return this;},eq(){return this;},maybeSingle:async()=>({data:{id:'room',session_state:'active',session_generation:'same'}})})};assert.equal(await checkOngoingSession(),true);
- console.log('PASS: identity gate, no header login, restored symbol, code-only Intro, silent invalid code return, unified checkboxes/reminders, no categories/log, removed editors, popup navigation/signout, resumable back navigation, wrong-account signout, and kicked/ended/reset room eviction');
+ console.log('PASS: identity gate, no header login, restored symbol, code-only Intro, silent invalid code return, unified checkboxes/reminders, no categories/log, removed editors, ordered admin tabs and isolated Players panel, popup navigation/signout, resumable back navigation, wrong-account signout, and kicked/ended/reset room eviction');
 })()`,context).catch(e=>{console.error(e);process.exitCode=1;});

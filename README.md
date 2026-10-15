@@ -1,3 +1,13 @@
+# Paths Web v0.7.2 — Administration tabs
+
+The Jade Emperor welcome now appears above a single horizontal tab row: **Administration → Rooms & sessions → Players**. Swipe the row sideways on narrow screens; tabs stay on one line and can be extended. Each tab changes the panel below it. The former Player Registry is now the **Players** panel. Arrow keys, Home and End also navigate the tabs. The ☯ Back / Sign out popup stays available.
+
+This is Web-only; HUD v0.7.0 remains current. Existing DOM checks cover welcome/tab order, active-tab state and panel isolation, plus prior entrance/navigation behavior. No database changes were required.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web v0.7.1 — Simpler administration and ☯ menu
 
 **Website:** https://denoden3.github.io/Paths-to-Immortality/
