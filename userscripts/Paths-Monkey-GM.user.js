@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.7
+// @version      0.7.8
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.7';
+  const VERSION = '0.7.8';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -92,6 +92,15 @@
       background:var(--pm-bg);overflow-y:auto;overscroll-behavior:contain;
       pointer-events:auto;padding:18px clamp(12px,3vw,32px) 24px}
     #paths-monkey-root .pm-left.pm-open{display:block}
+    /* Information toggle leaves the underlying HUD page mounted. */
+    #paths-monkey-root.pm-info-overlay .pm-left{display:block!important;bottom:var(--pm-native,95px);z-index:2}
+    #paths-monkey-root.pm-info-overlay .pm-feed,
+    #paths-monkey-root.pm-info-overlay .pm-compose,
+    #paths-monkey-root.pm-info-overlay .pm-registry,
+    #paths-monkey-root.pm-info-overlay .pm-roomlogs,
+    #paths-monkey-root.pm-info-overlay .pm-backdrop{visibility:hidden}
+    #paths-monkey-root.pm-info-dismissed .pm-left{display:none!important}
+
     #paths-monkey-root.pm-admin .pm-left{bottom:var(--pm-native,95px)}
     #paths-monkey-root.pm-admin .pm-compose{display:none}
     #paths-monkey-root .pm-session-list summary{cursor:pointer;min-height:42px;font-weight:800;color:var(--pm-gold);padding:9px 0}
@@ -247,7 +256,7 @@
       </div>
     </div>
     <div class="pm-hbar">
-      <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Go back to previous HUD page" aria-expanded="false" aria-controls="pm-sidebar" title="Go back to previous HUD page">☯</button>
+      <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Toggle information panel" aria-expanded="false" aria-controls="pm-sidebar" title="Open or close information panel">☯</button>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
       <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
@@ -838,6 +847,7 @@
     if(composer>0)root.style.setProperty('--pm-compose-height',Math.ceil(composer)+'px');
   }
   function setInfoVisible(visible){
+    root.classList.remove('pm-info-overlay','pm-info-dismissed');
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
     closeRegistry();closeRoomLogs();
     showSidebar=visible;
@@ -845,15 +855,26 @@
     $('sidebar').classList.toggle('pm-open',visible);
     $('sidebar').setAttribute('aria-hidden',String(!visible));
     $('logo-toggle').setAttribute('aria-expanded',String(visible));
-    $('logo-toggle').setAttribute('aria-label','Go back to previous HUD page');
+    $('logo-toggle').setAttribute('aria-label',visible?'Close information panel':'Open information panel');
     showFeed=!visible;$('feed').classList.toggle('pm-hide',visible);
     resizeHudBody();
+  }
+  function toggleInformation(){
+    const baseAdmin=captureHudPage().view==='admin';
+    const open=root.classList.contains('pm-info-overlay')||(baseAdmin&&!root.classList.contains('pm-info-dismissed'));
+    root.classList.toggle('pm-info-overlay',!open&&!baseAdmin);
+    root.classList.toggle('pm-info-dismissed',open&&baseAdmin);
+    $('sidebar').setAttribute('aria-hidden',String(open));
+    $('logo-toggle').setAttribute('aria-expanded',String(!open));
+    $('logo-toggle').setAttribute('aria-label',open?'Open information panel':'Close information panel');
+    if(!open)resizeHudBody();
   }
   function captureHudPage(){
     const view=!$('settings').classList.contains('pm-hide')?'settings':!$('rooms-page').classList.contains('pm-hide')?'roomtools':root.classList.contains('pm-registry-open')?'registry':root.classList.contains('pm-roomlogs-open')?'roomlogs':showSidebar?'admin':'chat';
     return {view,roomId:selectedRoom?.id,mode:root.classList.contains('pm-creating')?'create':'manage',scroll:$(({admin:'sidebar',chat:'feed',registry:'registry',roomlogs:'roomlogs'})[view]||'sidebar').scrollTop};
   }
   function rememberHudPage(page=captureHudPage()){
+    root.classList.remove('pm-info-overlay','pm-info-dismissed');
     if(restoringHudPage)return;const last=hudHistory[hudHistory.length-1];if(!last||last.view!==page.view||last.roomId!==page.roomId||last.mode!==page.mode)hudHistory.push(page);if(hudHistory.length>40)hudHistory.shift();
   }
   async function toggleSidebar(){
@@ -988,7 +1009,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.79+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.89+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -1029,7 +1050,7 @@
   $('collapse-title').onclick=()=>setHudMode('paths',false);
 
   $('settings-toggle').onclick=openSettings;
-  $('logo-toggle').onclick=()=>runTask(toggleSidebar);
+  $('logo-toggle').onclick=toggleInformation;
   $('manage-rooms').onclick=()=>openRoomPage('create');
   $('open-roomlogs').onclick=()=>runTask(openRoomLogs);
   $('roomlogs-back').textContent='← Back';$('roomlogs-back').onclick=()=>runTask(toggleSidebar);

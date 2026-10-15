@@ -7,6 +7,7 @@ for(const id of ['pm-kick-player','pm-kick-player-button','pm-end-session','pm-r
 const vm=require('vm');const infoCode=source.slice(source.indexOf('  function resizeHudBody(){'),source.indexOf('  function openSettings()'));
 document.getElementById('pm-compose').getBoundingClientRect=()=>({height:130});
 const root={classList:document.body.classList,querySelector:()=>({getBoundingClientRect:()=>({height:55})}),style:{setProperty(){}}};
+const sourceToggle=source.slice(source.indexOf('  function toggleInformation(){'),source.indexOf('  function captureHudPage(){'));
 const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
 (async()=>{
@@ -62,5 +63,20 @@ assert.ok(document.getElementById('pm-registry-create').classList.contains('pm-h
 context.characterHost=document.createElement('div');
 vm.runInContext(`renderRegistryCharacters({id:'player'},characterHost,[{id:'char',name:'Xu Yi',description:'A disciple',goal:'Learn'}]);`,context);
 assert.equal(context.characterHost.querySelectorAll('.pm-character-card').length,2);assert.ok(context.characterHost.textContent.includes('Remove'));assert.ok(context.characterHost.textContent.includes('Save'));assert.ok(context.characterHost.textContent.includes('Add Character'));
+// The symbol toggles information without changing its underlying page.
+vm.runInContext(sourceToggle,context);
+vm.runInContext("selectedRoom={id:'a',session_state:'active'};setInfoVisible(false);toggleInformation();",context);
+assert.ok(root.classList.contains('pm-info-overlay'));
+assert.equal(context.showSidebar,false,'opening information changed the chat view');
+vm.runInContext('toggleInformation();',context);
+assert.ok(!root.classList.contains('pm-info-overlay'));
+assert.equal(context.showSidebar,false,'closing information did not restore chat');
+vm.runInContext("setInfoVisible(true);root.classList.add('pm-registry-open');toggleInformation();toggleInformation();",context);
+assert.ok(root.classList.contains('pm-registry-open'),'information toggle lost Registry page');
+vm.runInContext("root.classList.remove('pm-registry-open');toggleInformation();",context);
+assert.ok(root.classList.contains('pm-info-dismissed'),'Admin information did not close');
+vm.runInContext('toggleInformation();',context);
+assert.ok(!root.classList.contains('pm-info-dismissed'));
+
 console.log('PASS: HUD navigation, picker, expandable registration/rename forms, inline player status and character editor controls');
 })().catch(error=>{console.error(error);process.exitCode=1;});

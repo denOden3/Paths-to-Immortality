@@ -1,3 +1,9 @@
+# Paths HUD v0.7.8 — Information symbol toggle
+
+The ☯ symbol opens and closes the information/Admin panel while leaving the underlying HUD page mounted. Closing it restores the same chat, Registry, Room Logs or settings page. On the Admin home itself it can close the information body to reveal ChatGPT and reopen it on the next tap. Explicit Back buttons keep previous-page navigation. No database changes; Web remains v0.7.5. Notion summary/link import remains planned, not implemented.
+
+---
+
 # Paths HUD v0.7.7 — Exclusive player card panels
 
 Rename and Characters are mutually exclusive inside each player card. Selecting one hides the other panel and highlights the selected button; tapping the active button closes its panel. Existing rename drafts are retained when switching. No database changes. Notion URL import has not been implemented. Web stays v0.7.5.
