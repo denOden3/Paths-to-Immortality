@@ -1,3 +1,11 @@
+# Paths HUD v0.7.5 — Previous-page navigation and unified session details
+
+The ☯ button navigates back through visited HUD pages, including Room Logs, chatrooms, registry, room tools and settings. Invalid/ended chat destinations fall back to Admin. Removed the duplicate selected-room title, active-room button list and refresh button from Current Session; Room Logs remains the route into chatrooms. The active-session selector sits directly below Current Session and refreshes both player/character participation and the saved Heavenly Calendar date. Its selection remains independent of the active chatroom. Participant rows now use larger, high-contrast 16px text with extra spacing.
+
+DOM checks exercise previous-page navigation, removed controls, selector position and participants/calendar loading. Existing API permissions are unchanged; no database changes. Web stays v0.7.5.
+
+---
+
 # Paths HUD v0.7.4 — Room Logs and session participant picker
 
 Administration now links to Room Logs, a HUD body page grouped by Ongoing and Concluded. Opening ongoing entries joins their chat; concluded entries show Scene ended and the recorded end time. Status is refreshed before opening an entry. Current Session holds active-room chat buttons and a separate Characters session selector, showing player aliases and all allowed characters per participant. Inspecting participants does not change the selected chatroom, drafts or speaker. Polling refreshes the active list and participant picker; outdated participant responses are discarded. Removed the Trusted HUD linked-to-owner line.

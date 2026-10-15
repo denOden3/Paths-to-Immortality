@@ -7,8 +7,9 @@ for(const id of ['pm-kick-player','pm-kick-player-button','pm-end-session','pm-r
 const vm=require('vm');const infoCode=source.slice(source.indexOf('  function resizeHudBody(){'),source.indexOf('  function openSettings()'));
 document.getElementById('pm-compose').getBoundingClientRect=()=>({height:130});
 const root={classList:document.body.classList,querySelector:()=>({getBoundingClientRect:()=>({height:55})}),style:{setProperty(){}}};
-const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,account:null,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
+const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
+(async()=>{
 vm.runInContext(listCode,context);
 vm.runInContext(infoCode+`;setInfoVisible(false);`,context);
 assert.ok(root.classList.contains('pm-admin'),'no room must show Admin');
@@ -18,27 +19,36 @@ vm.runInContext("account={};selectedRoom={id:'active',session_state:'active'};se
 assert.ok(!root.classList.contains('pm-admin'),'active room must open chat');
 assert.equal(document.getElementById('pm-sidebar').getAttribute('aria-hidden'),'true');
 assert.ok(!document.getElementById('pm-feed').classList.contains('pm-hide'));
-vm.runInContext('toggleSidebar();',context);assert.ok(root.classList.contains('pm-admin'),'symbol returns Admin');
+await vm.runInContext('toggleSidebar();',context);assert.ok(root.classList.contains('pm-admin'),'symbol returns Admin');
 vm.runInContext("selectedRoom.session_state='ended';setInfoVisible(false);",context);assert.ok(root.classList.contains('pm-admin'),'ended scene must hide composer');
 vm.runInContext(`rooms=[{id:'a',title:'Active room',session_state:'active'},{id:'e',title:'Ended room',session_state:'ended'}];renderOngoingSessions();`,context);
-assert.equal(document.getElementById('pm-ongoing-list').querySelectorAll('button').length,1);assert.equal(document.getElementById('pm-ongoing-list').textContent,'Active room');
 const admin=document.getElementById('pm-administration-group'),current=document.getElementById('pm-current-session-group');
 assert.equal(admin.tagName,'DETAILS');assert.equal(current.tagName,'DETAILS');assert.equal(admin.parentElement,current.parentElement);
 for(const id of ['pm-manage-rooms','pm-open-roomlogs','pm-open-registry'])assert.ok(admin.contains(document.getElementById(id)));
-for(const id of ['pm-people','pm-calendar','pm-ongoing-list','pm-character-session'])assert.ok(current.contains(document.getElementById(id)));
-assert.equal(document.getElementById('pm-refresh-ongoing').textContent,'↻');assert.ok(document.getElementById('pm-refresh-ongoing').getAttribute('aria-label'));
+for(const id of ['pm-people','pm-calendar','pm-character-session'])assert.ok(current.contains(document.getElementById(id)));
 assert.ok(document.getElementById('pm-manage-rooms').textContent.startsWith('＋'));
 assert.ok(!template.includes('Monkey only controls this HUD.'));assert.ok(!source.includes("feedback('Connected to '+info.title)"));
 vm.runInContext(`renderRegistry([{id:'one',alias:'<img src=x>',in_session:true,sessions:[{title:'Trial room',characters:['Xu Yi']}]},{id:'two',alias:'Friend',in_session:false,sessions:[]}]);`,context);
 assert.equal(document.getElementById('pm-registry-list').querySelectorAll('img').length,0);
 assert.equal(document.getElementById('pm-registry-list').querySelectorAll('article').length,2);
 assert.ok(document.getElementById('pm-registry-list').textContent.includes('In a session'));assert.ok(document.getElementById('pm-registry-list').textContent.includes('Not in a session'));assert.ok(document.getElementById('pm-registry-list').textContent.includes('Xu Yi'));
-vm.runInContext("root.classList.add('pm-registry-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-registry-open'),'symbol returns from Registry');
+await vm.runInContext("root.classList.add('pm-registry-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-registry-open'),'symbol returns from Registry');
 vm.runInContext('renderRoomLogs();',context);
 assert.ok(document.getElementById('pm-roomlogs-list').textContent.includes('Ongoing'));assert.ok(document.getElementById('pm-roomlogs-list').textContent.includes('Concluded'));assert.equal(document.getElementById('pm-roomlogs-list').querySelectorAll('button').length,2);
 assert.equal(document.getElementById('pm-connection'),null);
 assert.equal(document.getElementById('pm-character-session').querySelectorAll('option').length,2);
 vm.runInContext(`renderCharacterParticipants([{player_alias:'Puuchan',character_name:'Xu Yi',allowed_characters:['Xu Yi','Second PC'],role:'member'}]);`,context);
 assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.ok(document.getElementById('pm-people').textContent.includes('Second PC'));
-vm.runInContext("root.classList.add('pm-roomlogs-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-roomlogs-open'));
-console.log('PASS: HUD controls, event targets, Admin/chat routing, composer gating, symbol return and room logs, active-session navigation and player/character picker');
+await vm.runInContext("root.classList.add('pm-roomlogs-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-roomlogs-open'));
+for(const id of ['pm-room-title','pm-ongoing-list','pm-refresh-ongoing'])assert.equal(document.getElementById(id),null);
+assert.equal(document.getElementById('pm-character-session').previousElementSibling.tagName,'LABEL');assert.equal(document.getElementById('pm-character-session').previousElementSibling.previousElementSibling.tagName,'SUMMARY');
+// Back from a chat opened via Room Logs returns to Room Logs, then Admin.
+await vm.runInContext(`hudHistory=[];selectedRoom={id:'a',session_state:'active'};setInfoVisible(true);rememberHudPage();root.classList.add('pm-roomlogs-open');rememberHudPage();setInfoVisible(false);toggleSidebar();`,context);
+assert.ok(root.classList.contains('pm-roomlogs-open'),'back from chat lost Room Logs');
+await vm.runInContext('toggleSidebar();',context);assert.ok(!root.classList.contains('pm-roomlogs-open'));assert.ok(root.classList.contains('pm-admin'));
+// Both participant data and calendar follow the picker, not the current chatroom.
+context.authed=async(method,path,options)=>path.includes('get_scene_introduction')?{scene_date:'Early Spring, 8th'}:[{player_alias:'Puuchan',character_name:'Xu Yi'}];
+await vm.runInContext('loadCharacterParticipants();',context);
+assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.equal(document.getElementById('pm-calendar').textContent,'Early Spring, 8th');
+console.log('PASS: HUD IDs, removed duplicate controls, previous-page navigation, room logs, participants and calendar follow the session picker');
+})().catch(error=>{console.error(error);process.exitCode=1;});

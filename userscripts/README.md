@@ -2,7 +2,11 @@
 
 Standalone **Paths of Immortality HUD** Tampermonkey userscript for the Paths world. The source lives in the Paths repository and does not modify Mizuhana's scripts or saves.
 
-## HUD v0.7.4
+## HUD v0.7.5
+
+☯ goes back to the previous HUD page. Current Session starts with one active-session picker that controls both Characters and Heavenly Calendar. Removed the duplicate room name, active-session button list and its refresh button; open chats through Room Logs. Player and character rows are larger and brighter.
+
+## Previous HUD v0.7.4
 
 Administration → Room Logs lists ongoing and concluded rooms. Open an ongoing room to enter chat; concluded rooms show Scene ended. Current Session now contains active-room chat buttons. Its Characters picker shows the players and all characters participating in the chosen active session without changing your chatroom. Removed the Trusted HUD linked-to-owner status line.
 
@@ -24,7 +28,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.4**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.5**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
