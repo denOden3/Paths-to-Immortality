@@ -1,3 +1,9 @@
+# Paths HUD v0.7.1 — Session information in the HUD body
+
+The ☯ button now opens a full-width, scrollable information view between the HUD header and its action composer on all screen sizes. The floating narrow sidebar and desktop composer offset are removed. Tap ☯ again to return to ChatGPT; opening Scene closes information and vice versa. ResizeObserver tracks header and composer height so longer drafts and wrapped controls do not cover the bottom of the information view. Web stays v0.7.5.
+
+---
+
 # Paths Web v0.7.5 — Focused administration
 
 Administration keeps the HUD pairing/tools entry and removes the Web scene introduction editor. Date, location and opening situation are edited through HUD v0.7.0. Rooms now contains only its room log: the Owner recovery creator, unused legacy join form and outdated test footer are removed.

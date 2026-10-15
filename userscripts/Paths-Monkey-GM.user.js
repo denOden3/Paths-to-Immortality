@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.0
+// @version      0.7.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.0';
+  const VERSION = '0.7.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -86,9 +86,12 @@
     #paths-monkey-root .pm-text{border:1px solid #a28a91;border-radius:10px;background:#17131b;
       color:var(--pm-ink);padding:10px 11px;width:100%;outline:none}
     #paths-monkey-root .pm-text::placeholder{color:#baa9ae}
-    #paths-monkey-root .pm-left{position:absolute;left:0;top:53px;bottom:var(--pm-native,95px);
-      width:220px;border-right:1px solid var(--pm-stroke);background:var(--pm-panel);
-      overflow:auto;pointer-events:auto;padding:14px 11px 20px}
+    #paths-monkey-root .pm-left{display:none;position:absolute;left:0;right:0;
+      top:var(--pm-header-height,53px);bottom:calc(var(--pm-native,95px) + var(--pm-compose-height,120px));
+      background:var(--pm-bg);overflow-y:auto;overscroll-behavior:contain;
+      pointer-events:auto;padding:18px clamp(12px,3vw,32px) 24px}
+    #paths-monkey-root .pm-left.pm-open{display:block}
+    #paths-monkey-root .pm-logo[aria-expanded="true"]{background:#7b3646;border-color:var(--pm-gold)}
     #paths-monkey-root .pm-h{font-weight:850;color:var(--pm-gold);font-size:12px;letter-spacing:.065em;
       text-transform:uppercase;margin:8px 0}
     #paths-monkey-root .pm-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -98,7 +101,7 @@
     #paths-monkey-root .pm-link{color:var(--pm-gold);display:block;text-decoration:underline;
       padding:7px 0;font-size:12px}
     #paths-monkey-root .pm-compose{position:absolute;bottom:var(--pm-native,95px);
-      left:220px;right:0;max-width:100%;padding:8px 12px 9px;border-top:1px solid var(--pm-stroke);
+      left:0;right:0;max-width:100%;padding:8px 12px 9px;border-top:1px solid var(--pm-stroke);
       background:linear-gradient(110deg,#271d28,#39262e);box-shadow:0 -4px 14px #0b080caa;
       pointer-events:auto}
     #paths-monkey-root .pm-composer-line{display:flex;gap:10px;align-items:flex-start}
@@ -190,16 +193,12 @@
     #paths-monkey-root .pm-title-collapse .pm-title{flex:unset}
     #paths-monkey-root.pm-expanded{box-shadow:inset 0 0 0 2px #472a39}
     @media(min-width:1180px){
-      #paths-monkey-root .pm-compose{right:0;left:220px;padding-left:calc(12px + max(0px,(100vw - 1200px)/4));}
+      #paths-monkey-root .pm-compose{right:0;left:0;padding-left:calc(12px + max(0px,(100vw - 1200px)/4));}
     }
     @media(max-width:790px){
       #paths-monkey-root .pm-hbar{padding:6px 8px;gap:6px}
       #paths-monkey-root .pm-title{font-size:13px}
-      #paths-monkey-root .pm-left{display:none;width:min(280px,90vw);z-index:2;bottom:var(--pm-native,95px);
-        box-shadow:9px 0 32px #000a}
-      #paths-monkey-root .pm-left.pm-open{display:block}
       #paths-monkey-root .pm-logo{cursor:pointer;touch-action:manipulation}
-      #paths-monkey-root .pm-logo[aria-expanded="true"]{background:#7b3646;border-color:var(--pm-gold)}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
       #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
       #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
@@ -219,13 +218,13 @@
       </div>
     </div>
     <div class="pm-hbar">
-      <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Toggle Paths HUD information sidebar" aria-expanded="false" aria-controls="pm-sidebar" title="Show or hide information panels">☯</button>
+      <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Show session information" aria-expanded="false" aria-controls="pm-sidebar" title="Show or hide session information">☯</button>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
       <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
-    <aside id="pm-sidebar" class="pm-left" aria-label="Paths panel">
+    <section id="pm-sidebar" class="pm-left" aria-label="Session information" aria-hidden="true" tabindex="-1">
       <button id="pm-manage-rooms" class="pm-btn pm-sidebar-action" type="button">📂 Rooms & sessions</button>
       <div class="pm-h">Current session</div>
       <div id="pm-room-title" class="pm-name">Not connected</div>
@@ -244,7 +243,7 @@
       <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Paths Web ↗</a>
       <div class="pm-divider"></div>
       <div class="pm-mute">Monkey only controls this HUD. ChatGPT still owns the actual narration and its blue Send button.</div>
-    </aside>
+    </section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong>☁ Shared scene feed</strong><button id="pm-feed-refresh" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">✕</button></div>
       <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div>
@@ -610,8 +609,7 @@
     await refreshScene();
     if(paired)await loadSceneIntro();
     feedback('Connected to '+info.title);
-    showSidebar=false;$('sidebar').classList.remove('pm-open');
-    $('logo-toggle').setAttribute('aria-expanded','false');
+    setInfoVisible(false);
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
   }
   async function refreshScene() {
@@ -737,8 +735,7 @@
   function openRoomPage(){
     previousFocus=window.matchMedia('(max-width:790px)').matches?$('logo-toggle'):document.activeElement;
     $('settings').classList.add('pm-hide');
-    showSidebar=false;$('sidebar').classList.remove('pm-open');
-    $('logo-toggle').setAttribute('aria-expanded','false');
+    setInfoVisible(false);
     $('rooms-page').classList.remove('pm-hide');
     $('rooms-page-status').textContent=paired?'Trusted HUD · room ownership authorized':account?'Monkey connected · owner pairing not complete':'Connect the Monkey under ⚙ Settings first';
     $('session-tools').classList.toggle('pm-hide',!paired||!selectedRoom);
@@ -750,13 +747,21 @@
     $('rooms-page').classList.add('pm-hide');
     if(previousFocus?.focus)previousFocus.focus();
   }
-  function toggleSidebar(){
-    if(!window.matchMedia('(max-width:790px)').matches)return;
-    showSidebar=!showSidebar;
-    $('sidebar').classList.toggle('pm-open',showSidebar);
-    $('logo-toggle').setAttribute('aria-expanded',String(showSidebar));
-    $('logo-toggle').setAttribute('aria-label',showSidebar?'Close information panels':'Open information panels');
+  function resizeHudBody(){
+    const header=root.querySelector('.pm-hbar').getBoundingClientRect().height;
+    const composer=$('compose').getBoundingClientRect().height;
+    if(header>0)root.style.setProperty('--pm-header-height',Math.ceil(header)+'px');
+    if(composer>0)root.style.setProperty('--pm-compose-height',Math.ceil(composer)+'px');
   }
+  function setInfoVisible(visible){
+    showSidebar=visible;
+    $('sidebar').classList.toggle('pm-open',visible);
+    $('sidebar').setAttribute('aria-hidden',String(!visible));
+    $('logo-toggle').setAttribute('aria-expanded',String(visible));
+    $('logo-toggle').setAttribute('aria-label',visible?'Hide session information':'Show session information');
+    if(visible){showFeed=false;$('feed').classList.add('pm-hide');resizeHudBody();}
+  }
+  function toggleSidebar(){setInfoVisible(!showSidebar);}
   function openSettings() {
     previousFocus=document.activeElement;
     $('settings').classList.remove('pm-hide');setConnectedState();$('settings-close').focus();
@@ -789,9 +794,7 @@
     $('settings').classList.add('pm-hide');
     $('rooms-page').classList.add('pm-hide');
     $('feed').classList.add('pm-hide');
-    $('sidebar').classList.remove('pm-open');
-    showFeed=false; showSidebar=false;
-    $('logo-toggle').setAttribute('aria-expanded','false');
+    setInfoVisible(false);showFeed=false;
     closePickerMenu();
   }
   function setHudMode(mode,expand=false) {
@@ -893,7 +896,7 @@
   $('forget').onclick=resetIdentity;
   $('send').onclick=()=>runTask(postAction);
   $('narrate').onclick=prepareNarrate;
-  $('feed-toggle').onclick=()=>{showFeed=!showFeed;$('feed').classList.toggle('pm-hide',!showFeed);if(showFeed)runTask(refreshScene);};
+  $('feed-toggle').onclick=()=>{setInfoVisible(false);showFeed=!showFeed;$('feed').classList.toggle('pm-hide',!showFeed);if(showFeed)runTask(refreshScene);};
   $('feed-close').onclick=()=>{showFeed=false;$('feed').classList.add('pm-hide');};
   $('feed-refresh').onclick=()=>runTask(refreshScene);
   $('minimize').onclick=()=>setHudMode('paths',false);
@@ -908,13 +911,10 @@
     else if(showSidebar)toggleSidebar();
     else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
   });
-  window.addEventListener('resize',()=>{
-    resizeNativeInset();autoGrowAction();
-    if(window.innerWidth>790){
-      showSidebar=false;$('sidebar').classList.remove('pm-open');
-      $('logo-toggle').setAttribute('aria-expanded','false');
-    }
-  });
+  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();resizeHudBody();});
+  const bodyLayoutObserver=new ResizeObserver(resizeHudBody);
+  bodyLayoutObserver.observe(root.querySelector('.pm-hbar'));
+  bodyLayoutObserver.observe($('compose'));
   window.addEventListener('beforeunload',saveDraft);
   if(typeof GM_registerMenuCommand==='function') {
     GM_registerMenuCommand('Open Paths of Immortality HUD',showPaths);
