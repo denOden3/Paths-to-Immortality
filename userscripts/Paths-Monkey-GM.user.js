@@ -380,6 +380,7 @@
     $('pair-section').classList.toggle('pm-hide',!account&&!paired);
     $('pair-request').classList.toggle('pm-hide',paired);
     $('pair-new-room').classList.toggle('pm-hide',!paired);
+    $('session-tools').classList.toggle('pm-hide',!paired||!selectedRoom);
     $('legacy-invite').classList.toggle('pm-hide',paired);
     $('pair-state').textContent=paired?'✓ Owner has authorized this HUD':'Awaiting owner approval · get a temporary code';
     $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
@@ -508,6 +509,10 @@
   }
   async function createSessionInvitation(){
     if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');
+    const saved=await authed('POST','/rest/v1/rpc/get_scene_introduction_as_owner',
+      {body:{p_room_id:selectedRoom.id}});
+    if(!saved||!saved.scene_date||!saved.location||!saved.opening)
+      throw new Error('Save the scene date, location, and opening description before inviting a player.');
     const player=$('invite-player').value.trim(),kind=$('invite-kind').value;
     const lines=$('invite-list').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
     const details=kind==='guest'?lines.map(line=>{
