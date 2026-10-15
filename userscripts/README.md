@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.4.2**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.6.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -103,3 +103,7 @@ In **☁ Rooms & Sessions**, select/create a paired owner room, then save **In-w
 - **Temporary guest:** one role per line in the form `Applicant | Another hopeful attempting the second-day trial | Complete the examination`. The guest sees the role descriptions and objectives, chooses a role and names their temporary character upon entering.
 
 Tap **Generate private invitation** and **Copy invitation link**. Send the link privately; it expires after 48 hours and can be redeemed once. Guest preview does not require email login; the website creates an anonymous identity when the player enters. The owner's existing pairing remains valid across future rooms. Notion's existing Guest Registry remains the editable planning record and is **not automatically synced** to the invitation generator yet.
+
+## v0.6.0 — New player portal
+
+Update this script to get **Copy invitation code** beside Copy invitation link. The updated website accepts either. Assigned invitations offer established character checkboxes; guest invitations offer ONE named pre-established temporary character or a character previously played by the same registered player. Guest entries now use `Character name | Description | Objective`, with no free-form name field on the website. Player aliases and invitation categories must agree with the Jade Emperor’s player registry. The trusted HUD pairing does not need to be repeated.

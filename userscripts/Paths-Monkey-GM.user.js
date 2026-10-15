@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.5.1
+// @version      0.6.0
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.5.1';
+  const VERSION = '0.6.0';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -321,18 +321,19 @@
             <button id="pm-save-scene" class="pm-btn" type="button">Save scene introduction</button>
             <div class="pm-divider"></div>
             <div class="pm-h">✉ Invite a registered player</div>
-            <p>Enter a nickname you've approved, then assign characters or selectable guest roles. Every invitation is private, single-use, and valid for 48 hours.</p>
+            <p>Enter a nickname you've approved, then offer established characters or pre-established temporary characters. Every invitation is private, single-use, and valid for 48 hours.</p>
             <label class="pm-label" for="pm-invite-player">Player nickname</label>
             <input id="pm-invite-player" class="pm-text" maxlength="45" placeholder="Puuchan">
             <label class="pm-label" for="pm-invite-kind">Invitation type</label>
             <select id="pm-invite-kind" class="pm-text">
-              <option value="assigned">Assigned player — fixed character(s)</option>
-              <option value="guest">Temporary player — choose a guest role</option>
+              <option value="assigned">Established player — select character(s)</option>
+              <option value="guest">Temporary player — choose ONE character</option>
             </select>
-            <label class="pm-label" id="pm-invite-list-label" for="pm-invite-list">Assigned characters (one per line)</label>
+            <label class="pm-label" id="pm-invite-list-label" for="pm-invite-list">Established characters offered (one per line)</label>
             <textarea id="pm-invite-list" class="pm-text" maxlength="400" rows="3" placeholder="Xu Yi"></textarea>
             <button id="pm-make-invite" class="pm-btn pm-primary" type="button">Generate private invitation</button>
             <div id="pm-invite-output" class="pm-hide">
+              <label class="pm-label" for="pm-invite-code">Private one-use invitation code</label><input id="pm-invite-code" class="pm-text" readonly><button id="pm-copy-invite-code" class="pm-btn" type="button">Copy invitation code</button>
               <label class="pm-label" for="pm-invite-link">Private one-use invitation link</label>
               <textarea id="pm-invite-link" class="pm-text" rows="3" readonly></textarea>
               <button id="pm-copy-invite" class="pm-btn" type="button">Copy invitation link</button>
@@ -523,14 +524,14 @@
     if(!player||!names.length)throw new Error('Enter the player nickname and at least one character or role.');
     if(names.length>8)throw new Error('Maximum eight character or role options per invitation.');
     if(kind==='guest'&&details.some(d=>!d.description||!d.goal))
-      throw new Error('For each guest role, enter Role | Short description | Objective.');
+      throw new Error('For each temporary character, enter Name | Short description | Objective.');
     const token=await authed('POST','/rest/v1/rpc/create_detailed_scene_invitation_as_owner',{
       body:{p_room_id:selectedRoom.id,p_player_alias:player,p_invite_type:kind,p_characters:names,p_role_details:details}
     });
     if(typeof token!=='string'||!/^[0-9a-f]{48}$/.test(token))
       throw new Error('Supabase did not generate a valid invitation.');
     const link='https://denoden3.github.io/Paths-to-Immortality/?invite='+encodeURIComponent(token);
-    $('invite-link').value=link;$('invite-output').classList.remove('pm-hide');
+    $('invite-code').value=token;$('invite-link').value=link;$('invite-output').classList.remove('pm-hide');
     feedback('Private invitation created for '+player+'. Send the link securely; it is one-use.');
   }
   async function makeIdentity() {
@@ -872,10 +873,11 @@
   $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
   $('invite-kind').onchange=()=>{
     const guest=$('invite-kind').value==='guest';
-    $('invite-list-label').textContent=guest?'Guest roles: Role | Description | Objective (one per line)':'Assigned characters (one per line)';
+    $('invite-list-label').textContent=guest?'Temporary characters: Name | Description | Objective (one per line)':'Established characters offered (one per line)';
     $('invite-list').placeholder=guest?'Applicant | Another candidate at the examination | Complete the second-day trial':'Xu Yi';
   };
   $('make-invite').onclick=()=>runTask(createSessionInvitation);
+  $('copy-invite-code').addEventListener('click',()=>{const code=$('invite-code').value;if(code){GM_setClipboard(code);feedback('Private invitation code copied.');}});
   $('copy-invite').onclick=()=>{
     const link=$('invite-link').value;
     if(link){GM_setClipboard(link,'text');feedback('Invitation copied. Send it privately to the intended player.');}

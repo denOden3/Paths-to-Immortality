@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.5.1</title>
+<title>Paths to Immortality · Cloudveil Session v0.6.0</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -82,38 +82,35 @@ body.authOpen{overflow:hidden}
 .selectionBar .btn{padding:7px 10px;min-height:35px;font-size:12px}.selectionBar .count{color:var(--gold);font-size:12px;font-weight:800;flex:1;min-width:75px}
 .editSheet textarea{min-height:110px;max-height:38dvh;margin:12px 0}
 </style>
+<link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.5.1</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><button id="accountAccess" class="btn sm" type="button">Sign in</button><div id="status" class="state">Web v0.6.0</div></header>
 <div class="content">
+<nav id="portalNav" class="hidden" aria-label="Player navigation"><button id="navIntro" class="btn sm">Session invitation</button><button id="navSessions" class="btn sm">Your sessions</button><button id="navCharacters" class="btn sm">Characters Log</button><button id="navAdmin" class="btn sm hidden">☯ Administration</button><button id="navSignout" class="btn sm account">Sign out</button></nav>
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
 <div class="card"><h2>Welcome, wandering cultivator!</h2>
 <p>Step into the Jianghu and forge your own path toward immortality.</p>
 <button id="guest" class="btn primary">Step forth to the Jianghu!</button>
-<p id="gateHint" class="muted">A private invitation is needed to join a shared session.</p>
+
 </div>
-<div class="footer">☁ Every cultivator begins somewhere</div>
+
 </section>
-<section id="intro" class="scroll hidden" aria-label="Shared session introduction">
-<div class="card">
-<div class="muted" style="font-size:12px;letter-spacing:.05em">YOUR JIANGHU INVITATION</div>
-<h2 id="introTitle">Your story begins</h2>
-<p id="introDate" class="muted"></p>
-<p id="introPlace" class="muted"></p>
-<div id="introText" style="white-space:pre-wrap;padding:12px;border:1px solid var(--border);border-radius:12px"></div>
-<h3 id="introPlayer" style="margin-top:18px"></h3>
-<div id="introAssigned" class="card hidden"></div>
-<div id="introGuest" class="hidden">
-<p>Choose a guest role your host has approved for this session.</p>
-<div id="introRoles" class="buttons"></div>
-<p id="introRoleInfo" class="muted" style="white-space:pre-wrap"></p>
-<label for="introGuestName">Name your temporary character</label>
-<input id="introGuestName" maxlength="40" autocomplete="off" placeholder="Your character's name">
-</div>
-<div class="buttons"><button id="introEnter" type="button" class="btn primary">Step forth to your immortal path!</button></div>
-<p id="introFeedback" class="muted" role="status" aria-live="polite">Your invitation is private and can only be redeemed once.</p>
-</div>
+<section id="intro" class="scroll hidden" aria-label="Session invitation">
+<div class="portalHero"><h2 id="playerWelcome">Welcome, wanderer!</h2><p id="playerGreeting"></p></div>
+<div class="card"><label for="sessionCode" id="sessionCodeLabel">Insert invitation code for a session</label><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Generate scene</button></div><p id="introFeedback" class="muted" role="status" aria-live="polite"></p></div>
+<div id="sceneResult" class="hidden"><article class="card sceneBox"><h2 id="introTitle"></h2><div class="sceneMeta"><span id="introDate"></span><span id="introPlace"></span></div><div id="introText" class="sceneCopy"></div></article>
+<h3 id="characterHeading">Choose your character</h3><div id="characterChoices" class="choices"></div><div class="beginRow"><button id="introEnter" class="btn primary" type="button">Begin your journey!</button></div></div>
+</section>
+<section id="charactersLog" class="scroll hidden" aria-label="Characters Log"><div class="portalHero"><h2>Characters Log</h2><p id="logPlayer"></p></div><div id="logEntries"></div></section>
+<section id="administration" class="scroll hidden" aria-label="Jade Emperor administration">
+<div class="portalHero"><h2>Welcome, Jade Emperor.</h2><p>Shape the entrance to your Jianghu.</p></div>
+<div class="adminTabs" role="tablist" aria-label="Page editor"><button class="btn active" id="tabStarting" role="tab" aria-selected="true">Starting page</button><button class="btn" id="tabIntro" role="tab" aria-selected="false">Intro page</button><button class="btn" id="tabChat" role="tab" aria-selected="false">Chatroom layout</button></div>
+<div class="adminGrid"><div class="card editorFields" id="pageEditor"></div><div class="previewFrame" id="playerPreview" aria-label="Player perspective preview"></div></div>
+<div class="buttons"><button id="savePresentation" class="btn primary">Save page changes</button><button id="resetPresentation" class="btn">Discard unsaved changes</button></div><p id="adminSaved" class="adminNotice" role="status"></p>
+<div class="card"><h3>Player registry</h3><div class="grid"><div><label for="registerAlias">Player name</label><input id="registerAlias" maxlength="45" placeholder="e.g. Puuchan"></div><div><label for="registerKind">Player category</label><select id="registerKind"><option value="established">Established player</option><option value="temporary">Temporary player</option></select></div></div><div class="buttons"><button id="registerPlayer" class="btn primary">Save player</button><button id="refreshPlayers" class="btn">Refresh registry</button></div><div id="registeredPlayers"></div></div>
+<div class="card"><h3>Session administration</h3><div class="buttons"><button id="adminRooms" class="btn">Rooms &amp; sessions</button><button id="adminConnections" class="btn">HUD pairing &amp; tools</button></div><label for="adminSceneRoom">Edit a session introduction</label><select id="adminSceneRoom"><option value="">Choose a session</option></select><label for="adminSceneDate">In-world date</label><input id="adminSceneDate" maxlength="90"><label for="adminSceneLocation">Location</label><input id="adminSceneLocation" maxlength="150"><label for="adminSceneOpening">Opening situation</label><textarea id="adminSceneOpening" maxlength="2500"></textarea><div class="buttons"><button id="saveAdminScene" class="btn primary">Save scene introduction</button></div></div>
 </section>
 <section id="lobby" class="scroll hidden">
 <div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms of Cloudveil</h2><button id="signout" class="btn sm">Sign out</button></div>
@@ -210,7 +207,7 @@ const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQy
 const $=id=>document.getElementById(id);
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
 let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
-let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,selectedGuestRole='',activeCharacter='';
+let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,activeCharacter='';
 const ownMember=()=>members.find(m=>m.user_id===user?.id);
 const ownCharacters=()=>{const m=ownMember();return (m?.allowed_characters?.length?m.allowed_characters:[m?.character_name]).filter(Boolean);};
 const clearInviteAddress=()=>{inviteCode='';try{history.replaceState(null,'',location.pathname+location.hash);}catch{}};
@@ -254,14 +251,19 @@ $('modeSpeaker').onclick=()=>{
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','savePresentation','registerPlayer','saveAdminScene'])$(id).disabled=v;};
 const show=where=>{
-  for(const x of ['welcome','intro','lobby','chat','tools','composer'])$(x).classList.add('hidden');
+  for(const x of ['welcome','intro','lobby','chat','tools','composer','charactersLog','administration'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   currentView=where;
+  $('portalNav').classList.toggle('hidden',where==='welcome');
+  $('navAdmin').classList.toggle('hidden',!portalIdentity.is_admin);
+  $('toolsOpen').classList.toggle('hidden',!portalIdentity.is_admin);
+  $('accountAccess').textContent=user?'Account':'Sign in';
 };
 function openTools(){
+  if(!portalIdentity.is_admin){notice('Administration belongs to the Jade Emperor.');return;}
   if(currentView==='tools')return;
   toolsReturnView=currentView;
   $('toolRoomTitle').textContent=room?$('roomTitle').textContent:'No room selected';
@@ -299,7 +301,7 @@ $('monkeyRevoke').onclick=()=>safe(async()=>{
  notice(data?'Paths HUD permission revoked.':'No active pairing found.','good');
 });
 function backFromTools(){
-  const target=toolsReturnView==='chat'&&room?'chat':toolsReturnView==='lobby'&&user?'lobby':'welcome';
+  const target=toolsReturnView==='chat'&&room?'chat':portalIdentity.is_admin?'administration':'intro';
   show(target);
 }
 $('toolsOpen').onclick=()=>currentView==='tools'?backFromTools():openTools();
@@ -308,7 +310,7 @@ async function safe(fn){if(working)return;busy(true);clear();try{await fn();}cat
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';
- $('ownerRoomRecovery').classList.toggle('hidden',!user||user.is_anonymous===true);const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
+ $('ownerRoomRecovery').classList.toggle('hidden',!portalIdentity.is_admin);const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No sessions yet. Enter a session using your invitation code.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
 async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role,player_alias,allowed_characters,guest_role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
 $('ownerTools').classList.toggle('hidden',!isOwner);
 if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
@@ -514,67 +516,21 @@ $('selectionDelete').onclick=async()=>{
 
 function openAuthDialog(){$('authError').textContent='';$('authError').classList.add('hidden');$('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('google').focus();}
 function closeAuthDialog(){$('authOverlay').classList.add('hidden');document.body.classList.remove('authOpen');$('guest').focus();}
-async function loadInvitePreview(){
- if(!/^[0-9a-f]{48}$/.test(inviteCode))throw Error('This invitation link is incomplete.');
- const {data,error}=await db.rpc('preview_scene_invitation',{p_code:inviteCode});
- if(error)throw error;
- if(!data)throw Error('This invitation has expired or has already been claimed.');
- invitePreview=data;
- $('introTitle').textContent=data.title||'Private Jianghu session';
- $('introDate').textContent=data.scene_date?('📅 '+data.scene_date):'Date to be confirmed';
- $('introPlace').textContent=data.location?('📍 '+data.location):'Location to be confirmed';
- $('introText').textContent=data.opening||'The scene has not yet been described by the host.';
- $('introPlayer').textContent='Invited player: '+data.player_alias;
- $('introAssigned').classList.toggle('hidden',data.invite_type!=='assigned');
- $('introGuest').classList.toggle('hidden',data.invite_type!=='guest');
- $('introFeedback').textContent='One invitation, one participant. Please keep this link private.';
- if(data.invite_type==='assigned'){
-  $('introAssigned').textContent='Your character'+(data.characters.length>1?'s':'')+': '+data.characters.join(' · ');
- }else{
-  const roles=$('introRoles');roles.replaceChildren();selectedGuestRole='';
-  for(const role of data.roles){
-   const b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent=role;
-   b.onclick=()=>{selectedGuestRole=role;for(const btn of roles.children)btn.classList.toggle('primary',btn===b);
-     const detail=(data.role_details||[]).find(x=>x.name===role);
-     $('introRoleInfo').textContent=detail?
-       (detail.description+'\nObjective: '+detail.goal):
-       ('Role: '+role+'. Your actions must respect this role and the current scene.');};
-   roles.appendChild(b);
-  }
- }
- show('intro');
-}
-$('guest').onclick=()=>safe(async()=>{
- if(inviteCode){await loadInvitePreview();}else openAuthDialog();
-});
-$('introEnter').onclick=()=>safe(async()=>{
- if(!invitePreview||!inviteCode)throw Error('Open your valid invitation link first.');
- if(invitePreview.invite_type==='guest'&&(!selectedGuestRole||!$('introGuestName').value.trim()))
-  throw Error('Choose a guest role and name your character.');
- // An anonymous Supabase identity is only created when a participant enters a valid invitation.
- if(!user){const {data,error}=await db.auth.signInAnonymously();
-  if(error)throw Error('Guest entry unavailable: '+error.message);user=data.user;}
- const {data,error}=await db.rpc('redeem_scene_invitation',{
-  p_code:inviteCode,p_role:invitePreview.invite_type==='guest'?selectedGuestRole:null,
-  p_character_name:invitePreview.invite_type==='guest'?$('introGuestName').value.trim():null
- });
- if(error)throw error;
- clearInviteAddress();invitePreview=null;
- await openRoom(data);
- notice('Welcome to your shared Jianghu session!','good');
-});
+async function loadInvitePreview(){return generateSession();}
+$('guest').onclick=()=>safe(enterPortal);
+$('introEnter').onclick=()=>safe(beginJourney);
 $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
-$('google').onclick=()=>safe(async()=>{const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
+$('google').onclick=()=>safe(async()=>{sessionStorage.setItem('paths.afterAuth','1');const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
 // Guests now enter only through one-use personal invitation links.
 $('guestTrial').classList.add('hidden');
 $('guestTrial').onclick=()=>notice('Ask your host for a personal scene invitation link.','error');
 
-$('signout').onclick=()=>safe(async()=>{endLive();const {error}=await db.auth.signOut();if(error)throw error;user=null;room=null;show('welcome');$('networkStatus').textContent='Ready';});
+$('signout').onclick=()=>safe(portalSignout);
 $('create').onclick=()=>safe(async()=>{const title=$('roomName').value.trim(),name=$('createName').value.trim();if(!title||!name)throw Error('Enter a room name and your character name.');const {data,error}=await db.rpc('create_room',{p_title:title,p_character_name:name});if(error)throw error;await openRoom(data);notice('Private room created. Tap ☯ for room administration and invitations.','good');});
 $('join').onclick=()=>safe(async()=>{const code=$('joinCode').value.trim().toLowerCase(),name=$('joinName').value.trim();if(!code||!name)throw Error('Enter your invitation and character name.');const {data,error}=await db.rpc('join_room',{p_invite_code:code,p_character_name:name});if(error)throw error;$('joinCode').value='';await openRoom(data);notice('Successfully joined the private room.','good');});
-$('back').onclick=()=>safe(lobby);
+$('back').textContent='← Sessions';$('back').onclick=()=>safe(lobby);
 $('invite').onclick=()=>safe(async()=>{const {data,error}=await db.rpc('create_room_invite',{p_room_id:room});if(error)throw error;$('inviteText').textContent=data;$('inviteBox').classList.remove('hidden');notice('Invitation ready. Copy the code and send it to your friend privately.','good');});
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('inviteText').textContent);notice('Invite copied!','good');}catch{notice('Select the code and copy it manually.','error');}};
 $('closeInvite').onclick=()=>{$('inviteBox').classList.add('hidden');$('inviteText').textContent='';};
@@ -597,11 +553,134 @@ async function send(){await safe(async()=>{
 });}
 $('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
 window.addEventListener('beforeunload',saveDraft);window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
-async function boot(){try{const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});$('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();if(error)console.warn(error);user=data?.user||null;if(inviteCode){
-  // Even a signed-in owner sees the same entrance when using a personalized invitation.
-  $('gateHint').textContent='Your private session invitation is ready. Continue to read the introduction.';
-  show('welcome');
- }else if(user){await lobby();const last=localStorage.getItem('paths.test.lastroom');if(last)try{await openRoom(last);}catch(e){console.warn(e);await lobby();}}
- else show('welcome');}catch(e){console.error(e);$('networkStatus').textContent='Unavailable';notice('The webpage could not load its chat library. Check your internet connection and try reloading: '+e.message,'error');}}
+
+const DEFAULT_PRESENTATION=Object.freeze({
+ startTitle:'Welcome, wandering cultivator!',startCopy:'Step into the Jianghu and forge your own path toward immortality.',startButton:'Step forth to the Jianghu!',
+ establishedTitle:'Welcome back, {player}!',establishedCopy:'Are you ready to continue your journey to the Jianghu?',
+ temporaryTitle:'Welcome, {player}!',temporaryCopy:'The Jianghu is not for the faint of heart! If you still insist on having a little taste of the Jianghu, go show the Jade Emperor your resolve!',
+ codeLabel:'Insert invitation code for a session',generateButton:'Generate scene',beginButton:'Begin your journey!',
+ density:'comfortable',alignment:'alternating',width:'standard'
+});
+let presentation={...DEFAULT_PRESENTATION},presentationDraft={...DEFAULT_PRESENTATION},portalIdentity={is_admin:false},adminTab='starting',previewKind='established',previewName='Puuchan',registry=[],historyEntries=[];
+let loadedInvitationCode='',sessionChoices=[];
+const presentationKeys=Object.keys(DEFAULT_PRESENTATION);
+function cleanPresentation(raw){const result={...DEFAULT_PRESENTATION};for(const k of presentationKeys){if(typeof raw?.[k]==='string'&&raw[k].trim()&&raw[k].length<=600)result[k]=raw[k];}for(const [k,valid] of Object.entries({density:['compact','comfortable','spacious'],alignment:['alternating','left'],width:['standard','wide']})){if(!valid.includes(result[k]))result[k]=DEFAULT_PRESENTATION[k];}return result;}
+function el(tag,cls,text){const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;}
+function greeting(p,kind,name){return {title:(kind==='established'?p.establishedTitle:p.temporaryTitle).replaceAll('{player}',name||'wanderer'),copy:kind==='established'?p.establishedCopy:p.temporaryCopy};}
+function applyPresentation(){
+ $('welcome').querySelector('h2').textContent=presentation.startTitle;$('welcome').querySelector('p').textContent=presentation.startCopy;$('guest').textContent=presentation.startButton;
+ $('sessionCodeLabel').textContent=presentation.codeLabel;$('generateScene').textContent=presentation.generateButton;$('introEnter').textContent=presentation.beginButton;
+ const app=document.querySelector('.app');app.dataset.density=presentation.density;app.dataset.align=presentation.alignment;app.dataset.width=presentation.width;
+ updateGreeting();
+}
+function updateGreeting(data){const kind=data?.player_kind||portalIdentity.kind||'temporary',name=data?.player_alias||portalIdentity.alias||'wanderer';const g=greeting(presentation,kind,name);$('playerWelcome').textContent=g.title;$('playerGreeting').textContent=g.copy;}
+async function loadPresentation(){const {data,error}=await db.from('portal_presentation').select('settings').eq('id',true).single();if(error)throw error;presentation=cleanPresentation(data.settings);presentationDraft={...presentation};applyPresentation();}
+async function refreshPortalIdentity(){portalIdentity={is_admin:false};if(user){const {data,error}=await db.rpc('portal_context');if(error)throw error;portalIdentity=data||portalIdentity;}$('navAdmin').classList.toggle('hidden',!portalIdentity.is_admin);$('toolsOpen').classList.toggle('hidden',!portalIdentity.is_admin);updateGreeting();}
+async function enterPortal(){
+ if(!db)throw Error('The entrance is still loading. Try again in a moment.');
+ if(portalIdentity.is_admin){await openAdministration();return;}
+ show('intro');updateGreeting();
+ if(inviteCode){$('sessionCode').value=inviteCode;}
+}
+function parseInvitation(value){const s=value.trim();if(/^[0-9a-f]{48}$/i.test(s))return s.toLowerCase();try{const u=new URL(s);const v=u.searchParams.get('invite');if(u.origin==='https://denoden3.github.io'&&/^[0-9a-f]{48}$/i.test(v||''))return v.toLowerCase();}catch{}throw Error('Paste the complete invitation code or the private invitation link from your host.');}
+function invalidateScene(){loadedInvitationCode='';invitePreview=null;sessionChoices=[];$('sceneResult').classList.add('hidden');$('characterChoices').replaceChildren();$('introFeedback').textContent='';updateGreeting();}
+function characterOption(container,choice,type,index,checked=false){
+ const label=el('label','characterChoice'),input=el('input');input.type=type;input.name='sessionCharacter';input.value=choice.name;input.checked=checked;
+ const span=el('span');span.append(el('strong','',choice.name));if(choice.description)span.append(el('small','',choice.description));if(choice.goal)span.append(el('small','','Objective: '+choice.goal));if(choice.previous)span.append(el('small','','Previously played'));
+ label.append(input,span);container.append(label);return input;
+}
+async function generateSession(){
+ invalidateScene();const code=parseInvitation($('sessionCode').value);const {data,error}=await db.rpc('preview_scene_invitation',{p_code:code});if(error)throw error;if(!data)throw Error('This invitation has expired, has already been used, or is invalid.');
+ loadedInvitationCode=code;inviteCode=code;invitePreview=data;updateGreeting(data);
+ $('introTitle').textContent=data.title;$('introDate').textContent=data.scene_date?'📅 '+data.scene_date:'';$('introPlace').textContent=data.location?'📍 '+data.location:'';$('introText').textContent=data.opening||'The host has not yet described this scene.';
+ const established=data.player_kind==='established',seen=new Set();sessionChoices=[];
+ if(established){for(const name of data.characters||[])sessionChoices.push({name});}
+ else{
+  for(const name of data.roles||[]){const d=(data.role_details||[]).find(x=>x.name===name)||{};sessionChoices.push({name,description:d.description,goal:d.goal});seen.add(name);}
+  for(const item of data.previous_characters||[]){if(!seen.has(item.name)){sessionChoices.push({...item,previous:true});seen.add(item.name);}}
+ }
+ $('characterHeading').textContent=established?'Choose your characters':'Choose one character';
+ const box=$('characterChoices');box.replaceChildren();sessionChoices.forEach((c,i)=>characterOption(box,c,established?'checkbox':'radio',i,sessionChoices.length===1));
+ $('introFeedback').textContent=sessionChoices.length?(established?'Select one or more of your established characters.':'Choose one pre-established character or one you have played before.'):'No characters are available. Ask the Jade Emperor to update your invitation.';
+ $('introEnter').disabled=!sessionChoices.length;$('sceneResult').classList.remove('hidden');show('intro');
+}
+async function beginJourney(){
+ if(!invitePreview||!loadedInvitationCode||parseInvitation($('sessionCode').value)!==loadedInvitationCode)throw Error('Generate the scene from your current invitation code first.');
+ const chars=[...$('characterChoices').querySelectorAll('input:checked')].map(x=>x.value);if(!chars.length)throw Error('Choose a character before beginning.');if(invitePreview.player_kind==='temporary'&&chars.length!==1)throw Error('Choose exactly one temporary character.');
+ if(!user){const {data,error}=await db.auth.signInAnonymously();if(error)throw error;user=data.user;}
+ const {data,error}=await db.rpc('portal_redeem',{p_code:loadedInvitationCode,p_characters:chars});if(error)throw error;
+ clearInviteAddress();$('sessionCode').value='';invalidateScene();await refreshPortalIdentity();await openRoom(data);notice('Welcome to your shared Jianghu session!','good');
+}
+async function showCharacterLog(){
+ if(!user){show('charactersLog');$('logPlayer').textContent='Your journeys will be remembered here.';$('logEntries').replaceChildren(el('p','muted','Enter your first session to begin your Characters Log.'));return;}
+ const {data,error}=await db.rpc('portal_character_log');if(error)throw error;historyEntries=data||[];
+ $('logPlayer').textContent=portalIdentity.alias?portalIdentity.alias+"’s journeys":'Your journeys';const host=$('logEntries');host.replaceChildren();const groups=new Map();
+ for(const item of historyEntries){if(!groups.has(item.character))groups.set(item.character,[]);groups.get(item.character).push(item);}
+ if(!groups.size)host.append(el('p','muted','No characters have entered a session yet. Your characters and their related scenes will appear here.'));
+ for(const [name,items]of groups){const card=el('article','card logCard');card.append(el('h3','',name),el('p','muted',items[0].kind==='established'?'Established character':'Temporary character'));if(items[0].description)card.append(el('p','',items[0].description));
+  for(const scene of items){const node=el(scene.room_id&&scene.can_open?'button':'div',scene.room_id&&scene.can_open?'btn sceneLink':'note',scene.scene_title);node.append(el('span','',[scene.scene_date,scene.location].filter(Boolean).join(' · ')||'Date and location not recorded'));if(scene.room_id&&scene.can_open)node.onclick=()=>safe(()=>openRoom(scene.room_id));card.append(node);}host.append(card);
+ }
+ show('charactersLog');
+}
+async function portalSignout(){endLive();if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+$('sessionCode').addEventListener('input',invalidateScene);
+$('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
+$('navIntro').onclick=()=>safe(async()=>{if(portalIdentity.is_admin){adminTab='intro';await openAdministration();}else{show('intro');updateGreeting(invitePreview);}});
+$('navSessions').onclick=()=>safe(async()=>{if(!user){show('intro');notice('Enter a session with your invitation code first.');return;}await lobby();});
+$('navCharacters').onclick=()=>safe(showCharacterLog);$('navAdmin').onclick=()=>safe(openAdministration);$('navSignout').onclick=()=>safe(portalSignout);
+$('accountAccess').onclick=()=>{if(portalIdentity.is_admin){safe(openAdministration);return;}if(user){show('intro');notice('Use Sign out to change accounts. Keep your player login to retain access to your sessions.');return;}openAuthDialog();};
+
+// The owner edits a shared presentation, never a simulated player's account or room membership.
+const editorGroups={starting:[['startTitle','Welcome heading'],['startCopy','Welcome description'],['startButton','Entrance button']],intro:[['establishedTitle','Established player heading · use {player}'],['establishedCopy','Established player greeting'],['temporaryTitle','Temporary player heading · use {player}'],['temporaryCopy','Temporary player greeting'],['codeLabel','Invitation field label'],['generateButton','Generate button'],['beginButton','Begin button']],chat:[['density','Message spacing',['compact','comfortable','spacious']],['alignment','Message alignment',['alternating','left']],['width','Chatroom width',['standard','wide']]]};
+function renderEditor(){
+ const target=$('pageEditor');target.replaceChildren(el('h3','',adminTab==='starting'?'Starting page':adminTab==='intro'?'Intro page':'Chatroom layout'));
+ for(const [key,label,options]of editorGroups[adminTab]){const lab=el('label','',label),input=el(options?'select':key.endsWith('Copy')?'textarea':'input');input.id='edit-'+key;lab.htmlFor=input.id;if(options)for(const option of options){const o=el('option','',option[0].toUpperCase()+option.slice(1));o.value=option;input.append(o);}else input.maxLength=600;input.value=presentationDraft[key];input.oninput=()=>{presentationDraft[key]=input.value;$('adminSaved').textContent='Unsaved page changes';renderPreview();};target.append(lab,input);}
+ if(adminTab!=='starting'){
+  const lab=el('label','','Preview player'),select=el('select');select.id='previewPlayer';lab.htmlFor=select.id;const presets=[{alias:'Puuchan',kind:'established'},{alias:'Wandering guest',kind:'temporary'},...registry];
+  presets.forEach((p,i)=>{const o=el('option','',p.alias+' · '+p.kind);o.value=String(i);select.append(o);if(p.alias===previewName&&p.kind===previewKind)select.value=String(i);});
+  select.onchange=()=>{previewName=presets[Number(select.value)].alias;previewKind=presets[Number(select.value)].kind;renderPreview();};target.append(lab,select);
+ }
+ for(const [id,tab]of [['tabStarting','starting'],['tabIntro','intro'],['tabChat','chat']]){$(id).classList.toggle('active',tab===adminTab);$(id).setAttribute('aria-selected',String(tab===adminTab));}
+ renderPreview();
+}
+function renderPreview(){
+ const p=cleanPresentation(presentationDraft),host=$('playerPreview');host.replaceChildren(el('div','previewLabel','Player perspective · preview'));
+ if(adminTab==='starting'){const card=el('div','card');card.append(el('h2','',p.startTitle),el('p','',p.startCopy),el('button','btn primary',p.startButton));host.append(card);return;}
+ if(adminTab==='intro'){
+  const g=greeting(p,previewKind,previewName),hero=el('div','portalHero');hero.append(el('h2','',g.title),el('p','',g.copy));host.append(hero);
+  host.append(el('label','',p.codeLabel));const row=el('div','inviteRow'),input=el('input');input.placeholder='Invitation code';input.disabled=true;row.append(input,el('button','btn primary',p.generateButton));host.append(row);
+  const scene=el('article','card sceneBox');scene.style.marginTop='16px';scene.append(el('h3','','Cloudveil Sect · sample scene'),el('div','sceneMeta','Early Spring, 2nd · Outer Courtyard'),el('p','sceneCopy','Morning mist drifts between the pines. Your companions await by the stone steps.'));host.append(scene);
+  const choices=el('div','choices');for(const [i,name]of(previewKind==='established'?['Xu Yi','Another established character']:['Recruitment applicant','Previously played character']).entries()){const control=characterOption(choices,{name},previewKind==='established'?'checkbox':'radio',i,i===0);control.disabled=true;}host.append(choices,el('button','btn primary',p.beginButton));return;
+ }
+ const frame=el('div','app');frame.style.height='auto';frame.dataset.density=p.density;frame.dataset.align=p.alignment;frame.dataset.width=p.width;frame.style.padding='10px';
+ const feed=el('div','feed');for(const [cls,who,text]of [['narrator','The Heavenly Voice','A new day dawns over Cloudveil Sect.'],['mine',previewKind==='established'?'Xu Yi':'Recruitment applicant','I approach the stone steps.'],['ooc',previewName,'Ready when you are!']]){const bubble=el('div','bubble '+cls);bubble.append(el('div','by',who),el('div','body',text));feed.append(bubble);}frame.append(feed);
+ const row=el('div','send'),input=el('textarea');input.placeholder='What does your character do?';input.disabled=true;row.append(input,el('button','btn primary','Send'));frame.append(row);host.append(frame,el('p','muted',p.width==='wide'?'Wide layout · up to 1080px on desktop':'Standard layout · up to 820px on desktop'));
+}
+async function refreshRegistry(){const {data,error}=await db.rpc('portal_manage_player');if(error)throw error;registry=data||[];const host=$('registeredPlayers');host.replaceChildren();for(const p of registry){const row=el('div','adminPlayer');row.append(el('span','',p.alias),el('span','muted',p.kind));host.append(row);}if(!registry.length)host.append(el('p','muted','Players are registered here or when you issue a HUD invitation.'));}
+async function openAdministration(){
+ if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
+ await refreshRegistry();const {data,error}=await db.from('rooms').select('id,title').order('created_at',{ascending:false});if(error)throw error;const select=$('adminSceneRoom');select.replaceChildren(el('option','','Choose a session'));select.firstChild.value='';for(const r of data||[]){const o=el('option','',r.title);o.value=r.id;select.append(o);}show('administration');renderEditor();
+}
+for(const [id,tab]of [['tabStarting','starting'],['tabIntro','intro'],['tabChat','chat']])$(id).onclick=()=>{adminTab=tab;renderEditor();};
+$('savePresentation').onclick=()=>safe(async()=>{
+ if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
+ for(const k of presentationKeys)if(!presentationDraft[k]?.trim())throw Error('Page text cannot be empty.');
+ const settings=cleanPresentation(presentationDraft);const {data,error}=await db.from('portal_presentation').update({settings,updated_at:new Date().toISOString()}).eq('id',true).select('settings').single();if(error)throw error;
+ presentation=cleanPresentation(data.settings);presentationDraft={...presentation};applyPresentation();renderEditor();$('adminSaved').textContent='Saved. These changes apply to the player pages.';
+});
+$('resetPresentation').onclick=()=>{presentationDraft={...presentation};renderEditor();$('adminSaved').textContent='Unsaved changes discarded.';};
+$('registerPlayer').onclick=()=>safe(async()=>{const alias=$('registerAlias').value.trim();if(!alias)throw Error('Enter a player name.');const {error}=await db.rpc('portal_manage_player',{p_alias:alias,p_kind:$('registerKind').value});if(error)throw error;await refreshRegistry();$('registerAlias').value='';notice('Player registry saved. Use the same name when issuing invitations.','good');});
+$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminRooms').onclick=()=>safe(lobby);$('adminConnections').onclick=()=>safe(async()=>{if(!room){await lobby();notice('Open an owner session, then tap ☯ for HUD pairing.');return;}openTools();});
+$('adminSceneRoom').onchange=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)return;const {data,error}=await db.rpc('get_scene_introduction_as_owner',{p_room_id:id});if(error)throw error;$('adminSceneDate').value=data.scene_date||'';$('adminSceneLocation').value=data.location||'';$('adminSceneOpening').value=data.opening||'';});
+$('saveAdminScene').onclick=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)throw Error('Choose a session first.');const {data,error}=await db.rpc('set_scene_introduction_as_owner',{p_room_id:id,p_date:$('adminSceneDate').value.trim(),p_location:$('adminSceneLocation').value.trim(),p_opening:$('adminSceneOpening').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving.');notice('Scene introduction saved for this session.','good');});
+
+async function boot(){try{
+ const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+ db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ $('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();
+ if(error&&error.name!=='AuthSessionMissingError')console.warn(error);user=data?.user||null;
+ await loadPresentation();await refreshPortalIdentity();show('welcome');
+ if(sessionStorage.getItem('paths.afterAuth')&&user){sessionStorage.removeItem('paths.afterAuth');await enterPortal();}
+}catch(e){console.error(e);notice('The entrance could not load. Check your connection and reload: '+e.message,'error');}}
 boot();
 </script></body></html>

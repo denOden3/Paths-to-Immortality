@@ -1,3 +1,28 @@
+# Paths Web v0.6.0 — Player entrances and Jade Emperor administration
+
+**Live website:** https://denoden3.github.io/Paths-to-Immortality/
+
+- The starting page ends at **Step forth to the Jianghu!** Everyone sees the starting page first; a remembered administrator login enters Administration after clicking it. Use **Sign in → Google** for the existing Jade Emperor account if needed. Signing in with another Google account does not grant administration.
+- Administration includes **Starting page**, **Intro page**, and **Chatroom layout** editor tabs. Previews use sample player/scene content, selectable established/temporary perspectives, and actual shared presentation settings. Save changes to publish the text/layout settings for all player entrances. Session introductions are edited separately for a selected real room. The editor controls text, message spacing/alignment, and desktop chat width; it is not a free-form HTML/CSS editor.
+- Owner-only player registry: enter the same player alias used when generating HUD invitations. Categories are **Established** and **Temporary**. Invitations also register new aliases automatically; an existing alias/category must match the invitation type.
+- Established players see the centered **Welcome back, {player}!** greeting and can check one or more characters offered by their assigned invitation. Temporary players see the centered **Welcome, {player}!** greeting and select exactly one pre-established offered character or one of their previously played temporary characters. Free-form temporary character naming has been removed.
+- Players paste an invitation code **or the private URL** and click **Generate scene** to load the session introduction, then select characters and click **Begin your journey!** Codes remain private, one-use, and valid for 48 hours. Editing the code invalidates its loaded preview.
+- First-time visitors are addressed as “wanderer” until their private invitation identifies them. Returning players are recognized through their current authenticated browser session. Anonymous browser identity remains dependent on browser storage. A later personal invitation can reconnect a player record on another identity; aliases alone do not authenticate anyone.
+- **Characters Log** groups each player's chosen characters with their related scene titles, dates, and locations. It is stored server-side and isolated per player. Scene links open only when the current account has room membership. Deleted-room scene summaries remain in the log. No Notion history has been imported; this records joined sessions from this upgrade onward.
+- **HUD v0.6.0** adds **Copy invitation code** alongside the existing link and updates the character selection labels. Update the existing Tampermonkey script from the repository's raw URL; the existing trusted pairing remains valid.
+
+## Verification
+
+Database integration checks in `tests/portal-permissions.sql` run inside a rolled-back transaction: administrator-only access, presentation RLS, private histories, assigned-character subsets, single temporary selection, one-use tokens, legacy redemption checks, forged-speaker rejection, and returning temporary characters. The test expects the existing administrator and at least three unused anonymous test identities.
+
+DOM checks: install `linkedom` into a temporary directory, then run `PORTAL_DOM_MODULE=/absolute/path/to/node_modules/linkedom node tests/portal-dom.cjs` from the checkout. Checks cover greetings, selection controls, preview tabs, text injection, and Characters Log grouping. JavaScript syntax is also checked. Real Android Firefox rendering and touch behavior still need a device check.
+
+The SQL files in `db/` document the additive production migrations for this upgrade; do not rerun them on an already upgraded database.
+
+---
+
+## Earlier development notes (historical)
+
 # Paths-to-Immortality
 
 A mobile-first, two-player xianxia roleplaying HUD for Cloudveil Sect.
