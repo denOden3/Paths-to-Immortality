@@ -1,3 +1,13 @@
+# Paths Web v0.7.5 — Focused administration
+
+Administration keeps the HUD pairing/tools entry and removes the Web scene introduction editor. Date, location and opening situation are edited through HUD v0.7.0. Rooms now contains only its room log: the Owner recovery creator, unused legacy join form and outdated test footer are removed.
+
+Opening Administration no longer loads rooms for the removed editor. The pairing/tools entry opens the latest owned room when none is selected, so it no longer sends the owner back and forth between Administration and Rooms. Existing server pairing authorization is unchanged. No database or HUD update is required. DOM and syntax checks cover the cleanup and retained navigation.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web v0.7.4 — Rooms and concluded-scene archive links
 
 **Rooms** replaces Rooms & sessions in Web navigation. Ongoing rooms open their chat; concluded rooms open a **Scene ended** page. Rooms are grouped by Ongoing / Concluded. Owner access and existing player revocation rules remain in place.

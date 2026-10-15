@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.4</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.5</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.4</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.5</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -108,15 +108,13 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="administration" class="scroll hidden" role="tabpanel" aria-labelledby="navAdmin">
 
-<div class="card"><h3>Session administration</h3><div class="buttons"><button id="adminConnections" class="btn">HUD pairing &amp; tools</button></div><label for="adminSceneRoom">Edit a session introduction</label><select id="adminSceneRoom"><option value="">Choose a session</option></select><label for="adminSceneDate">In-world date</label><input id="adminSceneDate" maxlength="90"><label for="adminSceneLocation">Location</label><input id="adminSceneLocation" maxlength="150"><label for="adminSceneOpening">Opening situation</label><textarea id="adminSceneOpening" maxlength="2500"></textarea><div class="buttons"><button id="saveAdminScene" class="btn primary">Save scene introduction</button></div></div>
+<div class="card"><h3>HUD pairing &amp; tools</h3><p>Connect your Paths HUD to your administrator account. Prepare rooms, invitations and scene introductions in the HUD.</p><div class="buttons"><button id="adminConnections" class="btn">Open HUD pairing &amp; tools</button></div></div>
 </section>
 <section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="row rosterHeader"><h2>Players</h2><button id="refreshPlayers" class="btn sm">Refresh players</button></div><p class="muted">Players registered through your HUD invitations. “In a session” means they have joined an ongoing room.</p><p id="rosterSummary" class="muted" role="status" aria-live="polite"></p><div id="registeredPlayers" class="playerRoster"></div><p id="rosterFeedback" class="muted" role="status"></p></section>
 <section id="lobby" class="scroll hidden" role="tabpanel" aria-labelledby="navSessions">
 <div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms</h2></div>
 <div class="card"><h3>Room log</h3><div id="roomList" class="muted">Loading rooms…</div></div>
-<div class="grid"><div id="ownerRoomRecovery" class="card hidden"><h3>Owner recovery · create a room</h3><p>The first player creates the room.</p><label for="createName">Your character</label><input id="createName" value="Xiao Lan" maxlength="40"><label for="roomName">Room title</label><input id="roomName" value="Cloudveil Test Hall" maxlength="80"><div class="buttons"><button id="create" class="btn primary">Create private room</button></div></div>
-<div class="card hidden"><h3>Legacy invitation code</h3><p>The second player needs a one-use invitation code.</p><label for="joinName">Your character</label><input id="joinName" value="Xu Yi" maxlength="40"><label for="joinCode">Invitation code</label><input id="joinCode" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste invitation"><div class="buttons"><button id="join" class="btn primary">Join room</button></div></div></div>
-<div class="footer">Shared roleplay test · Room owners can now prepare ChatGPT narration</div>
+
 </section>
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
@@ -254,7 +252,7 @@ $('modeSpeaker').onclick=()=>{
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveAdminScene','saveArchiveLink'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveArchiveLink'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
   for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
@@ -323,7 +321,7 @@ function renderRoomLog(items){
 }
 async function selectLoggedRoom(item){if(item.session_state==='ended')await openConcludedRoom(item.id);else await openRoom(item.id);}
 async function lobby(){
- endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';$('ownerRoomRecovery').classList.toggle('hidden',!portalIdentity.is_admin);
+ endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';
  if(portalIdentity.is_admin){const {data,error}=await db.rpc('portal_room_log');if(error)throw error;renderRoomLog(data||[]);}
  else{const {data,error}=await db.from('rooms').select('id,title,session_state').order('created_at',{ascending:false});if(error)throw error;renderRoomLog(data||[]);}
 }
@@ -580,8 +578,6 @@ $('google').onclick=()=>safe(async()=>{sessionStorage.setItem('paths.adminAuth',
 $('guestTrial').classList.add('hidden');
 $('guestTrial').onclick=()=>notice('Ask your host for a personal scene invitation link.','error');
 
-$('create').onclick=()=>safe(async()=>{const title=$('roomName').value.trim(),name=$('createName').value.trim();if(!title||!name)throw Error('Enter a room name and your character name.');const {data,error}=await db.rpc('create_room',{p_title:title,p_character_name:name});if(error)throw error;await openRoom(data);notice('Private room created. Room tools are available from Administration.','good');});
-$('join').onclick=()=>safe(async()=>{const code=$('joinCode').value.trim().toLowerCase(),name=$('joinName').value.trim();if(!code||!name)throw Error('Enter your invitation and character name.');const {data,error}=await db.rpc('join_room',{p_invite_code:code,p_character_name:name});if(error)throw error;$('joinCode').value='';await openRoom(data);notice('Successfully joined the private room.','good');});
 $('back').textContent='← Sessions';$('back').onclick=()=>safe(lobby);
 $('invite').onclick=()=>safe(async()=>{const {data,error}=await db.rpc('create_room_invite',{p_room_id:room});if(error)throw error;$('inviteText').textContent=data;$('inviteBox').classList.remove('hidden');notice('Invitation ready. Copy the code and send it to your friend privately.','good');});
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('inviteText').textContent);notice('Invite copied!','good');}catch{notice('Select the code and copy it manually.','error');}};
@@ -721,11 +717,9 @@ async function refreshRegistry(){
 }
 async function openAdministration(){
  if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
- const {data,error}=await db.from('rooms').select('id,title').order('created_at',{ascending:false});if(error)throw error;const select=$('adminSceneRoom');select.replaceChildren(el('option','','Choose a session'));select.firstChild.value='';for(const r of data||[]){const o=el('option','',r.title);o.value=r.id;select.append(o);}show('administration');
+ show('administration');
 }
-$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminConnections').onclick=()=>safe(async()=>{if(!room){await lobby();notice('Open an owner session, then return to Administration → HUD pairing & tools.');return;}openTools();});
-$('adminSceneRoom').onchange=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)return;const {data,error}=await db.rpc('get_scene_introduction_as_owner',{p_room_id:id});if(error)throw error;$('adminSceneDate').value=data.scene_date||'';$('adminSceneLocation').value=data.location||'';$('adminSceneOpening').value=data.opening||'';});
-$('saveAdminScene').onclick=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)throw Error('Choose a session first.');const {data,error}=await db.rpc('set_scene_introduction_as_owner',{p_room_id:id,p_date:$('adminSceneDate').value.trim(),p_location:$('adminSceneLocation').value.trim(),p_opening:$('adminSceneOpening').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving.');notice('Scene introduction saved for this session.','good');});
+$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminConnections').onclick=()=>safe(async()=>{if(!room){const {data,error}=await db.from('rooms').select('id').eq('owner_id',user.id).eq('session_state','active').order('created_at',{ascending:false}).limit(1);if(error)throw error;if(!data?.length){notice('Create an ongoing room from the HUD before opening room pairing tools.');return;}await openRoom(data[0].id);}openTools();});
 
 async function boot(){try{
  const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
