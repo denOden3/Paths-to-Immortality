@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.3**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.4.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -75,3 +75,13 @@ The three Paths HUD controls (Post, Narrate, Scene) now have larger gaps on mobi
 The Paths HUD Narrate action now asks ChatGPT to **fetch and read** the latest [Narration Rules](https://app.notion.com/p/3fab0ac52efe810caecfdf5da0270caf) before resolving any shared in-character directives. The link in the sidebar points to the same page. The old Shared Narrator Protocol has become an archived regression test, not active instructions.
 
 The narrator must state plainly if it cannot retrieve Notion; it cannot claim compliance, source verification or successful Supabase publication without actual access and confirmed writes. Player/OOC distinctions and the existing testing-only no-Notion-edits setting remain unchanged. No ChatGPT response is automatically delivered merely because the page exists; the user must still submit the native ChatGPT composer.
+
+## Paths HUD v0.4.0 — trusted owner pairing
+
+1. Update the Tampermonkey userscript on Firefox and open **Paths HUD → Settings / Connections**.
+2. If the Monkey has no identity, tap **Create Monkey guest identity**. Under **One-time GM pairing**, tap **Request pairing code**. The private code expires after 10 minutes; request a new one if needed. Do not share it publicly.
+3. Open **Paths Web** separately with the **Google-signed-in owner account**, enter a room that account owns, click ☯ **Tools**, and approve the code under **Trusted Paths HUD**. The Web asks for explicit approval of all rooms owned by the account.
+4. Return to Paths HUD, tap **Refresh authorization**, and choose one of the owner's rooms (or create a new owner room). In pairing mode, **Send** posts as the owner's chosen character rather than a second Monkey character.
+5. To revoke the grant, return to the Google owner's **Paths Web → ☯ Tools → Revoke access**. If you lose the anonymous Monkey identity or its browser storage, revoke the old pairing and authorize the replacement identity.
+
+The old invite-based Monkey-as-separate-player option remains in Settings as a legacy fallback for testing; it is hidden after pairing. Only rooms belonging to the authorizing Google account become accessible. Existing rooms owned by unrelated anonymous accounts are **not** transferred by pairing. Access tokens remain inside Tampermonkey's private storage and are never copied to GitHub or Paths Web. This is an explicitly user-approved connection; it does not grant access to Notion and doesn't yet automate sending GPT narration.
