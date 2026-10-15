@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.3.3
+// @version      0.4.0
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.3.3';
+  const VERSION = '0.4.0';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -38,6 +38,7 @@
   const $ = (id) => document.getElementById('pm-' + id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   let account = get('account', null);
+  let paired=false;
   let selectedRoom = get('room', null);
   let rooms = [];
   let members = [];
@@ -108,6 +109,9 @@
     #paths-monkey-root .pm-actions #pm-narrate{background:#2479ea;border-color:#78b5ff;color:#fff;
       box-shadow:0 1px 8px #1155bb55}
     #paths-monkey-root .pm-actions #pm-narrate:hover{background:#176bde}
+    #paths-monkey-root .pm-pair-code{overflow-wrap:anywhere;font:12px ui-monospace,monospace;user-select:text;color:var(--pm-gold);background:#211b24;border:1px solid var(--pm-gold);padding:10px;border-radius:9px}
+    #paths-monkey-root .pm-pair-block{border:1px solid var(--pm-stroke);border-radius:10px;margin:12px 0;padding:10px;background:#302631}
+    #paths-monkey-root .pm-pair-block .pm-btn{margin-top:8px}
     #paths-monkey-root .pm-mode-btn{min-height:40px;min-width:86px;background:#b73543;
       border:1px solid #f09b8b;color:#fff5e8;border-radius:10px;padding:7px 10px;
       font-weight:800;box-shadow:0 0 0 1px #f4c9a633}
@@ -257,16 +261,39 @@
         <div class="pm-row"><h2 id="pm-settings-title">☯ Monkey's briefcase</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
         <p>This separate Paths userscript does not read or change Mizuhana's scripts, saves, or ChatGPT's story replies.</p>
         <div id="pm-auth-status" class="pm-pill">Not connected</div>
+        <div id="pm-pair-section" class="pm-hide">
+          <div class="pm-pair-block">
+            <div class="pm-h">🐒 Trusted HUD — one-time pairing</div>
+            <p>Request a 10-minute code, then approve it in Paths Web as the Google-signed-in owner. No Google password or separate player slot is needed.</p>
+            <p id="pm-pair-state" class="pm-mute">Not paired</p>
+            <button id="pm-pair-request" class="pm-btn pm-primary" type="button">Request pairing code</button>
+            <div id="pm-pair-code-area" class="pm-hide">
+              <div id="pm-pair-code" class="pm-pair-code" aria-label="Private one-time pairing code"></div>
+              <button id="pm-pair-copy" type="button" class="pm-btn">Copy pairing code</button>
+              <p>In Paths Web, open one of your owner rooms, then ☯ Tools → Approve Paths HUD. Return here and refresh.</p>
+            </div>
+            <button id="pm-pair-refresh" class="pm-btn" type="button">Refresh authorization</button>
+          </div>
+          <div id="pm-pair-new-room" class="pm-pair-block pm-hide">
+            <div class="pm-h">Create a new private room</div>
+            <label class="pm-label" for="pm-pair-room-name">Room title</label>
+            <input id="pm-pair-room-name" class="pm-text" maxlength="80" value="New Jianghu Session">
+            <label class="pm-label" for="pm-pair-character-name">Your character</label>
+            <input id="pm-pair-character-name" class="pm-text" maxlength="40" value="Xiao Lan">
+            <button id="pm-pair-create-room" class="pm-btn pm-primary" type="button">Create owner room</button>
+          </div>
+        </div>
         <div id="pm-signin-section">
-          <p>The ChatGPT domain cannot reuse your Google login from GitHub Pages. Connect a separate temporary Monkey identity, then invite it into your room from the main website.</p>
+          <p>ChatGPT cannot reuse your Paths Web Google login. Create the Monkey's private anonymous identity and pair it to your owner account below.</p>
           <button id="pm-connect" class="pm-btn pm-primary" type="button">Create Monkey guest identity</button>
         </div>
         <div id="pm-room-section">
+          <div id="pm-legacy-invite"><p class="pm-mute">Legacy option: joins as a separate player instead of pairing.</p>
           <label class="pm-label" for="pm-join-code">Private room invitation code (from the owner's website)</label>
           <input id="pm-join-code" class="pm-text" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste single-use invitation code">
           <label class="pm-label" for="pm-character-name">Monkey's character name</label>
           <input id="pm-character-name" class="pm-text" maxlength="40" value="Xiao Lan">
-          <button id="pm-join" type="button" class="pm-btn pm-primary">Join invited room</button>
+          <button id="pm-join" type="button" class="pm-btn pm-primary">Join invited room</button></div>
           <button id="pm-reload-rooms" type="button" class="pm-btn">Refresh room list</button>
           <div class="pm-h">My rooms</div>
           <div id="pm-room-list" class="pm-mute">No room selected</div>
@@ -301,12 +328,17 @@
   function setConnectedState() {
     const isInRoom = !!(account && selectedRoom);
     $('room-title').textContent = selectedRoom?.title || 'Not connected';
-    $('connection').textContent = !account ? 'Monkey guest not connected' : !selectedRoom ? 'Guest connected · invite needed' : 'Supabase linked · scene available';
-    $('auth-status').textContent = account ? 'Monkey guest connected' : 'Not connected';
+    $('connection').textContent = !account ? 'Monkey not connected' : paired ? (selectedRoom?'Trusted HUD · linked to owner':'Trusted HUD · select a room') : (!selectedRoom?'Monkey identity ready · pairing needed':'Guest access · pairing recommended');
+    $('auth-status').textContent = !account?'Not connected':paired?'✓ Trusted HUD paired':'Monkey identity ready · unpaired';
     $('send').disabled = busy || !isInRoom;
     $('narrate').disabled = busy || !isInRoom;
     $('signin-section').classList.toggle('pm-hide', !!account);
     $('room-section').classList.toggle('pm-hide', !account);
+    $('pair-section').classList.toggle('pm-hide',!account);
+    $('pair-request').classList.toggle('pm-hide',paired);
+    $('pair-new-room').classList.toggle('pm-hide',!paired);
+    $('legacy-invite').classList.toggle('pm-hide',paired);
+    $('pair-state').textContent=paired?'✓ Owner has authorized this HUD':'Awaiting owner approval · get a temporary code';
     $('people').textContent = members.length ? members.map((x) => x.character_name).join(' · ') : 'Participants not loaded';
   }
   function updateSpeakerToggle(){
@@ -392,22 +424,52 @@
       return http(method, path, {...options, token});
     }
   }
+  async function refreshPairing(){
+    if(!account){paired=false;setConnectedState();return;}
+    const ok=await authed('POST','/rest/v1/rpc/monkey_pair_status',{body:{}});
+    paired=ok===true;
+    if(paired){$('pair-code').textContent='';$('pair-code-area').classList.add('pm-hide');}
+    setConnectedState();
+  }
+  async function requestPairing(){
+    if(!account)throw new Error('Create a Monkey identity first.');
+    await refreshPairing();
+    if(paired)throw new Error('Already paired. Revoke it from Paths Web if you need to replace this identity.');
+    const code=await authed('POST','/rest/v1/rpc/request_monkey_pair_code',{body:{}});
+    if(typeof code!=='string'||!/^[0-9a-f]{48}$/.test(code))throw new Error('No valid pairing code received.');
+    $('pair-code').textContent=code;$('pair-code-area').classList.remove('pm-hide');
+    feedback('One-time code ready; expires in 10 minutes.');
+  }
+  async function refreshPairedRooms(){
+    await loadRooms();feedback(paired?'✓ Trusted HUD authorized! Select a room.':'Still unpaired. Approve the code under Paths Web → ☯ Tools.');
+  }
+  async function createOwnerRoom(){
+    if(!paired)throw new Error('Pair the HUD first.');
+    const title=$('pair-room-name').value.trim(),character=$('pair-character-name').value.trim();
+    if(!title||title.length>80||!character||character.length>40)throw new Error('Enter a room title and character name.');
+    const id=await authed('POST','/rest/v1/rpc/create_room_as_owner',{body:{p_title:title,p_character_name:character}});
+    if(typeof id!=='string')throw new Error('Could not confirm new room creation.');
+    await loadRooms();
+    const item=rooms.find(x=>x.id===id);if(!item)throw new Error('Room created; refresh the list.');
+    await chooseRoom(item);feedback('Room created under your owner account.');closeSettings();
+  }
   async function makeIdentity() {
     if (account) throw new Error('Monkey already has an identity. Use it or reset explicitly.');
     const r = await http('POST','/auth/v1/signup',{body:{data:{app:'Paths Monkey'},gotrue_meta_security:{}}});
     if (!r.access_token || !r.refresh_token || !r.user?.id) throw new Error('Supabase did not return an anonymous session. Enable Anonymous Sign-Ins first.');
     account = {access_token:r.access_token,refresh_token:r.refresh_token,expires_at:Date.now()+(r.expires_in||3600)*1000,user_id:r.user.id};
     put('account',account);
-    feedback('Monkey guest created. Invite this guest from your owner account on the Paths website.');
+    feedback('Monkey identity created. Request a pairing code for approval on Paths Web.');
     await loadRooms();
     setConnectedState();
   }
   async function loadRooms() {
     if (!account) return;
+    await refreshPairing();
     const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at&order=created_at.desc');
     rooms = Array.isArray(data) ? data : [];
     const box = $('room-list');box.replaceChildren();
-    if (!rooms.length) { box.textContent='No rooms yet. Generate a fresh invite from the Paths website.'; }
+    if (!rooms.length) { box.textContent='No rooms yet. Pair the HUD or use a legacy invitation.'; }
     for (const item of rooms) {
       const b=document.createElement('button');
       b.type='button';b.className='pm-btn';b.style.cssText='display:block;width:100%;margin:5px 0;text-align:left';
@@ -491,10 +553,16 @@
       pendingRequestKind=kind;
     }
     try {
-      await authed('POST','/rest/v1/messages',{
-        body:{room_id:selectedRoom.id,sender_id:account.user_id,body:text,kind,client_message_id:pendingRequestId},
-        prefer:'return=minimal'
-      });
+      if(paired){
+        await authed('POST','/rest/v1/rpc/post_as_owner',{
+          body:{p_room_id:selectedRoom.id,p_body:text,p_kind:kind,p_client_message_id:pendingRequestId}
+        });
+      }else{
+        await authed('POST','/rest/v1/messages',{
+          body:{room_id:selectedRoom.id,sender_id:account.user_id,body:text,kind,client_message_id:pendingRequestId},
+          prefer:'return=minimal'
+        });
+      }
     } catch(e) {
       if (e.code!=='23505') throw e;
       // The same message ID was already accepted. Do not post a second copy.
@@ -574,7 +642,7 @@
   function resetIdentity() {
     if(!confirm('Forget ONLY the temporary Paths Monkey identity and its room links? Your Google login on the Paths website and all existing messages will remain.'))return;
     saveDraft();
-    account=null;rooms=[];members=[];messages=[];selectedRoom=null;
+    account=null;paired=false;rooms=[];members=[];messages=[];selectedRoom=null;
     remove('account');remove('room');$('room-list').textContent='No rooms loaded';renderFeed();
     restoreDraft();setConnectedState();feedback('Monkey guest reset. Existing shared room data is untouched.');
   }
@@ -668,6 +736,14 @@
   $('settings-close').onclick=closeSettings;
   $('close-panel').onclick=closeSettings;
   $('connect').onclick=()=>runTask(makeIdentity);
+  $('pair-request').onclick=()=>runTask(requestPairing);
+  $('pair-copy').onclick=()=>{
+    const code=$('pair-code').textContent;
+    if(code)GM_setClipboard(code,'text');
+    feedback('Code copied. Approve it in your Google-signed-in Paths Web → ☯ Tools.');
+  };
+  $('pair-refresh').onclick=()=>runTask(refreshPairedRooms);
+  $('pair-create-room').onclick=()=>runTask(createOwnerRoom);
   $('reload-rooms').onclick=()=>runTask(loadRooms);
   $('join').onclick=()=>runTask(join);
   $('forget').onclick=resetIdentity;
