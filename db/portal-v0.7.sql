@@ -120,10 +120,10 @@ begin
  if p_action='kick' then
   if p_user_id is null or p_user_id=v_owner or not exists(select 1 from public.room_members where room_id=p_room_id and user_id=p_user_id and role<>'owner') then raise exception 'Select a player in this room';end if;
   select player_id into pid from private.portal_accounts where user_id=p_user_id;
-  update private.scene_invitations set expires_at=least(expires_at,now()) where room_id=p_room_id and (claimed_by=p_user_id or (pid is not null and player_id=pid));
+  update private.scene_invitations set expires_at=least(expires_at,now()),consumed_at=coalesce(consumed_at,clock_timestamp()) where room_id=p_room_id and (claimed_by=p_user_id or (pid is not null and player_id=pid));
   delete from public.room_members where room_id=p_room_id and role<>'owner' and (user_id=p_user_id or (pid is not null and user_id in(select user_id from private.portal_accounts where player_id=pid)));
  elsif p_action in ('end','reset') then
-  update private.scene_invitations set expires_at=least(expires_at,now()) where room_id=p_room_id;
+  update private.scene_invitations set expires_at=least(expires_at,now()),consumed_at=coalesce(consumed_at,clock_timestamp()) where room_id=p_room_id;
   update private.room_invites set remaining_uses=0 where room_id=p_room_id;
   delete from public.room_members where room_id=p_room_id and role<>'owner';
   if p_action='reset' then
