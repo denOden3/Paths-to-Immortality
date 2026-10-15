@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.2**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.3.3**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -69,3 +69,9 @@ The three Paths HUD controls (Post, Narrate, Scene) now have larger gaps on mobi
 - Composer top row remains **action textarea → Send**. Lower action row is **Narrate · Scene · Xiao Lan**, with Xiao Lan pushed to the right but offset inward from Send instead of directly beneath it. Narrow layouts reduce the offset before wrapping.
 - The identity toggle still controls actual Supabase `player` versus `ooc` messages. Scene stays as the current read-only room-message peek for checking other players' actions; a future session panel could replace it after reliable narration integration.
 - Mizuhana stable/testing scripts, settings and saves are unchanged.
+
+## v0.3.3 — Authoritative Notion Narration Rules
+
+The Paths HUD Narrate action now asks ChatGPT to **fetch and read** the latest [Narration Rules](https://app.notion.com/p/3fab0ac52efe810caecfdf5da0270caf) before resolving any shared in-character directives. The link in the sidebar points to the same page. The old Shared Narrator Protocol has become an archived regression test, not active instructions.
+
+The narrator must state plainly if it cannot retrieve Notion; it cannot claim compliance, source verification or successful Supabase publication without actual access and confirmed writes. Player/OOC distinctions and the existing testing-only no-Notion-edits setting remain unchanged. No ChatGPT response is automatically delivered merely because the page exists; the user must still submit the native ChatGPT composer.
