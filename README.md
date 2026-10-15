@@ -1,3 +1,9 @@
+# Paths HUD v0.7.2 — Admin home and ongoing chatrooms
+
+Administration is the default HUD page with no action composer. It offers Create a New Room and a collapsible Ongoing Sessions list. Active-room buttons open a full-width chatroom and its composer; ☯ returns to Admin. Session tools opens the existing introduction, invitations and lifecycle controls. Creation uses a dedicated form view. Ended/unavailable scenes hide the composer. The Admin list refreshes on return, manually, and every 12 seconds while visible. Web stays v0.7.5; no database changes.
+
+---
+
 # Paths HUD v0.7.1 — Session information in the HUD body
 
 The ☯ button now opens a full-width, scrollable information view between the HUD header and its action composer on all screen sizes. The floating narrow sidebar and desktop composer offset are removed. Tap ☯ again to return to ChatGPT; opening Scene closes information and vice versa. ResizeObserver tracks header and composer height so longer drafts and wrapped controls do not cover the bottom of the information view. Web stays v0.7.5.

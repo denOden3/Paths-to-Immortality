@@ -2,7 +2,11 @@
 
 Standalone **Paths of Immortality HUD** Tampermonkey userscript for the Paths world. The source lives in the Paths repository and does not modify Mizuhana's scripts or saves.
 
-## HUD v0.7.1
+## HUD v0.7.2
+
+HUD opens on Administration with no action composer. Create a New Room opens the creation form; collapsible Ongoing Sessions lists active rooms only. Selecting one opens its chatroom and composer. ☯ returns to Administration. Session tools in the chatroom retains scene introductions, invitations and lifecycle controls. Ended or unavailable scenes return to Administration.
+
+## Previous HUD v0.7.1
 
 The ☯ button toggles session information in the full-width HUD body on mobile and desktop. Information scrolls between the header and action composer; both composers remain available. Tap ☯ again to return to ChatGPT. The information view and shared-feed peek close each other. Header/composer sizing adapts to wrapped controls and expanding text.
 
@@ -12,7 +16,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.1**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.2**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
