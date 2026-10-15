@@ -94,3 +94,12 @@ The old invite-based Monkey-as-separate-player option remains in Settings as a l
 - The legacy option to join with an invitation (separate guest identity) remains with the room controls as a fallback for unpaired users. Owner authorization is still handled in Paths Web. The private pairing itself is not reset by these interface changes.
 - Paths Web remains the **actual shared client for Puuchan and future players**; HUD is the owner's in-ChatGPT control interface. Invitation creation and most player flows still require Paths Web until further implementation.
 - This is code-reviewed and JavaScript-syntax-checked; the Android Firefox layout and touch behavior require a real device check.
+
+## HUD v0.5.1 — Scene introduction and invited character roles
+
+In **☁ Rooms & Sessions**, select/create a paired owner room, then save **In-world date**, **Location** and **Opening situation**. Next enter a player nickname and select **Assigned** or **Temporary guest**:
+
+- **Assigned:** put one approved character name per line, e.g. `Xu Yi`; multiple lines assign multiple characters to the same player. The invited player gets no character picker on the entrance page.
+- **Temporary guest:** one role per line in the form `Applicant | Another hopeful attempting the second-day trial | Complete the examination`. The guest sees the role descriptions and objectives, chooses a role and names their temporary character upon entering.
+
+Tap **Generate private invitation** and **Copy invitation link**. Send the link privately; it expires after 48 hours and can be redeemed once. Guest preview does not require email login; the website creates an anonymous identity when the player enters. The owner's existing pairing remains valid across future rooms. Notion's existing Guest Registry remains the editable planning record and is **not automatically synced** to the invitation generator yet.
