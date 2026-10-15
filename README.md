@@ -70,3 +70,11 @@ This is an early prototype: verify the character/OOC switch from both phones bef
 - Paths Web has a single speaker-toggle button. For Xu Yi's membership it switches between **🎭 Xu Yi** (character action) and **💬 Puuchan** (out-of-character player chat). Other room members display their actual character name and a generic Player label for OOC messages.
 - New chat bubbles use **Xu Yi** or **Puuchan** according to their stored message type. Underlying Supabase author identity never changes. Previously written OOC messages by Xu Yi display as Puuchan too.
 - These changes do not affect Paths HUD or Mizuhana. Invitation links and automatic novel compilation remain future features.
+
+## Trusted Paths HUD — one-time owner pairing (Web v0.4.1)
+
+Paths Web's owner-only ☯ Tools page provides **Approve Paths HUD**, **Refresh status** and **Revoke access**. Sign in with the permanent Google owner account, open a room actually owned by that account, then enter the 48-character pairing code displayed in the Paths HUD. Codes are stored as SHA-256 hashes, expire after 10 minutes, and are consumed once. Approval requires explicit confirmation and links one anonymous HUD identity to one room owner; it does **not** invite the Monkey as a visible participant.
+
+The pairing authorizes access to **all private rooms owned by that account**, not merely the currently selected room. It does not give Supabase project administration or Notion privileges. It can be revoked on Paths Web. Owner-only access cannot be granted from an anonymous-owned room using this ritual. The existing room invitation mechanism remains available for guest players.
+
+The database provides delegated owner-room read access, creation, character/OOC posting, invitation creation and guarded narration publication. The owner still controls final narration requests; pairing itself does not call the ChatGPT API or automate the ChatGPT Send button. Live owner-device pairing has not yet been completed or verified.
