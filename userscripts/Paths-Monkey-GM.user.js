@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.4.0
+// @version      0.4.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.4.0';
+  const VERSION = '0.4.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -141,6 +141,13 @@
       border-radius:17px;padding:17px;border:1px solid #a47c81;background:#29212b;
       box-shadow:0 14px 50px #000b}
     #paths-monkey-root .pm-panel h2{font-size:19px;font-weight:800;margin:4px 0}
+    #paths-monkey-root .pm-logo{cursor:pointer;color:var(--pm-ink)}
+    #paths-monkey-root .pm-logo:focus-visible{outline:3px solid var(--pm-gold);outline-offset:2px}
+    #paths-monkey-root .pm-sidebar-action{width:100%;text-align:left;margin:4px 0 8px}
+    #paths-monkey-root .pm-room-page{max-height:85vh}
+    #paths-monkey-root .pm-room-page #pm-room-section{display:block}
+    #paths-monkey-root .pm-room-page .pm-pair-block{margin:8px 0}
+
     #paths-monkey-root .pm-label{display:block;font-size:12px;color:var(--pm-muted);font-weight:700;margin:11px 0 5px}
     #paths-monkey-root .pm-panel .pm-text{margin-bottom:5px}
     #paths-monkey-root .pm-panel p{color:var(--pm-muted);font-size:12px;margin:8px 0}
@@ -192,7 +199,7 @@
       #paths-monkey-root .pm-left{display:none;width:min(280px,90vw);z-index:2;bottom:var(--pm-native,95px);
         box-shadow:9px 0 32px #000a}
       #paths-monkey-root .pm-left.pm-open{display:block}
-      #paths-monkey-root .pm-drawer-toggle{display:inline-block}
+      #paths-monkey-root .pm-drawer-toggle{display:none!important}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
       #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
       #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
@@ -212,7 +219,7 @@
       </div>
     </div>
     <div class="pm-hbar">
-      <div class="pm-logo" aria-hidden="true">☯</div>
+      <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Toggle Paths HUD information sidebar" aria-expanded="false" aria-controls="pm-sidebar" title="Show or hide information panels">☯</button>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
       <button id="pm-sidebar-toggle" type="button" class="pm-btn pm-mini pm-drawer-toggle" aria-label="Open Paths information panels" title="Information panels">☰</button>
@@ -220,6 +227,7 @@
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
     <aside id="pm-sidebar" class="pm-left" aria-label="Paths panel">
+      <button id="pm-manage-rooms" class="pm-btn pm-sidebar-action" type="button">📂 Rooms & sessions</button>
       <div class="pm-h">Current session</div>
       <div id="pm-room-title" class="pm-name">Not connected</div>
       <div id="pm-connection" class="pm-mute">Connect Monkey to Supabase</div>
@@ -256,15 +264,21 @@
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
+    <div id="pm-rooms-page" class="pm-backdrop pm-hide" role="presentation">
+      <section class="pm-panel pm-room-page" role="dialog" aria-modal="true" aria-labelledby="pm-rooms-page-title">
+        <div class="pm-row"><h2 id="pm-rooms-page-title">📂 Rooms & sessions</h2><button id="pm-rooms-page-close" class="pm-btn pm-mini" type="button">✕</button></div>
+        <p id="pm-rooms-page-status">Create private rooms, choose a current session, or refresh your list.</p>
+        <div id="pm-room-management-content"></div>
+        <button id="pm-rooms-page-done" class="pm-btn" type="button">Done</button>
+      </section>
+    </div>
     <div id="pm-settings" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-settings-title">
         <div class="pm-row"><h2 id="pm-settings-title">☯ Monkey's briefcase</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
-        <p>This separate Paths userscript does not read or change Mizuhana's scripts, saves, or ChatGPT's story replies.</p>
         <div id="pm-auth-status" class="pm-pill">Not connected</div>
         <div id="pm-pair-section" class="pm-hide">
           <div class="pm-pair-block">
-            <div class="pm-h">🐒 Trusted HUD — one-time pairing</div>
-            <p>Request a 10-minute code, then approve it in Paths Web as the Google-signed-in owner. No Google password or separate player slot is needed.</p>
+            <div class="pm-h">🐒 Pairing & recovery</div>
             <p id="pm-pair-state" class="pm-mute">Not paired</p>
             <button id="pm-pair-request" class="pm-btn pm-primary" type="button">Request pairing code</button>
             <div id="pm-pair-code-area" class="pm-hide">
@@ -306,6 +320,9 @@
     </div>
   `;
   document.documentElement.appendChild(root);
+  // Move live room controls into their own panel without duplicating IDs or state.
+  $('room-management-content').appendChild($('pair-new-room'));
+  $('room-management-content').appendChild($('room-section'));
 
   function feedback(message, bad = false) {
     $('feedback').textContent = message;
@@ -334,7 +351,7 @@
     $('narrate').disabled = busy || !isInRoom;
     $('signin-section').classList.toggle('pm-hide', !!account);
     $('room-section').classList.toggle('pm-hide', !account);
-    $('pair-section').classList.toggle('pm-hide',!account);
+    $('pair-section').classList.toggle('pm-hide',!account&&!paired);
     $('pair-request').classList.toggle('pm-hide',paired);
     $('pair-new-room').classList.toggle('pm-hide',!paired);
     $('legacy-invite').classList.toggle('pm-hide',paired);
@@ -630,6 +647,24 @@
       root.style.setProperty('--pm-native',height+'px');
     }
   }
+  function openRoomPage(){
+    previousFocus=document.activeElement;
+    $('settings').classList.add('pm-hide');
+    $('rooms-page').classList.remove('pm-hide');
+    $('rooms-page-status').textContent=paired?'Trusted HUD · room ownership authorized':account?'Monkey connected · owner pairing not complete':'Connect the Monkey under ⚙ Settings first';
+    setConnectedState();
+    $('rooms-page-close').focus();
+    if(account)runTask(loadRooms);
+  }
+  function closeRoomPage(){
+    $('rooms-page').classList.add('pm-hide');
+    if(previousFocus?.focus)previousFocus.focus();
+  }
+  function toggleSidebar(){
+    showSidebar=!showSidebar;
+    $('sidebar').classList.toggle('pm-open',showSidebar);
+    $('logo-toggle').setAttribute('aria-expanded',String(showSidebar));
+  }
   function openSettings() {
     previousFocus=document.activeElement;
     $('settings').classList.remove('pm-hide');setConnectedState();$('settings-close').focus();
@@ -660,9 +695,11 @@
   }
   function closeAllPanels() {
     $('settings').classList.add('pm-hide');
+    $('rooms-page').classList.add('pm-hide');
     $('feed').classList.add('pm-hide');
     $('sidebar').classList.remove('pm-open');
     showFeed=false; showSidebar=false;
+    $('logo-toggle').setAttribute('aria-expanded','false');
     closePickerMenu();
   }
   function setHudMode(mode,expand=false) {
@@ -733,6 +770,11 @@
   $('collapse-title').onclick=()=>setHudMode('paths',false);
 
   $('settings-toggle').onclick=openSettings;
+  $('logo-toggle').onclick=toggleSidebar;
+  $('manage-rooms').onclick=openRoomPage;
+  $('rooms-page-close').onclick=closeRoomPage;
+  $('rooms-page-done').onclick=closeRoomPage;
+  $('rooms-page').addEventListener('click',e=>{if(e.target===$('rooms-page'))closeRoomPage();});
   $('settings-close').onclick=closeSettings;
   $('close-panel').onclick=closeSettings;
   $('connect').onclick=()=>runTask(makeIdentity);
@@ -752,19 +794,20 @@
   $('feed-toggle').onclick=()=>{showFeed=!showFeed;$('feed').classList.toggle('pm-hide',!showFeed);if(showFeed)runTask(refreshScene);};
   $('feed-close').onclick=()=>{showFeed=false;$('feed').classList.add('pm-hide');};
   $('feed-refresh').onclick=()=>runTask(refreshScene);
-  $('sidebar-toggle').onclick=()=>{showSidebar=!showSidebar;$('sidebar').classList.toggle('pm-open',showSidebar);};
+  $('sidebar-toggle').onclick=toggleSidebar;
   $('minimize').onclick=()=>setHudMode('paths',false);
   $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
   $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settings').classList.contains('pm-hide'))closeSettings();else if(e.key==='Escape'&&!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settings').classList.contains('pm-hide'))closeSettings();else if(e.key==='Escape'&&!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();else if(e.key==='Escape'&&!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();});
   window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();});
   window.addEventListener('beforeunload',saveDraft);
   if(typeof GM_registerMenuCommand==='function') {
     GM_registerMenuCommand('Open Paths of Immortality HUD',showPaths);
     GM_registerMenuCommand('Collapse Paths HUD',()=>setHudMode('paths',false));
     GM_registerMenuCommand('Paths HUD: Connections',()=>{showPaths();openSettings();});
+    GM_registerMenuCommand('Paths HUD: Rooms & sessions',()=>{showPaths();openRoomPage();});
   }
   setConnectedState();restoreDraft();renderFeed();updateSpeakerToggle();
   setHudMode(hudMode,hudExpanded);
