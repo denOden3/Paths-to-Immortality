@@ -56,3 +56,9 @@ The browser application is called **Paths Web** (not the Paths HUD). Choose Char
 Long-press your own bubble to select messages. The first selection action is **OOC**: it changes selected character messages to OOC. When all selected bubbles already are OOC, that control changes to **Character**, allowing correction back to story mode. This type switch is limited to messages that have not been followed by a Narrator turn; the server verifies ownership. Edits and deletion of OOC chat remain possible afterward, while narrated character actions stay locked.
 
 This is an early prototype: verify the character/OOC switch from both phones before using it for canonical scenes. End Scene and Notion novel compilation are **not** implemented yet.
+
+## Paths Web v0.3.2 — Xu Yi's entrance controls
+
+- The web player's Character/OOC composer selector is labeled **Xu Yi** / **Puuchan** (the underlying message types remain `player` / `ooc`). Character placeholder is `What does Xu Yi do?`; OOC placeholder is `Let your voice be heard`.
+- The **Narrate** and **Invite** buttons are no longer in the chat header. The owner-only invitation generator is preserved in a collapsed **Room tools** section, until the planned invitation-link and GM-pairing workflows replace it. The Web narration button is hidden; the experimental ChatGPT narration workflow runs on Paths HUD instead.
+- Message selection, OOC reclassification, realtime chat, Google/guest accounts and all existing rooms remain unchanged.
