@@ -7,7 +7,7 @@ for(const id of ['pm-kick-player','pm-kick-player-button','pm-end-session','pm-r
 const vm=require('vm');const infoCode=source.slice(source.indexOf('  function resizeHudBody(){'),source.indexOf('  function openSettings()'));
 document.getElementById('pm-compose').getBoundingClientRect=()=>({height:130});
 const root={classList:document.body.classList,querySelector:()=>({getBoundingClientRect:()=>({height:55})}),style:{setProperty(){}}};
-const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
+const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
 (async()=>{
 vm.runInContext(listCode,context);
@@ -54,6 +54,10 @@ const playerCard=document.getElementById('pm-registry-list').querySelector('arti
 assert.ok(playerCard.querySelector('.pm-player-heading').textContent.includes(' · In a session'));
 const renameButton=[...playerCard.querySelectorAll('button')].find(x=>x.textContent==='Rename');const charactersButton=[...playerCard.querySelectorAll('button')].find(x=>x.textContent==='Characters');assert.ok(renameButton&&charactersButton);
 const renameRow=playerCard.querySelector('.pm-input-row');assert.ok(renameRow.classList.contains('pm-hide'));renameButton.onclick();assert.ok(!renameRow.classList.contains('pm-hide'));assert.equal(renameRow.querySelector('button').textContent,'Save');
+charactersButton.onclick();assert.ok(renameRow.classList.contains('pm-hide'),'Characters left rename form visible');assert.equal(renameButton.getAttribute('aria-pressed'),'false');assert.equal(charactersButton.getAttribute('aria-pressed'),'true');assert.ok(charactersButton.classList.contains('pm-registry-active'));
+renameButton.onclick();assert.ok(!renameRow.classList.contains('pm-hide'));assert.equal(charactersButton.getAttribute('aria-pressed'),'false');assert.ok(playerCard.lastElementChild.classList.contains('pm-hide'),'Rename left Characters visible');
+renameButton.onclick();assert.ok(renameRow.classList.contains('pm-hide'));assert.equal(renameButton.getAttribute('aria-pressed'),'false');
+
 assert.ok(document.getElementById('pm-registry-create').classList.contains('pm-hide'));assert.ok(!document.getElementById('pm-registry-toggle').classList.contains('pm-primary'));assert.equal(document.getElementById('pm-registry-add').textContent,'Register');assert.ok(document.getElementById('pm-registry-add').classList.contains('pm-primary'));assert.equal(document.getElementById('pm-registry-add').parentElement,document.getElementById('pm-registry-name').parentElement);
 context.characterHost=document.createElement('div');
 vm.runInContext(`renderRegistryCharacters({id:'player'},characterHost,[{id:'char',name:'Xu Yi',description:'A disciple',goal:'Learn'}]);`,context);

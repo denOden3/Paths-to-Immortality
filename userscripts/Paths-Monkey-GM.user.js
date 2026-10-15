@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.6
+// @version      0.7.7
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.6';
+  const VERSION = '0.7.7';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -113,6 +113,7 @@
     #paths-monkey-root .pm-input-row > .pm-text{flex:1;min-width:0}
     #paths-monkey-root .pm-player-heading{font-size:15px;margin-bottom:8px;overflow-wrap:anywhere}
     #paths-monkey-root .pm-player-heading .pm-mute{font-size:13px;font-weight:400}
+    #paths-monkey-root .pm-btn.pm-registry-active{background:#632732;border-color:var(--pm-gold);color:var(--pm-ink)}
     #paths-monkey-root .pm-character-card{border-top:1px solid var(--pm-stroke);padding:12px 0;margin-top:12px}
     #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:65px}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
@@ -891,9 +892,12 @@
       const renameForm=document.createElement('div');renameForm.className='pm-input-row pm-hide';const field=registryField('Player name for '+player.alias,player.alias,45);
       const save=registryButton('Save',()=>runTask(()=>saveRegistryPlayer(player.id,field.value)));renameForm.append(field,save);
       const actions=document.createElement('div');actions.className='pm-row';
-      const rename=registryButton('Rename',()=>{const open=renameForm.classList.contains('pm-hide');renameForm.classList.toggle('pm-hide',!open);rename.setAttribute('aria-expanded',String(open));if(open)field.focus();});rename.setAttribute('aria-expanded','false');
       const characterPanel=document.createElement('div');characterPanel.className='pm-hide';
-      const characters=registryButton('Characters',()=>{const open=characterPanel.classList.contains('pm-hide');characterPanel.classList.toggle('pm-hide',!open);characters.setAttribute('aria-expanded',String(open));if(open)runTask(()=>loadRegistryCharacters(player,characterPanel));});characters.setAttribute('aria-expanded','false');
+      function showPlayerPanel(panel){
+        for(const [button,body,key] of [[rename,renameForm,'rename'],[characters,characterPanel,'characters']]){const active=panel===key;body.classList.toggle('pm-hide',!active);button.classList.toggle('pm-registry-active',active);button.setAttribute('aria-expanded',String(active));button.setAttribute('aria-pressed',String(active));}
+      }
+      const rename=registryButton('Rename',()=>{if(busy)return;const open=renameForm.classList.contains('pm-hide');showPlayerPanel(open?'rename':null);if(open)field.focus();});rename.setAttribute('aria-expanded','false');rename.setAttribute('aria-pressed','false');
+      const characters=registryButton('Characters',()=>{if(busy)return;const open=characterPanel.classList.contains('pm-hide');showPlayerPanel(open?'characters':null);if(open)runTask(()=>loadRegistryCharacters(player,characterPanel));});characters.setAttribute('aria-expanded','false');characters.setAttribute('aria-pressed','false');
       actions.append(rename,characters);card.append(heading,sessions,actions,renameForm,characterPanel);list.append(card);
     }
   }
@@ -984,7 +988,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.69+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.79+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');

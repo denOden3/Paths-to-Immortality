@@ -1,3 +1,9 @@
+# Paths HUD v0.7.7 — Exclusive player card panels
+
+Rename and Characters are mutually exclusive inside each player card. Selecting one hides the other panel and highlights the selected button; tapping the active button closes its panel. Existing rename drafts are retained when switching. No database changes. Notion URL import has not been implemented. Web stays v0.7.5.
+
+---
+
 # Paths HUD v0.7.6 — Expandable player forms and managed characters
 
 Register Player is a transparent toggle revealing a new-name field and adjacent red Register button. Player status appears next to their name. Rename reveals a hidden field and Save button; Characters opens a player-specific character editor with Add, Save and Remove actions. Character fields cover name, description and objective. Duplicate player registration now raises an explicit warning, including capitalization and outer-space variations.
