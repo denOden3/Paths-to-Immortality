@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d">
-<title>Paths to Immortality · Cloudveil Test Room v0.4.0</title>
+<title>Paths to Immortality · Cloudveil Test Room v0.4.1</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -84,7 +84,7 @@ body.authOpen{overflow:hidden}
 </style>
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.4.0</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.4.1</div></header>
 <div class="content">
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
@@ -121,6 +121,18 @@ body.authOpen{overflow:hidden}
 <div class="buttons"><button id="invite" class="btn sm" type="button">Generate invitation code</button></div>
 <div id="inviteBox" class="card hidden"><h3>One-use invite · expires after 48 hours</h3><p>Send this code privately to your friend. Anyone who receives it can use it once while it's valid.</p><div id="inviteText" class="code"></div><div class="buttons"><button id="copy" class="btn sm">Copy code</button><button id="closeInvite" class="btn sm">Hide</button></div></div>
 <div class="buttons"><button id="narrate" class="btn sm" type="button">✦ Narrator test tools</button></div>
+<div class="toolCard" id="monkeyApproval" style="margin-top:13px">
+<h3>🐒 Trusted Paths HUD</h3>
+<p>One-time ritual: obtain a pairing code in your Paths HUD, then approve it here while signed in as this room's owner. The HUD can manage <strong>all rooms owned by this account</strong> without appearing as another character. Never share the code with anyone else.</p>
+<p id="monkeyApprovalStatus" class="muted" aria-live="polite">Checking authorization…</p>
+<label for="monkeyApprovalCode">48-character pairing code from Paths HUD</label>
+<input id="monkeyApprovalCode" maxlength="48" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your HUD's pairing code">
+<div class="buttons">
+<button id="monkeyApprove" class="btn primary sm" type="button">Approve Paths HUD</button>
+<button id="monkeyRefresh" class="btn sm" type="button">Refresh status</button>
+<button id="monkeyRevoke" class="btn sm" type="button">Revoke access</button>
+</div>
+</div>
 </div>
 <div class="toolCard"><h3>About this test</h3>
 <p>Paths Web is the shared player chat. Story narration is controlled separately from Paths HUD inside ChatGPT.</p>
@@ -207,7 +219,7 @@ function setChatMode(mode){
 $('modeSpeaker').onclick=()=>setChatMode(chatMode==='player'?'ooc':'player');
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke'])$(id).disabled=v;};
 const show=where=>{
   for(const x of ['welcome','lobby','chat','tools','composer'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
@@ -221,6 +233,36 @@ function openTools(){
   $('toolConnection').textContent=!user?'Not signed in':room?'Connected to private room':'Signed in · no room selected';
   show('tools');
 }
+async function refreshOwnerMonkeyStatus(){
+ if(!user||!room||!members.some(x=>x.user_id===user.id&&x.role==='owner')){
+  $('monkeyApprovalStatus').textContent='Only the signed-in room owner can pair a HUD.';
+  $('monkeyRevoke').disabled=true;return;
+ }
+ const {data,error}=await db.rpc('owner_monkey_pair_status');
+ if(error)throw error;
+ $('monkeyApprovalStatus').textContent=data?'● Paths HUD paired · owner-authorized':'○ No Paths HUD paired yet';
+ $('monkeyRevoke').disabled=!data;
+}
+$('monkeyApprove').onclick=()=>safe(async()=>{
+ if(!room||!user)throw Error('Open a room you own before pairing.');
+ const code=$('monkeyApprovalCode').value.trim().toLowerCase();
+ if(!/^[0-9a-f]{48}$/.test(code))throw Error('Paste the full 48-character pairing code from Paths HUD.');
+ if(!confirm('Authorize this Paths HUD identity to access and manage ALL private rooms owned by your signed-in account?'))return;
+ const {data,error}=await db.rpc('approve_monkey_pair_code',{p_code:code,p_owner_room:room});
+ if(error)throw error;
+ if(data!==true)throw Error('Supabase did not confirm pairing.');
+ $('monkeyApprovalCode').value='';
+ await refreshOwnerMonkeyStatus();
+ notice('Paths HUD is now authorized. Return to the HUD and tap Refresh authorization.','good');
+});
+$('monkeyRefresh').onclick=()=>safe(refreshOwnerMonkeyStatus);
+$('monkeyRevoke').onclick=()=>safe(async()=>{
+ if(!confirm('Revoke this Paths HUD access to ALL rooms you own? It will no longer be able to manage future sessions.'))return;
+ const {data,error}=await db.rpc('revoke_owner_monkey');
+ if(error)throw error;
+ await refreshOwnerMonkeyStatus();
+ notice(data?'Paths HUD permission revoked.':'No active pairing found.','good');
+});
 function backFromTools(){
   const target=toolsReturnView==='chat'&&room?'chat':toolsReturnView==='lobby'&&user?'lobby':'welcome';
   show(target);
@@ -233,6 +275,7 @@ function endLive(){if(subscription){db.removeChannel(subscription);subscription=
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
 async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
 $('ownerTools').classList.toggle('hidden',!isOwner);
+if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
 updateSpeakerDisplay();}
 
 const isMine=m=>m&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
