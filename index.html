@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.2</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.3</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.2</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.3</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms &amp; sessions</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -110,8 +110,7 @@ body.authOpen{overflow:hidden}
 
 <div class="card"><h3>Session administration</h3><div class="buttons"><button id="adminConnections" class="btn">HUD pairing &amp; tools</button></div><label for="adminSceneRoom">Edit a session introduction</label><select id="adminSceneRoom"><option value="">Choose a session</option></select><label for="adminSceneDate">In-world date</label><input id="adminSceneDate" maxlength="90"><label for="adminSceneLocation">Location</label><input id="adminSceneLocation" maxlength="150"><label for="adminSceneOpening">Opening situation</label><textarea id="adminSceneOpening" maxlength="2500"></textarea><div class="buttons"><button id="saveAdminScene" class="btn primary">Save scene introduction</button></div></div>
 </section>
-<section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="card"><h3>Players</h3><div class="grid"><div><label for="registerAlias">Player name</label><input id="registerAlias" maxlength="45" placeholder="e.g. Puuchan"></div></div><div class="buttons"><button id="registerPlayer" class="btn primary">Save player</button><button id="refreshPlayers" class="btn">Refresh players</button></div><div id="registeredPlayers"></div></div>
-</section>
+<section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="row rosterHeader"><h2>Players</h2><button id="refreshPlayers" class="btn sm">Refresh players</button></div><p class="muted">Players registered through your HUD invitations. “In a session” means they have joined an ongoing room.</p><p id="rosterSummary" class="muted" role="status" aria-live="polite"></p><div id="registeredPlayers" class="playerRoster"></div><p id="rosterFeedback" class="muted" role="status"></p></section>
 <section id="lobby" class="scroll hidden" role="tabpanel" aria-labelledby="navSessions">
 <div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms of Cloudveil</h2></div>
 <div class="card"><h3>Your rooms</h3><div id="roomList" class="muted">Loading rooms…</div></div>
@@ -207,7 +206,7 @@ body.authOpen{overflow:hidden}
 <script type="module">
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
-let activeGeneration=null,guardTimer=null,guardPromise=null;
+let activeGeneration=null,guardTimer=null,guardPromise=null,rosterTimer=null,rosterPromise=null;
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
 let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
 let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,activeCharacter='';
@@ -254,13 +253,15 @@ $('modeSpeaker').onclick=()=>{
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','registerPlayer','saveAdminScene'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveAdminScene'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
   for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   currentView=where;
+  if(rosterTimer){clearInterval(rosterTimer);rosterTimer=null;}
+  if(where==='adminPlayers'&&portalIdentity.is_admin)rosterTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshRegistry().catch(()=>{if(currentView==='adminPlayers')$('rosterFeedback').textContent='Could not refresh. Tap Refresh players to try again.';});},15000);
   closeHeaderMenu(false);
   $('portalNav').classList.toggle('hidden',!portalIdentity.is_admin||['welcome','identityGate'].includes(where));
   $('adminGreeting').classList.toggle('hidden',!portalIdentity.is_admin||!['administration','lobby','adminPlayers'].includes(where));
@@ -672,7 +673,7 @@ $('menuBack').onclick=()=>safe(returnFromPage);
 $('menuSignout').onclick=()=>safe(async()=>{closeHeaderMenu(false);await portalSignout();});
 $('headerMenuOverlay').addEventListener('click',e=>{if(e.target===$('headerMenuOverlay'))closeHeaderMenu();});
 $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...$('headerMenu').querySelectorAll('button')].filter(x=>!x.disabled&&!x.classList.contains('hidden'));if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
-async function portalSignout(){endLive();if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+async function portalSignout(){endLive();if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
 $('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);$('navPlayers').onclick=()=>safe(async()=>{if(!portalIdentity.is_admin)returnToStart();else{await refreshRegistry();show('adminPlayers');}});
@@ -680,12 +681,26 @@ $('portalNav').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Hom
 $('chooseAdministrator').onclick=()=>safe(chooseAdministrator);
 $('choosePlayer').onclick=()=>safe(async()=>{if(await resumeOngoingSession())return;openCodeDialog();});
 $('closeCode').onclick=returnToStart;$('codeOverlay').addEventListener('click',e=>{if(e.target===$('codeOverlay'))returnToStart();});
-async function refreshRegistry(){const {data,error}=await db.rpc('portal_manage_player');if(error)throw error;registry=data||[];const host=$('registeredPlayers');host.replaceChildren();for(const p of registry){const row=el('div','adminPlayer');row.append(el('span','',p.alias));host.append(row);}if(!registry.length)host.append(el('p','muted','Players are registered here or when you issue a HUD invitation.'));}
+function renderPlayerRoster(players){
+ const host=$('registeredPlayers');host.replaceChildren();const active=players.filter(p=>p.in_session).length;
+ $('rosterSummary').textContent=players.length+' player'+(players.length===1?'':'s')+' · '+active+' in a session · '+(players.length-active)+' not in a session';
+ if(!players.length){host.append(el('div','card muted','No players registered yet. They will appear when you generate an invitation in your HUD.'));return;}
+ for(const p of players){
+  const card=el('article','card playerRosterCard'),head=el('div','row');head.append(el('h3','',p.alias),el('span','playerStatus '+(p.in_session?'isInSession':'isNotInSession'),p.in_session?'In a session':'Not in a session'));card.append(head);
+  if(p.registered_at){const registered=new Date(p.registered_at);if(!Number.isNaN(registered.valueOf()))card.append(el('p','muted','Registered '+registered.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})));}
+  for(const session of p.sessions||[]){const details=el('div','playerSession');details.append(el('h4','',session.title),el('p','',(session.characters||[]).join(' · ')));card.append(details);}
+  host.append(card);
+ }
+}
+async function refreshRegistry(){
+ if(!portalIdentity.is_admin)throw Error('Administrator access required.');if(rosterPromise)return rosterPromise;
+ const owner=user?.id;
+ rosterPromise=(async()=>{const {data,error}=await db.rpc('portal_player_roster');if(error)throw error;if(user?.id!==owner||!portalIdentity.is_admin)return;registry=data||[];renderPlayerRoster(registry);$('rosterFeedback').textContent='';})().finally(()=>{rosterPromise=null;});return rosterPromise;
+}
 async function openAdministration(){
  if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
  const {data,error}=await db.from('rooms').select('id,title').order('created_at',{ascending:false});if(error)throw error;const select=$('adminSceneRoom');select.replaceChildren(el('option','','Choose a session'));select.firstChild.value='';for(const r of data||[]){const o=el('option','',r.title);o.value=r.id;select.append(o);}show('administration');
 }
-$('registerPlayer').onclick=()=>safe(async()=>{const alias=$('registerAlias').value.trim();if(!alias)throw Error('Enter a player name.');const {error}=await db.rpc('portal_manage_player',{p_alias:alias});if(error)throw error;await refreshRegistry();$('registerAlias').value='';notice('Player registry saved. Use the same name when issuing invitations.','good');});
 $('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminConnections').onclick=()=>safe(async()=>{if(!room){await lobby();notice('Open an owner session, then return to Administration → HUD pairing & tools.');return;}openTools();});
 $('adminSceneRoom').onchange=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)return;const {data,error}=await db.rpc('get_scene_introduction_as_owner',{p_room_id:id});if(error)throw error;$('adminSceneDate').value=data.scene_date||'';$('adminSceneLocation').value=data.location||'';$('adminSceneOpening').value=data.opening||'';});
 $('saveAdminScene').onclick=()=>safe(async()=>{const id=$('adminSceneRoom').value;if(!id)throw Error('Choose a session first.');const {data,error}=await db.rpc('set_scene_introduction_as_owner',{p_room_id:id,p_date:$('adminSceneDate').value.trim(),p_location:$('adminSceneLocation').value.trim(),p_opening:$('adminSceneOpening').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving.');notice('Scene introduction saved for this session.','good');});

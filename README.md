@@ -1,3 +1,15 @@
+# Paths Web v0.7.3 — Read-only player roster
+
+**Players** now lists registered names with **In a session** / **Not in a session**, active room titles and their selected characters. The total and session counts appear above the roster. Registration fields have been removed from Web; generating a HUD invitation still registers new player names automatically.
+
+Status is based on membership in an ongoing room, not whether the browser is online. Invited players who have not joined appear as Not in a session. Kick, End and Reset remove membership and update the roster accordingly. Multiple active rooms are listed separately. Refresh happens when the tab opens, with the Refresh players button, and every 15 seconds while the roster is visible. The owner-only roster API returns no emails, login tokens or invitation codes.
+
+DOM checks cover status cards, room/character display, empty state, safe text rendering and removed registration fields. Database integration checks cover the status transitions and denial to player accounts. This is a Web update; HUD v0.7.0 remains current.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web v0.7.2 — Administration tabs
 
 The Jade Emperor welcome now appears above a single horizontal tab row: **Administration → Rooms & sessions → Players**. Swipe the row sideways on narrow screens; tabs stay on one line and can be extended. Each tab changes the panel below it. The former Player Registry is now the **Players** panel. Arrow keys, Home and End also navigate the tabs. The ☯ Back / Sign out popup stays available.
