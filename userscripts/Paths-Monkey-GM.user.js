@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.5.0
+// @version      0.5.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.5.0';
+  const VERSION = '0.5.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -509,11 +509,18 @@
   async function createSessionInvitation(){
     if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');
     const player=$('invite-player').value.trim(),kind=$('invite-kind').value;
-    const names=$('invite-list').value.split(/[\n,]+/).map(x=>x.trim()).filter(Boolean);
+    const lines=$('invite-list').value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    const details=kind==='guest'?lines.map(line=>{
+      const p=line.split('|').map(x=>x.trim());
+      return {name:p[0]||'',description:p[1]||'',goal:p[2]||''};
+    }):[];
+    const names=kind==='guest'?details.map(x=>x.name):lines;
     if(!player||!names.length)throw new Error('Enter the player nickname and at least one character or role.');
     if(names.length>8)throw new Error('Maximum eight character or role options per invitation.');
-    const token=await authed('POST','/rest/v1/rpc/create_scene_invitation_as_owner',{
-      body:{p_room_id:selectedRoom.id,p_player_alias:player,p_invite_type:kind,p_characters:names}
+    if(kind==='guest'&&details.some(d=>!d.description||!d.goal))
+      throw new Error('For each guest role, enter Role | Short description | Objective.');
+    const token=await authed('POST','/rest/v1/rpc/create_detailed_scene_invitation_as_owner',{
+      body:{p_room_id:selectedRoom.id,p_player_alias:player,p_invite_type:kind,p_characters:names,p_role_details:details}
     });
     if(typeof token!=='string'||!/^[0-9a-f]{48}$/.test(token))
       throw new Error('Supabase did not generate a valid invitation.');
@@ -860,8 +867,8 @@
   $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
   $('invite-kind').onchange=()=>{
     const guest=$('invite-kind').value==='guest';
-    $('invite-list-label').textContent=guest?'Selectable guest roles (one per line)':'Assigned characters (one per line)';
-    $('invite-list').placeholder=guest?'Applicant\nSpectator':'Xu Yi';
+    $('invite-list-label').textContent=guest?'Guest roles: Role | Description | Objective (one per line)':'Assigned characters (one per line)';
+    $('invite-list').placeholder=guest?'Applicant | Another candidate at the examination | Complete the second-day trial':'Xu Yi';
   };
   $('make-invite').onclick=()=>runTask(createSessionInvitation);
   $('copy-invite').onclick=()=>{
