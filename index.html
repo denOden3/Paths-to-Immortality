@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d">
-<title>Paths to Immortality · Cloudveil Test Room v0.3.1</title>
+<title>Paths to Immortality · Cloudveil Test Room v0.3.2</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -16,7 +16,12 @@ input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 2px #f1be7a
 label{display:block;margin:9px 0 5px;font-size:12px;font-weight:700;color:var(--muted)}.btn{background:#3e3038;border:1px solid #8f6a71;border-radius:10px;padding:10px 13px;color:var(--text);font-weight:700;min-height:42px}.btn.primary{background:var(--crimson);border-color:#f06c65;color:white}.btn.sm{padding:7px 10px;min-height:36px;font-size:12px}.btn:focus-visible{outline:3px solid var(--gold);outline-offset:1px}.buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .note{margin:9px 0;padding:11px;border-left:3px solid var(--gold);border-radius:8px;background:#3c302d;color:var(--text);font-size:12px}.notice{padding:10px 12px;border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:10px;background:#392c31;margin-bottom:12px;font-size:13px}.notice.error{border-left-color:#ff817b;color:#fff0ed}.notice.good{border-left-color:var(--good)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.muted{color:var(--muted);font-size:13px}
 .roomButton{display:block;width:100%;text-align:left;margin-bottom:6px}.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.roomTitle{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.roombar{display:flex;gap:9px;align-items:center;padding-bottom:10px;flex-wrap:wrap}.roombar .roomTitle{flex:1}
-.members{font-size:12px;color:var(--gold);min-height:24px}.feed{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:10px 2px}
+.members{font-size:12px;color:var(--gold);min-height:24px}
+.ownerTools{font-size:12px;margin:1px 0 8px;border:1px solid var(--border);border-radius:10px;padding:7px 11px;background:#29212b}
+.ownerTools summary{cursor:pointer;color:var(--muted);font-weight:700;list-style-position:inside;min-height:24px}
+.ownerTools summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ownerTools .buttons{margin-top:5px}
+.feed{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px;padding:10px 2px}
 .bubble{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:10px 12px;max-width:94%;align-self:flex-start;overflow-wrap:anywhere}.bubble.mine{align-self:flex-end;background:#4b3038;border-color:#b2575c}.bubble.narrator{max-width:100%;background:#373022;border-color:var(--gold)}
 .bubble.ooc{background:#2b2935;border-style:dashed;border-color:#9c829d}
 .bubble.mine.ooc{background:#38313f;border-color:#a28ca3}
@@ -65,7 +70,7 @@ body.authOpen{overflow:hidden}
 </style>
 </head><body>
 <div class="app">
-<header class="head"><div class="sig" aria-hidden="true">☯</div><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.3.1</div></header>
+<header class="head"><div class="sig" aria-hidden="true">☯</div><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.3.2</div></header>
 <div class="content">
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
@@ -82,7 +87,10 @@ body.authOpen{overflow:hidden}
 <div class="footer">Shared roleplay test · Room owners can now prepare ChatGPT narration</div>
 </section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong><button id="narrate" class="btn sm hidden" type="button">✦ Narrate</button><button id="invite" class="btn sm hidden">Invite</button></div>
+<div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
+<details id="ownerTools" class="ownerTools hidden"><summary>Room tools</summary>
+<div class="buttons"><button id="invite" class="btn sm" type="button">Generate invitation code</button></div></details>
+<button id="narrate" class="hidden" type="button" tabindex="-1" aria-hidden="true"></button>
 <div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
@@ -96,9 +104,9 @@ body.authOpen{overflow:hidden}
 </div>
 <div id="composer" class="compose hidden">
 <div id="modeRow" class="modeRow" role="group" aria-label="Choose character or out-of-character chat">
-<button id="modeCharacter" class="btn sm active" type="button" aria-pressed="true">🎭 Character</button>
-<button id="modeOoc" class="btn sm" type="button" aria-pressed="false">💬 Player · OOC</button>
-</div><div class="send"><textarea id="msg" maxlength="8000" placeholder="What does your character do?" aria-label="Character action"></textarea><button id="send" class="btn primary">Send</button></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
+<button id="modeCharacter" class="btn sm active" type="button" aria-pressed="true">🎭 Xu Yi</button>
+<button id="modeOoc" class="btn sm" type="button" aria-pressed="false">💬 Puuchan</button>
+</div><div class="send"><textarea id="msg" maxlength="8000" placeholder="What does Xu Yi do?" aria-label="Xu Yi character action or Puuchan chat"></textarea><button id="send" class="btn primary">Send</button></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
 </div>
 <div id="authOverlay" class="authOverlay hidden" role="presentation">
 <section id="authSheet" class="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle" aria-describedby="authDescription" tabindex="-1">
@@ -151,7 +159,7 @@ function setChatMode(mode){
   $('modeOoc').classList.toggle('oocMode',mode==='ooc');
   $('modeCharacter').setAttribute('aria-pressed',String(mode==='player'));
   $('modeOoc').setAttribute('aria-pressed',String(mode==='ooc'));
-  $('msg').placeholder=mode==='player'?'What does your character do?':'Hear ye, hear ye, the Jade Emperor has spoken!';
+  $('msg').placeholder=mode==='player'?'What does Xu Yi do?':'Let your voice be heard';
   if(pendingMode!==chatMode){pending=null;pendingMode=null;pendingText=null;}
   try{if(room)localStorage.setItem(modeKey(),mode);}catch{}
 }
@@ -165,7 +173,7 @@ async function safe(fn){if(working)return;busy(true);clear();try{await fn();}cat
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No rooms yet. Create one or redeem an invitation.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
-async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');$('invite').classList.toggle('hidden',!isOwner);$('narrate').classList.toggle('hidden',!isOwner);}
+async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');$('ownerTools').classList.toggle('hidden',!isOwner);if(!isOwner)$('ownerTools').open=false;}
 
 const isMine=m=>m&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
 function updateSelection(){
