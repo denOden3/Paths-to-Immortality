@@ -387,7 +387,7 @@ function hideNarrator(){
 }
 function narratorGuide(roomName,pendingActions,lastNarration){
   const characterLines=pendingActions.map((x,i)=>{
-    const character=members.find(m=>m.user_id===x.sender_id)?.character_name||'Unknown player';
+    const character=x.character_name||members.find(m=>m.user_id===x.sender_id)?.character_name||'Unknown player';
     return (i+1)+'. '+character+' ('+new Date(x.created_at).toLocaleTimeString()+'):\n'+x.body;
   }).join('\n\n');
   const prior=lastNarration?('\nPREVIOUS NARRATION (context only):\n'+lastNarration.slice(0,3000)+'\n'):'\nThis is a new shared test scene; do not assume a previously established location or date.\n';
