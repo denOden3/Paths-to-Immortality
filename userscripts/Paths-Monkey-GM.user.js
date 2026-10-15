@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.5
+// @version      0.7.6
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.5';
+  const VERSION = '0.7.6';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -108,6 +108,13 @@
     #paths-monkey-root.pm-registry-open .pm-left{display:none}
     #paths-monkey-root .pm-player-card{border:1px solid var(--pm-stroke);border-radius:10px;padding:12px;margin:12px 0}
     #paths-monkey-root .pm-player-card input{margin:8px 0}
+    #paths-monkey-root #pm-registry-toggle{background:transparent}
+    #paths-monkey-root .pm-input-row{display:flex;gap:8px;align-items:center;margin:8px 0}
+    #paths-monkey-root .pm-input-row > .pm-text{flex:1;min-width:0}
+    #paths-monkey-root .pm-player-heading{font-size:15px;margin-bottom:8px;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-player-heading .pm-mute{font-size:13px;font-weight:400}
+    #paths-monkey-root .pm-character-card{border-top:1px solid var(--pm-stroke);padding:12px 0;margin-top:12px}
+    #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:65px}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
     #paths-monkey-root.pm-creating #pm-room-section{display:none}
     #paths-monkey-root:not(.pm-creating) #pm-room-management-content > #pm-pair-new-room{display:none}
@@ -268,7 +275,8 @@
     <section id="pm-registry" class="pm-registry" aria-label="Players Registry" aria-hidden="true">
     <div class="pm-row"><h2 class="pm-name">Players Registry</h2><button id="pm-registry-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-registry-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh players">↻</button></div>
     <p class="pm-mute">Register names, rename player records, and see their ongoing rooms. Invitations control entry.</p>
-    <label for="pm-registry-name" class="pm-label">New player name</label><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register player</button>
+    <button id="pm-registry-toggle" class="pm-btn" type="button" aria-expanded="false" aria-controls="pm-registry-create">Register Player</button>
+    <div id="pm-registry-create" class="pm-hide"><label for="pm-registry-name" class="pm-label">New player name</label><div class="pm-input-row"><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register</button></div></div>
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
@@ -871,20 +879,47 @@
     const data=await authed('POST','/rest/v1/rpc/hud_player_registry',{body:{p_id:null,p_alias:null}});
     if(!account||!paired)return;renderRegistry(data||[]);$('registry-status').textContent=(data||[]).length+' players registered.';
   }
+  function registryButton(text,handler,primary=false){const button=document.createElement('button');button.className='pm-btn pm-mini'+(primary?' pm-primary':'');button.type='button';button.textContent=text;button.onclick=handler;return button;}
+  function registryField(label,value,max,multiline=false){const field=document.createElement(multiline?'textarea':'input');field.className='pm-text';field.value=value||'';field.maxLength=max;field.setAttribute('aria-label',label);field.placeholder=label;return field;}
   function renderRegistry(items){
     const list=$('registry-list');list.replaceChildren();if(!items.length){list.textContent='No players registered yet.';return;}
     for(const player of items){
-      const card=document.createElement('article');card.className='pm-player-card';const name=document.createElement('strong');name.textContent=player.alias;
-      const status=document.createElement('p');status.className='pm-mute';status.textContent=player.in_session?'In a session':'Not in a session';
-      for(const scene of player.sessions||[]){const line=document.createElement('div');line.className='pm-mute';line.textContent=scene.title+' · '+(scene.characters||[]).join(', ');status.append(line);}
-      const field=document.createElement('input');field.className='pm-text';field.value=player.alias;field.maxLength=45;field.setAttribute('aria-label','Player name for '+player.alias);
-      const save=document.createElement('button');save.className='pm-btn pm-mini';save.type='button';save.textContent='Save name';save.onclick=()=>runTask(()=>saveRegistryPlayer(player.id,field.value));card.append(name,status,field,save);list.append(card);
+      const card=document.createElement('article');card.className='pm-player-card';
+      const heading=document.createElement('div');heading.className='pm-player-heading';const name=document.createElement('strong');name.textContent=player.alias;
+      const status=document.createElement('span');status.className='pm-mute';status.textContent=' · '+(player.in_session?'In a session':'Not in a session');heading.append(name,status);
+      const sessions=document.createElement('div');sessions.className='pm-mute';for(const scene of player.sessions||[]){const line=document.createElement('div');line.textContent=scene.title+' · '+(scene.characters||[]).join(', ');sessions.append(line);}
+      const renameForm=document.createElement('div');renameForm.className='pm-input-row pm-hide';const field=registryField('Player name for '+player.alias,player.alias,45);
+      const save=registryButton('Save',()=>runTask(()=>saveRegistryPlayer(player.id,field.value)));renameForm.append(field,save);
+      const actions=document.createElement('div');actions.className='pm-row';
+      const rename=registryButton('Rename',()=>{const open=renameForm.classList.contains('pm-hide');renameForm.classList.toggle('pm-hide',!open);rename.setAttribute('aria-expanded',String(open));if(open)field.focus();});rename.setAttribute('aria-expanded','false');
+      const characterPanel=document.createElement('div');characterPanel.className='pm-hide';
+      const characters=registryButton('Characters',()=>{const open=characterPanel.classList.contains('pm-hide');characterPanel.classList.toggle('pm-hide',!open);characters.setAttribute('aria-expanded',String(open));if(open)runTask(()=>loadRegistryCharacters(player,characterPanel));});characters.setAttribute('aria-expanded','false');
+      actions.append(rename,characters);card.append(heading,sessions,actions,renameForm,characterPanel);list.append(card);
     }
+  }
+  async function loadRegistryCharacters(player,host){
+    host.textContent='Loading characters…';const data=await authed('POST','/rest/v1/rpc/hud_player_characters',{body:{p_player:player.id}});renderRegistryCharacters(player,host,data||[]);
+  }
+  function renderRegistryCharacters(player,host,items){
+    host.replaceChildren();const note=document.createElement('p');note.className='pm-mute';note.textContent='Saved character choices. Removing one keeps past scenes and current room participation.';host.append(note);
+    const newForm=document.createElement('div');newForm.className='pm-character-card pm-hide';const newName=registryField('Character name','',40),newDescription=registryField('Description','',350,true),newGoal=registryField('Objective','',150);
+    const addToggle=registryButton('Add Character',()=>{const open=newForm.classList.contains('pm-hide');newForm.classList.toggle('pm-hide',!open);addToggle.setAttribute('aria-expanded',String(open));if(open)newName.focus();});addToggle.setAttribute('aria-expanded','false');
+    const add=registryButton('Add',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value)),true);newForm.append(newName,newDescription,newGoal,add);host.append(addToggle,newForm);
+    if(!items.length){const empty=document.createElement('p');empty.className='pm-mute';empty.textContent='No saved characters yet.';host.append(empty);}
+    for(const character of items){const row=document.createElement('div');row.className='pm-character-card';const name=registryField('Character name',character.name,40),description=registryField('Description',character.description,350,true),goal=registryField('Objective',character.goal,150);
+      const actions=document.createElement('div');actions.className='pm-row';const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,goal.value)));
+      const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));actions.append(save,remove);row.append(name,description,goal,actions);host.append(row);
+    }
+  }
+  async function changeRegistryCharacter(player,host,action,id,name=null,description='',goal=''){
+    if(!paired||!account)throw new Error('Pair your HUD before managing characters.');
+    const data=await authed('POST','/rest/v1/rpc/hud_player_characters',{body:{p_player:player.id,p_action:action,p_character:id,p_name:name?.trim()||null,p_description:description,p_objective:goal}});
+    renderRegistryCharacters(player,host,data||[]);$('registry-status').textContent=action==='remove'?'Character removed from saved choices. Past scenes kept.':'Character saved.';
   }
   async function saveRegistryPlayer(id,alias){
     if(!account||!paired)throw new Error('Pair your HUD before managing players.');alias=alias.trim();if(!alias||alias.length>45)throw new Error('Enter a player name (1–45 characters).');
     const data=await authed('POST','/rest/v1/rpc/hud_player_registry',{body:{p_id:id,p_alias:alias}});
-    renderRegistry(data||[]);$('registry-status').textContent=id?'Player name saved.':'Player registered.';if(!id)$('registry-name').value='';
+    renderRegistry(data||[]);$('registry-status').textContent=id?'Player name saved.':'Player registered.';if(!id){$('registry-name').value='';$('registry-create').classList.add('pm-hide');$('registry-toggle').setAttribute('aria-expanded','false');}
   }
   function openSettings() {
     rememberHudPage();previousFocus=document.activeElement;
@@ -949,7 +984,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.59+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.69+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -1000,6 +1035,7 @@
   $('registry-back').textContent='← Back';$('registry-back').onclick=()=>runTask(toggleSidebar);
   $('registry-refresh').onclick=()=>runTask(refreshRegistry);
   $('registry-add').onclick=()=>runTask(()=>saveRegistryPlayer(null,$('registry-name').value));
+  $('registry-toggle').onclick=()=>{const open=$('registry-create').classList.contains('pm-hide');$('registry-create').classList.toggle('pm-hide',!open);$('registry-toggle').setAttribute('aria-expanded',String(open));if(open)$('registry-name').focus();};
   $('rooms-page-close').onclick=closeRoomPage;
   $('rooms-page-done').onclick=closeRoomPage;
   $('rooms-page').addEventListener('click',e=>{if(e.target===$('rooms-page'))closeRoomPage();});

@@ -50,5 +50,13 @@ await vm.runInContext('toggleSidebar();',context);assert.ok(!root.classList.cont
 context.authed=async(method,path,options)=>path.includes('get_scene_introduction')?{scene_date:'Early Spring, 8th'}:[{player_alias:'Puuchan',character_name:'Xu Yi'}];
 await vm.runInContext('loadCharacterParticipants();',context);
 assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.equal(document.getElementById('pm-calendar').textContent,'Early Spring, 8th');
-console.log('PASS: HUD IDs, removed duplicate controls, previous-page navigation, room logs, participants and calendar follow the session picker');
+const playerCard=document.getElementById('pm-registry-list').querySelector('article');
+assert.ok(playerCard.querySelector('.pm-player-heading').textContent.includes(' · In a session'));
+const renameButton=[...playerCard.querySelectorAll('button')].find(x=>x.textContent==='Rename');const charactersButton=[...playerCard.querySelectorAll('button')].find(x=>x.textContent==='Characters');assert.ok(renameButton&&charactersButton);
+const renameRow=playerCard.querySelector('.pm-input-row');assert.ok(renameRow.classList.contains('pm-hide'));renameButton.onclick();assert.ok(!renameRow.classList.contains('pm-hide'));assert.equal(renameRow.querySelector('button').textContent,'Save');
+assert.ok(document.getElementById('pm-registry-create').classList.contains('pm-hide'));assert.ok(!document.getElementById('pm-registry-toggle').classList.contains('pm-primary'));assert.equal(document.getElementById('pm-registry-add').textContent,'Register');assert.ok(document.getElementById('pm-registry-add').classList.contains('pm-primary'));assert.equal(document.getElementById('pm-registry-add').parentElement,document.getElementById('pm-registry-name').parentElement);
+context.characterHost=document.createElement('div');
+vm.runInContext(`renderRegistryCharacters({id:'player'},characterHost,[{id:'char',name:'Xu Yi',description:'A disciple',goal:'Learn'}]);`,context);
+assert.equal(context.characterHost.querySelectorAll('.pm-character-card').length,2);assert.ok(context.characterHost.textContent.includes('Remove'));assert.ok(context.characterHost.textContent.includes('Save'));assert.ok(context.characterHost.textContent.includes('Add Character'));
+console.log('PASS: HUD navigation, picker, expandable registration/rename forms, inline player status and character editor controls');
 })().catch(error=>{console.error(error);process.exitCode=1;});

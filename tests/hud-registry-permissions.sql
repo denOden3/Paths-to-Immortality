@@ -26,27 +26,48 @@ end;$$;
 reset role;
 select set_config('request.jwt.claims',jsonb_build_object('sub',monkey_id,'role','authenticated')::text,true) from qa_registry;
 set local role authenticated;
-do $$declare s record;data jsonb;denied boolean:=false;begin
+do $$declare s record;data jsonb;denied boolean:=false;chars jsonb;cid uuid;rid uuid;tok text;begin
  select * into s from qa_registry;
  data:=public.hud_player_registry();assert data @> '[{"alias":"__QA Registry","in_session":true}]';assert not data @> '[{"alias":"__QA foreign registry"}]';
  data:=public.hud_player_registry(s.player_id,'__QA Renamed');assert data @> jsonb_build_array(jsonb_build_object('id',s.player_id,'alias','__QA Renamed','in_session',true));
  assert (select player_alias='__QA Renamed' from public.room_members where room_id=s.room_id and user_id=s.player_user);
- perform public.hud_player_registry(null,'__QA Renamed');
- begin perform public.hud_player_registry(s.other_id,'Foreign rename');exception when others then denied:=true;end;assert denied,'foreign record renamed';
+ denied:=false;begin perform public.hud_player_registry(null,'  __qa renamed  ');exception when others then denied:=sqlerrm like '%already registered%';end;assert denied,'duplicate registration did not warn';
+ denied:=false;begin perform public.hud_player_registry(s.other_id,'Foreign rename');exception when others then denied:=true;end;assert denied,'foreign record renamed';
  denied:=false;begin perform public.hud_player_registry(null,' ');exception when others then denied:=true;end;assert denied,'empty name accepted';
  perform public.hud_player_registry(null,'__QA Collision');denied:=false;
  begin perform public.hud_player_registry(s.player_id,'__QA Collision');exception when others then denied:=true;end;assert denied,'duplicate rename accepted';
+ chars:=public.hud_player_characters(s.player_id);assert chars @> '[{"name":"Registry PC"}]','played character not tracked';
+ cid:=(chars->0->>'id')::uuid;perform public.hud_player_characters(s.player_id,'remove',cid);
+ chars:=public.hud_player_characters(s.player_id,'save',null,'__QA Extra','Original description','Study');
+ cid:=(chars->0->>'id')::uuid;chars:=public.hud_player_characters(s.player_id,'save',cid,'__QA Extra Renamed','Edited description','Learn');
+ assert chars @> '[{"name":"__QA Extra Renamed","description":"Edited description","goal":"Learn"}]';
+ denied:=false;begin perform public.hud_player_characters(s.player_id,'save',null,'__qa extra renamed');exception when others then denied:=true;end;assert denied,'duplicate character accepted';
+ denied:=false;begin perform public.hud_player_characters(s.other_id);exception when others then denied:=true;end;assert denied,'foreign character access';
+ rid:=public.create_room_as_owner('__QA Character choices','Owner');
+ tok:=public.create_player_invitation(rid,'__QA Renamed','[{"name":"Explicit option"}]');update qa_registry set invite=tok;
+ data:=public.preview_scene_invitation(tok);assert data->'previous_characters' @> '[{"name":"__QA Extra Renamed"}]','manually added character not offered';
+ assert not data->'previous_characters' @> '[{"name":"Registry PC"}]','removed character still offered';
+
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',player_user,'role','authenticated')::text,true) from qa_registry;
+set local role authenticated;
+do $$declare s record;denied boolean:=false;begin
+ select * into s from qa_registry;
+ begin perform public.hud_player_characters(s.player_id);exception when others then denied:=true;end;assert denied,'player read privileged character list';
+ denied:=false;begin perform public.portal_redeem(s.invite,array['Registry PC']);exception when others then denied:=true;end;assert denied,'removed character redeemed from history';
+ perform public.portal_redeem(s.invite,array['__QA Extra Renamed']);assert jsonb_array_length(public.portal_character_log())=2,'history lost after editing saved list';
 end;$$;
 reset role;
 do $$begin
  assert (select count(*)=1 from private.portal_players where alias='__QA Renamed');
- assert (select count(*)=1 from private.character_appearances where player_id=(select player_id from qa_registry));
+ assert (select count(*)=2 from private.character_appearances where player_id=(select player_id from qa_registry));
 end;$$;
 update private.monkey_delegations set revoked_at=now() where monkey_id=(select monkey_id from qa_registry);
 select set_config('request.jwt.claims',jsonb_build_object('sub',monkey_id,'role','authenticated')::text,true) from qa_registry;
 set local role authenticated;
 do $$declare denied boolean:=false;begin
- begin perform public.hud_player_registry();exception when others then denied:=true;end;assert denied,'revoked HUD retained registry access';
+ begin perform public.hud_player_registry();exception when others then denied:=true;end;assert denied,'revoked HUD retained registry access';denied:=false;begin perform public.hud_player_characters((select player_id from qa_registry));exception when others then denied:=true;end;assert denied,'revoked HUD character access';
 end;$$;
 reset role;
 select set_config('request.jwt.claims','{}',true);

@@ -1,3 +1,13 @@
+# Paths HUD v0.7.6 — Expandable player forms and managed characters
+
+Register Player is a transparent toggle revealing a new-name field and adjacent red Register button. Player status appears next to their name. Rename reveals a hidden field and Save button; Characters opens a player-specific character editor with Add, Save and Remove actions. Character fields cover name, description and objective. Duplicate player registration now raises an explicit warning, including capitalization and outer-space variations.
+
+The new private.player_characters list is keyed to each stable player ID and seeded from prior appearances. Editing/removing saved choices preserves historical appearances and current room membership. Valid invitation previews include saved choices; redemption checks the same list. Explicit invitation options remain available, and actually playing one records it again. Renaming a character retains historical names for reminder lookup. CRUD requires the owner or an actively paired HUD; players, foreign records and revoked HUDs are denied. Gmail is not required; invitation redemption binds an anonymous browser account to the stable player ID. Web remains v0.7.5.
+
+Applied definition: db/hud-player-characters.sql. UI checks cover hidden forms, status/action placement and editor controls. Transactional integration checks cover duplicate registration warnings, CRUD, saved choices in preview/redemption, preserved history, and owner/player/foreign/revoked permissions. Existing full session lifecycle tests also pass.
+
+---
+
 # Paths HUD v0.7.5 — Previous-page navigation and unified session details
 
 The ☯ button navigates back through visited HUD pages, including Room Logs, chatrooms, registry, room tools and settings. Invalid/ended chat destinations fall back to Admin. Removed the duplicate selected-room title, active-room button list and refresh button from Current Session; Room Logs remains the route into chatrooms. The active-session selector sits directly below Current Session and refreshes both player/character participation and the saved Heavenly Calendar date. Its selection remains independent of the active chatroom. Participant rows now use larger, high-contrast 16px text with extra spacing.
