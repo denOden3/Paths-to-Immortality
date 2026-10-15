@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.3.2
+// @version      0.3.3
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,12 +24,12 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.3.2';
+  const VERSION = '0.3.3';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
   const GAME_URL = 'https://denoden3.github.io/Paths-to-Immortality/';
-  const GM_RULES_URL = 'https://app.notion.com/p/3f9b0ac52efe817ba56ed1d5112268b7';
+  const GM_RULES_URL = 'https://app.notion.com/p/3fab0ac52efe810caecfdf5da0270caf';
   const CODEX_URL = 'https://app.notion.com/p/3f7b0ac52efe81258310c96057391e18';
   const SAVE_PREFIX = 'paths.monkey.gm.v1.';
   const get = (k, fallback = null) => GM_getValue(SAVE_PREFIX + k, fallback);
@@ -229,7 +229,7 @@
       <div class="pm-divider"></div>
       <div class="pm-h">Reference shelves</div>
       <a class="pm-link" href="${CODEX_URL}" target="_blank" rel="noopener noreferrer">☁ Cloudveil World Codex ↗</a>
-      <a class="pm-link" href="${GM_RULES_URL}" target="_blank" rel="noopener noreferrer">☯ Shared Narrator Protocol ↗</a>
+      <a class="pm-link" href="${GM_RULES_URL}" target="_blank" rel="noopener noreferrer">📜 Narration Rules ↗</a>
       <a class="pm-link" href="${GAME_URL}" target="_blank" rel="noopener noreferrer">✦ Paths Web ↗</a>
       <div class="pm-divider"></div>
       <div class="pm-mute">Monkey only controls this HUD. ChatGPT still owns the actual narration and its blue Send button.</div>
@@ -505,7 +505,8 @@
   }
   function makeNarrateInstruction() {
     return 'Cloudveil GM: In Supabase Paths to Immortality, room '+selectedRoom.id+
-      ', fetch pending CHARACTER actions (kind=player) since the last narration and IGNORE OOC chat (kind=ooc). Follow Notion Shared Narrator Protocol GM-SHARED-01, narrate once and publish the result there. Test only; no Notion edits.';
+      ', FIRST fetch and read the current Narration Rules at '+GM_RULES_URL+
+      ' (Sections A Universal and C Shared; Section D only when ending a scene). Fetch relevant world canon and chronology where available. If retrieval fails, disclose it and ask for the rules; do not claim compliance. Then fetch pending CHARACTER actions (kind=player) since the last narration and IGNORE OOC chat (kind=ooc). Resolve one fair combined narration, and publish only via an actually authorized, verified Supabase write. If publishing fails, say so. Test only; no Notion edits.';
   }
   function copyText(value) {
     GM_setClipboard(value,'text');
