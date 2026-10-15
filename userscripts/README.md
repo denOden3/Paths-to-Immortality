@@ -8,7 +8,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.4.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.4.2**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 
@@ -85,3 +85,12 @@ The narrator must state plainly if it cannot retrieve Notion; it cannot claim co
 5. To revoke the grant, return to the Google owner's **Paths Web → ☯ Tools → Revoke access**. If you lose the anonymous Monkey identity or its browser storage, revoke the old pairing and authorize the replacement identity.
 
 The old invite-based Monkey-as-separate-player option remains in Settings as a legacy fallback for testing; it is hidden after pairing. Only rooms belonging to the authorizing Google account become accessible. Existing rooms owned by unrelated anonymous accounts are **not** transferred by pairing. Access tokens remain inside Tampermonkey's private storage and are never copied to GitHub or Paths Web. This is an explicitly user-approved connection; it does not grant access to Notion and doesn't yet automate sending GPT narration.
+
+## Paths HUD v0.4.2 — Rooms page and mobile navigation
+
+- The **☯ symbol beside the title** toggles the HUD information sidebar on narrow/mobile screens, replacing the separate three-line panel-list button. The Desktop sidebar continues to appear normally.
+- The sidebar now offers **📂 Rooms & sessions**. Open it to create an owner room, refresh the list, or choose an existing room. The previous room-creation/list inputs have been relocated from Monkey's briefcase to this dedicated page; they continue to use the same trusted owner pairing and existing Supabase identity.
+- **⚙ Monkey's briefcase** now focuses on connection and pairing/recovery; its verbose top explanation and duplicated 'Trusted HUD paired' badge were removed. The remaining confirmation appears once under Pairing & recovery.
+- The legacy option to join with an invitation (separate guest identity) remains with the room controls as a fallback for unpaired users. Owner authorization is still handled in Paths Web. The private pairing itself is not reset by these interface changes.
+- Paths Web remains the **actual shared client for Puuchan and future players**; HUD is the owner's in-ChatGPT control interface. Invitation creation and most player flows still require Paths Web until further implementation.
+- This is code-reviewed and JavaScript-syntax-checked; the Android Firefox layout and touch behavior require a real device check.
