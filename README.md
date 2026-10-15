@@ -1,3 +1,17 @@
+# Paths Web v0.7.1 — Simpler administration and ☯ menu
+
+**Website:** https://denoden3.github.io/Paths-to-Immortality/
+
+The administration page no longer has page-editing tabs, preview panels, or presentation-save buttons. It retains the player registry and actual room/session tools. Existing presentation settings still load; further layout changes are made in code.
+
+Tap **☯** beside the title for a compact popup with **← Back** and **Sign out**. Sign out is available only with a signed-in browser identity, and is no longer displayed in the page navigation or room lobby. Back follows the page context; leaving a player's ongoing room through this arrow preserves its browser re-entry record. The popup closes by tapping outside it, tapping ☯ again, pressing Escape, or choosing an action.
+
+This is a Web-only update. HUD v0.7.0 remains current and does not need updating for this change. Database permissions and session controls are unchanged. Existing DOM checks cover removed editors/inline signout, popup opening/closing and preserved ongoing-room re-entry; syntax checks also pass. Android visual/touch behavior still needs a real-device check.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web / HUD v0.7.0 — Invitation gate and session controls
 
 **Website:** https://denoden3.github.io/Paths-to-Immortality/
