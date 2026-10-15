@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.5.0</title>
+<title>Paths to Immortality · Cloudveil Session v0.5.1</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -84,7 +84,7 @@ body.authOpen{overflow:hidden}
 </style>
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.5.0</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open Paths Web tools" aria-label="Open Paths Web tools">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.5.1</div></header>
 <div class="content">
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
@@ -107,7 +107,7 @@ body.authOpen{overflow:hidden}
 <div id="introGuest" class="hidden">
 <p>Choose a guest role your host has approved for this session.</p>
 <div id="introRoles" class="buttons"></div>
-<p id="introRoleInfo" class="muted"></p>
+<p id="introRoleInfo" class="muted" style="white-space:pre-wrap"></p>
 <label for="introGuestName">Name your temporary character</label>
 <input id="introGuestName" maxlength="40" autocomplete="off" placeholder="Your character's name">
 </div>
@@ -533,7 +533,10 @@ async function loadInvitePreview(){
   for(const role of data.roles){
    const b=document.createElement('button');b.type='button';b.className='btn sm';b.textContent=role;
    b.onclick=()=>{selectedGuestRole=role;for(const btn of roles.children)btn.classList.toggle('primary',btn===b);
-     $('introRoleInfo').textContent='Role: '+role+'. Your actions must respect this role and the current scene.';};
+     const detail=(data.role_details||[]).find(x=>x.name===role);
+     $('introRoleInfo').textContent=detail?
+       (detail.description+'\nObjective: '+detail.goal):
+       ('Role: '+role+'. Your actions must respect this role and the current scene.');};
    roles.appendChild(b);
   }
  }
@@ -562,7 +565,9 @@ $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
 $('google').onclick=()=>safe(async()=>{const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
-$('guestTrial').onclick=()=>safe(async()=>{const {data,error}=await db.auth.signInAnonymously();if(error)throw Error('Temporary guest sign-in unavailable. Check that Anonymous Sign-Ins are enabled in Supabase. '+error.message);user=data.user;closeAuthDialog();await lobby();});
+// Guests now enter only through one-use personal invitation links.
+$('guestTrial').classList.add('hidden');
+$('guestTrial').onclick=()=>notice('Ask your host for a personal scene invitation link.','error');
 
 $('signout').onclick=()=>safe(async()=>{endLive();const {error}=await db.auth.signOut();if(error)throw error;user=null;room=null;show('welcome');$('networkStatus').textContent='Ready';});
 $('create').onclick=()=>safe(async()=>{const title=$('roomName').value.trim(),name=$('createName').value.trim();if(!title||!name)throw Error('Enter a room name and your character name.');const {data,error}=await db.rpc('create_room',{p_title:title,p_character_name:name});if(error)throw error;await openRoom(data);notice('Private room created. Tap ☯ for room administration and invitations.','good');});
