@@ -1,3 +1,15 @@
+# Paths Web v0.7.4 — Rooms and concluded-scene archive links
+
+**Rooms** replaces Rooms & sessions in Web navigation. Ongoing rooms open their chat; concluded rooms open a **Scene ended** page. Rooms are grouped by Ongoing / Concluded. Owner access and existing player revocation rules remain in place.
+
+The ended-scene page can record a Notion page URL. Status is deliberately **No Notion link recorded** / **Notion link saved**: the application does not upload to Notion, inspect that page, or claim an upload succeeded. The owner manually pastes the page link after archiving the scene. Links are private, owner-readable, restricted to HTTPS Notion domains, and associated with that room's specific session generation. Resetting the room cannot carry a previous scene's link into a new session. A stale concluded-scene page cannot save a link against a different session.
+
+This is a Web-only change; HUD v0.7.0 remains current. DOM checks cover grouped room labels, concluded routing and honest archive status. Database checks cover owner-only access, URL validation and session-generation isolation.
+
+---
+
+## Previous implementation notes (historical)
+
 # Paths Web v0.7.3 — Read-only player roster
 
 **Players** now lists registered names with **In a session** / **Not in a session**, active room titles and their selected characters. The total and session counts appear above the roster. Registration fields have been removed from Web; generating a HUD invitation still registers new player names automatically.

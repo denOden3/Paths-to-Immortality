@@ -14,6 +14,7 @@ do $$declare rid uuid;begin
  update qa_state set pending_a=public.create_player_invitation(rid,'__QA A','[{"name":"QA A3"}]');
  assert public.portal_player_roster() @> '[{"alias":"__QA A","in_session":false},{"alias":"__QA B","in_session":false}]'::jsonb,'invited players must not appear joined';
  update public.portal_presentation set settings='{"playerTitle":"QA {player}"}' where id;assert found;
+ assert public.portal_room_log() @> '[{"title":"__QA Unified room","session_state":"active"}]'::jsonb;
 end;$$;
 reset role;
 select set_config('request.jwt.claims',jsonb_build_object('sub',a,'role','authenticated')::text,true) from qa_state;
@@ -24,6 +25,8 @@ do $$declare s record;v jsonb;denied boolean;begin
  denied:=false;begin perform public.control_session(s.r,'reset');exception when others then denied:=true;end;assert denied,'player reset session';
  denied:=false;begin perform public.portal_manage_player();exception when others then denied:=true;end;assert denied,'registry leaked';
  denied:=false;begin perform public.portal_player_roster();exception when others then denied:=true;end;assert denied,'player read administrator roster';
+ denied:=false;begin perform public.portal_room_log();exception when others then denied:=true;end;assert denied,'player read private room log';
+ denied:=false;begin perform public.portal_record_notion_archive(s.r,gen_random_uuid(),'https://www.notion.so/fake');exception when others then denied:=true;end;assert denied,'player altered archive status';
  update public.portal_presentation set settings='{}' where id;assert not found,'player changed website';
  denied:=false;begin perform public.portal_redeem(s.inv_a,array['Forged character']);exception when others then denied:=true;end;assert denied,'unapproved character joined';
  perform public.portal_redeem(s.inv_a,array['QA A1','QA A2']);
@@ -86,6 +89,7 @@ do $$declare s record;denied boolean;begin
  assert (select count(*)=1 from public.room_members where room_id=s.r),'reset members remain';
  assert public.portal_player_roster() @> '[{"alias":"__QA A","in_session":false},{"alias":"__QA B","in_session":false}]'::jsonb,'reset roster status';
  assert public.get_scene_introduction_as_owner(s.r)->>'opening'='','reset introduction remains';
+ assert public.portal_concluded_room(s.r) is null,'active room presented as concluded';
  update qa_state set new_a=public.create_player_invitation(s.r,'__QA A','[{"name":"QA A3","description":"Another disciple"}]');
 end;$$;
 reset role;
@@ -99,6 +103,20 @@ do $$declare s record;v jsonb;begin
  assert (select count(*)=1 from public.rooms where id=s.r),'new session not accessible';
 end;$$;
 reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',owner_id,'role','authenticated')::text,true) from qa_state;
+set local role authenticated;
+do $$declare s record;page jsonb;denied boolean;begin
+ select * into s from qa_state;assert public.control_session(s.r,'end');page:=public.portal_concluded_room(s.r);
+ assert page->>'title'='__QA Unified room';assert page->>'notion_url' is null,'unknown archive falsely marked';
+ denied:=false;begin perform public.portal_record_notion_archive(s.r,s.generation,'https://www.notion.so/stale');exception when others then denied:=true;end;assert denied,'old generation accepted archive';
+ denied:=false;begin perform public.portal_record_notion_archive(s.r,(page->>'session_generation')::uuid,'https://notion.so.evil.example/fake');exception when others then denied:=true;end;assert denied,'non-Notion link accepted';
+ assert public.portal_record_notion_archive(s.r,(page->>'session_generation')::uuid,'https://app.notion.com/p/qa-scene');
+ assert public.portal_concluded_room(s.r)->>'notion_url'='https://app.notion.com/p/qa-scene';
+ assert public.portal_room_log() @> '[{"title":"__QA Unified room","session_state":"ended","notion_url":"https://app.notion.com/p/qa-scene"}]'::jsonb;
+ assert public.control_session(s.r,'reset');
+ assert public.portal_room_log() @> '[{"title":"__QA Unified room","session_state":"active","notion_url":null}]'::jsonb,'old archive leaked into new scene';
+end;$$;
+reset role;
 select set_config('request.jwt.claims','{}',true);
 set local role anon;
 do $$declare denied boolean;begin
@@ -107,5 +125,5 @@ do $$declare denied boolean;begin
  assert (select count(*)=1 from public.portal_presentation);
 end;$$;
 reset role;
-select 'PASS: unified multi-character entry, invitation privacy/expiry/one-use, owner-only moderation, kicked/ended room read/write denial, ended transcript retained, reset clears chat/introduction/members and rotates generation, new-code re-entry, character reminders, and owner-only roster membership/status transitions' as result;
+select 'PASS: unified multi-character entry, invitation privacy/expiry/one-use, owner-only moderation, kicked/ended room read/write denial, ended transcript retained, reset clears chat/introduction/members and rotates generation, new-code re-entry, character reminders, and owner-only roster status, room log privacy, Notion link validation and generation isolation' as result;
 rollback;

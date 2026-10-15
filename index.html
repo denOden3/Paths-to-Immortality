@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.3</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.4</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,10 +85,10 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.3</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.4</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
-<nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms &amp; sessions</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
+<nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
 <div class="card"><h2>Welcome, wandering cultivator!</h2>
@@ -112,12 +112,13 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="row rosterHeader"><h2>Players</h2><button id="refreshPlayers" class="btn sm">Refresh players</button></div><p class="muted">Players registered through your HUD invitations. “In a session” means they have joined an ongoing room.</p><p id="rosterSummary" class="muted" role="status" aria-live="polite"></p><div id="registeredPlayers" class="playerRoster"></div><p id="rosterFeedback" class="muted" role="status"></p></section>
 <section id="lobby" class="scroll hidden" role="tabpanel" aria-labelledby="navSessions">
-<div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms of Cloudveil</h2></div>
-<div class="card"><h3>Your rooms</h3><div id="roomList" class="muted">Loading rooms…</div></div>
+<div class="row" style="margin-bottom:10px"><h2 style="margin:0;font-size:17px">☁ Rooms</h2></div>
+<div class="card"><h3>Room log</h3><div id="roomList" class="muted">Loading rooms…</div></div>
 <div class="grid"><div id="ownerRoomRecovery" class="card hidden"><h3>Owner recovery · create a room</h3><p>The first player creates the room.</p><label for="createName">Your character</label><input id="createName" value="Xiao Lan" maxlength="40"><label for="roomName">Room title</label><input id="roomName" value="Cloudveil Test Hall" maxlength="80"><div class="buttons"><button id="create" class="btn primary">Create private room</button></div></div>
 <div class="card hidden"><h3>Legacy invitation code</h3><p>The second player needs a one-use invitation code.</p><label for="joinName">Your character</label><input id="joinName" value="Xu Yi" maxlength="40"><label for="joinCode">Invitation code</label><input id="joinCode" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="Paste invitation"><div class="buttons"><button id="join" class="btn primary">Join room</button></div></div></div>
 <div class="footer">Shared roleplay test · Room owners can now prepare ChatGPT narration</div>
 </section>
+<section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
 <div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
@@ -206,7 +207,7 @@ body.authOpen{overflow:hidden}
 <script type="module">
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
-let activeGeneration=null,guardTimer=null,guardPromise=null,rosterTimer=null,rosterPromise=null;
+let activeGeneration=null,guardTimer=null,guardPromise=null,rosterTimer=null,rosterPromise=null,concludedScene=null;
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
 let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
 let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,activeCharacter='';
@@ -253,10 +254,10 @@ $('modeSpeaker').onclick=()=>{
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
-const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveAdminScene'])$(id).disabled=v;};
+const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','create','join','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveAdminScene','saveArchiveLink'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
-  for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers'])$(x).classList.add('hidden');
+  for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   currentView=where;
@@ -264,8 +265,8 @@ const show=where=>{
   if(where==='adminPlayers'&&portalIdentity.is_admin)rosterTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshRegistry().catch(()=>{if(currentView==='adminPlayers')$('rosterFeedback').textContent='Could not refresh. Tap Refresh players to try again.';});},15000);
   closeHeaderMenu(false);
   $('portalNav').classList.toggle('hidden',!portalIdentity.is_admin||['welcome','identityGate'].includes(where));
-  $('adminGreeting').classList.toggle('hidden',!portalIdentity.is_admin||!['administration','lobby','adminPlayers'].includes(where));
-  for(const [id,panel] of [['navAdmin','administration'],['navSessions','lobby'],['navPlayers','adminPlayers']]){const tab=$(id),active=where===panel;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
+  $('adminGreeting').classList.toggle('hidden',!portalIdentity.is_admin||!['administration','lobby','adminPlayers','concludedRoom'].includes(where));
+  for(const [id,panel] of [['navAdmin','administration'],['navSessions','lobby'],['navPlayers','adminPlayers']]){const tab=$(id),active=where===panel||(where==='concludedRoom'&&panel==='lobby');tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;}
   $('toolsOpen').classList.remove('hidden');$('toolsOpen').title='Open navigation';$('toolsOpen').setAttribute('aria-label',$('toolsOpen').title);
 
 };
@@ -316,8 +317,29 @@ $('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
-async function lobby(){endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';
- $('ownerRoomRecovery').classList.toggle('hidden',!portalIdentity.is_admin);const {data,error}=await db.from('rooms').select('id,title,created_at').order('created_at',{ascending:false});if(error)throw error;const el=$('roomList');el.replaceChildren();if(!data.length){el.textContent='No sessions yet. Enter a session using your invitation code.';return;}for(const item of data){const btn=document.createElement('button');btn.className='btn roomButton';btn.textContent='☁ '+item.title;btn.onclick=()=>safe(()=>openRoom(item.id));el.append(btn);}}
+function renderRoomLog(items){
+ const host=$('roomList');host.replaceChildren();if(!items.length){host.append(el('p','muted','No rooms yet. Create a room from your HUD to begin.'));return;}
+ for(const [state,label]of [['active','Ongoing'],['ended','Concluded']]){const group=items.filter(x=>x.session_state===state);if(!group.length)continue;const section=el('section','roomLogGroup');section.append(el('h4','',label));for(const item of group){const button=el('button','btn roomLogButton'),head=el('span','row');button.type='button';head.append(el('strong','',item.title),el('span','playerStatus '+(state==='active'?'isInSession':'isNotInSession'),label));button.append(head);if(state==='ended')button.append(el('span','roomArchiveNote',item.notion_url?'Notion link saved':'No Notion link recorded'));button.onclick=()=>safe(()=>selectLoggedRoom(item));section.append(button);}host.append(section);}
+}
+async function selectLoggedRoom(item){if(item.session_state==='ended')await openConcludedRoom(item.id);else await openRoom(item.id);}
+async function lobby(){
+ endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';$('ownerRoomRecovery').classList.toggle('hidden',!portalIdentity.is_admin);
+ if(portalIdentity.is_admin){const {data,error}=await db.rpc('portal_room_log');if(error)throw error;renderRoomLog(data||[]);}
+ else{const {data,error}=await db.from('rooms').select('id,title,session_state').order('created_at',{ascending:false});if(error)throw error;renderRoomLog(data||[]);}
+}
+function renderConcludedRoom(data){
+ concludedScene=data;$('concludedTitle').textContent=data.title;$('concludedDate').textContent=data.ended_at?'Concluded '+new Date(data.ended_at).toLocaleString():'';
+ $('concludedMeta').textContent=[data.scene_date,data.location].filter(Boolean).join(' · ');$('concludedOpening').textContent=data.opening||'';
+ $('archiveStatus').textContent=data.notion_url?'Notion link saved':'No Notion link recorded';$('archiveUrl').value=data.notion_url||'';
+ const link=$('archiveLink');link.classList.toggle('hidden',!data.notion_url);if(data.notion_url)link.href=data.notion_url;else link.removeAttribute('href');
+ show('concludedRoom');
+}
+async function openConcludedRoom(id){
+ if(!portalIdentity.is_admin){returnToStart();return;}endLive();room=null;
+ const {data,error}=await db.rpc('portal_concluded_room',{p_room_id:id});if(error)throw error;if(!data){await lobby();return;}renderConcludedRoom(data);
+}
+$('concludedBack').onclick=()=>safe(lobby);
+$('saveArchiveLink').onclick=()=>safe(async()=>{if(!concludedScene||!portalIdentity.is_admin)throw Error('Open a concluded scene first.');const {data,error}=await db.rpc('portal_record_notion_archive',{p_room_id:concludedScene.id,p_generation:concludedScene.session_generation,p_url:$('archiveUrl').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving the Notion link.');await openConcludedRoom(concludedScene.id);notice('Notion link recorded.','good');});
 async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role,player_alias,allowed_characters,guest_role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];if(!members.some(x=>x.user_id===user?.id)&&!portalIdentity.is_admin){returnToStart();return;}$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
 $('ownerTools').classList.toggle('hidden',!isOwner);
 if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
@@ -384,7 +406,7 @@ async function fetchMessages(){
 }
 async function openRoom(id,expectedGeneration=null){
  endLive();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
- if(error)throw error;if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
+ if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  await fetchMembers();if(room!==id)return false;await fetchMessages();
@@ -664,7 +686,7 @@ function closeHeaderMenu(restoreFocus=true){
 async function returnFromPage(){
  closeHeaderMenu(false);
  if(currentView==='tools'){backFromTools();return;}
- if(currentView==='chat'&&portalIdentity.is_admin){await lobby();return;}
+ if(['chat','concludedRoom'].includes(currentView)&&portalIdentity.is_admin){await lobby();return;}
  if(['lobby','adminPlayers'].includes(currentView)&&portalIdentity.is_admin){await openAdministration();return;}
  const target=['administration','intro'].includes(currentView)?'identityGate':'welcome';
  returnToStart({preserveResume:true});show(target);
