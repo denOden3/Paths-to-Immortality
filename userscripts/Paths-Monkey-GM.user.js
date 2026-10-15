@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.4.1
+// @version      0.4.2
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.4.1';
+  const VERSION = '0.4.2';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -152,7 +152,6 @@
     #paths-monkey-root .pm-panel .pm-text{margin-bottom:5px}
     #paths-monkey-root .pm-panel p{color:var(--pm-muted);font-size:12px;margin:8px 0}
     #paths-monkey-root .pm-panel .pm-btn{margin:5px 4px 5px 0}
-    #paths-monkey-root .pm-drawer-toggle{display:none}
     #paths-monkey-root .pm-hide{display:none!important}
     #paths-monkey-root .pm-pill{font-size:11px;border-radius:30px;background:#4e343d;color:var(--pm-gold);
       padding:4px 9px;border:1px solid #855663}
@@ -199,7 +198,8 @@
       #paths-monkey-root .pm-left{display:none;width:min(280px,90vw);z-index:2;bottom:var(--pm-native,95px);
         box-shadow:9px 0 32px #000a}
       #paths-monkey-root .pm-left.pm-open{display:block}
-      #paths-monkey-root .pm-drawer-toggle{display:none!important}
+      #paths-monkey-root .pm-logo{cursor:pointer;touch-action:manipulation}
+      #paths-monkey-root .pm-logo[aria-expanded="true"]{background:#7b3646;border-color:var(--pm-gold)}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
       #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
       #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
@@ -222,7 +222,6 @@
       <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Toggle Paths HUD information sidebar" aria-expanded="false" aria-controls="pm-sidebar" title="Show or hide information panels">☯</button>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
-      <button id="pm-sidebar-toggle" type="button" class="pm-btn pm-mini pm-drawer-toggle" aria-label="Open Paths information panels" title="Information panels">☰</button>
       <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
@@ -275,7 +274,6 @@
     <div id="pm-settings" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-settings-title">
         <div class="pm-row"><h2 id="pm-settings-title">☯ Monkey's briefcase</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
-        <div id="pm-auth-status" class="pm-pill">Not connected</div>
         <div id="pm-pair-section" class="pm-hide">
           <div class="pm-pair-block">
             <div class="pm-h">🐒 Pairing & recovery</div>
@@ -346,7 +344,6 @@
     const isInRoom = !!(account && selectedRoom);
     $('room-title').textContent = selectedRoom?.title || 'Not connected';
     $('connection').textContent = !account ? 'Monkey not connected' : paired ? (selectedRoom?'Trusted HUD · linked to owner':'Trusted HUD · select a room') : (!selectedRoom?'Monkey identity ready · pairing needed':'Guest access · pairing recommended');
-    $('auth-status').textContent = !account?'Not connected':paired?'✓ Trusted HUD paired':'Monkey identity ready · unpaired';
     $('send').disabled = busy || !isInRoom;
     $('narrate').disabled = busy || !isInRoom;
     $('signin-section').classList.toggle('pm-hide', !!account);
@@ -517,7 +514,7 @@
     if (!joined) throw new Error('Joined, but the new room was not found in the list. Tap Refresh.');
     await chooseRoom(joined);
     feedback('Monkey joined '+joined.title+'. Xiao Lan may now post to your friend.');
-    closeSettings();
+    closeRoomPage();
   }
   async function chooseRoom(info) {
     saveDraft();
@@ -529,6 +526,8 @@
     await refreshScene();
     feedback('Connected to '+info.title);
     showSidebar=false;$('sidebar').classList.remove('pm-open');
+    $('logo-toggle').setAttribute('aria-expanded','false');
+    if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
   }
   async function refreshScene() {
     if (!selectedRoom || !account) return;
@@ -648,8 +647,10 @@
     }
   }
   function openRoomPage(){
-    previousFocus=document.activeElement;
+    previousFocus=window.matchMedia('(max-width:790px)').matches?$('logo-toggle'):document.activeElement;
     $('settings').classList.add('pm-hide');
+    showSidebar=false;$('sidebar').classList.remove('pm-open');
+    $('logo-toggle').setAttribute('aria-expanded','false');
     $('rooms-page').classList.remove('pm-hide');
     $('rooms-page-status').textContent=paired?'Trusted HUD · room ownership authorized':account?'Monkey connected · owner pairing not complete':'Connect the Monkey under ⚙ Settings first';
     setConnectedState();
@@ -661,9 +662,11 @@
     if(previousFocus?.focus)previousFocus.focus();
   }
   function toggleSidebar(){
+    if(!window.matchMedia('(max-width:790px)').matches)return;
     showSidebar=!showSidebar;
     $('sidebar').classList.toggle('pm-open',showSidebar);
     $('logo-toggle').setAttribute('aria-expanded',String(showSidebar));
+    $('logo-toggle').setAttribute('aria-label',showSidebar?'Close information panels':'Open information panels');
   }
   function openSettings() {
     previousFocus=document.activeElement;
@@ -794,14 +797,25 @@
   $('feed-toggle').onclick=()=>{showFeed=!showFeed;$('feed').classList.toggle('pm-hide',!showFeed);if(showFeed)runTask(refreshScene);};
   $('feed-close').onclick=()=>{showFeed=false;$('feed').classList.add('pm-hide');};
   $('feed-refresh').onclick=()=>runTask(refreshScene);
-  $('sidebar-toggle').onclick=toggleSidebar;
   $('minimize').onclick=()=>setHudMode('paths',false);
   $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
   $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('settings').classList.contains('pm-hide'))closeSettings();else if(e.key==='Escape'&&!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();else if(e.key==='Escape'&&!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();});
-  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();});
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape')return;
+    if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
+    else if(!$('settings').classList.contains('pm-hide'))closeSettings();
+    else if(showSidebar)toggleSidebar();
+    else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
+  });
+  window.addEventListener('resize',()=>{
+    resizeNativeInset();autoGrowAction();
+    if(window.innerWidth>790){
+      showSidebar=false;$('sidebar').classList.remove('pm-open');
+      $('logo-toggle').setAttribute('aria-expanded','false');
+    }
+  });
   window.addEventListener('beforeunload',saveDraft);
   if(typeof GM_registerMenuCommand==='function') {
     GM_registerMenuCommand('Open Paths of Immortality HUD',showPaths);
