@@ -43,7 +43,7 @@ vm.runInContext(`renderCharacterParticipants([{player_alias:'Puuchan',character_
 assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.ok(document.getElementById('pm-people').textContent.includes('Second PC'));
 await vm.runInContext("root.classList.add('pm-roomlogs-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-roomlogs-open'));
 for(const id of ['pm-room-title','pm-ongoing-list','pm-refresh-ongoing'])assert.equal(document.getElementById(id),null);
-assert.equal(document.getElementById('pm-character-session').previousElementSibling.tagName,'LABEL');assert.equal(document.getElementById('pm-character-session').previousElementSibling.previousElementSibling.tagName,'SUMMARY');
+assert.equal(document.getElementById('pm-character-session').previousElementSibling.tagName,'SUMMARY');assert.equal(document.getElementById('pm-character-session').getAttribute('aria-label'),'Active session');
 // Back from a chat opened via Room Logs returns to Room Logs, then Admin.
 await vm.runInContext(`hudHistory=[];selectedRoom={id:'a',session_state:'active'};setInfoVisible(true);rememberHudPage();root.classList.add('pm-roomlogs-open');rememberHudPage();setInfoVisible(false);toggleSidebar();`,context);
 assert.ok(root.classList.contains('pm-roomlogs-open'),'back from chat lost Room Logs');
@@ -84,6 +84,14 @@ await vm.runInContext(`rooms=[{id:'native-room',title:'New Jianghu Session',sess
 assert.equal(document.getElementById('pm-character-session').value,'native-room');assert.equal(document.getElementById('pm-character-session').selectedIndex,1);
 await vm.runInContext('renderOngoingSessions();',context);assert.equal(document.getElementById('pm-character-session').value,'native-room');
 await vm.runInContext('loadCharacterParticipants();',context);assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.ok(!document.getElementById('pm-calendar').textContent.includes('No active'));
+// The room shortcut follows the picker and never opens an ended room.
+assert.equal(document.getElementById('pm-open-picked-room').textContent,'New Jianghu Session');
+context.chooseRoom=async room=>{context.openedRoom=room.id;};
+await vm.runInContext('openPickedRoom();',context);assert.equal(context.openedRoom,'native-room');
+await vm.runInContext("rooms.push({id:'second',title:'Second room',session_state:'active'});renderOngoingSessions();$('character-session').value='second';renderPickedRoomButton();openPickedRoom();",context);
+assert.equal(document.getElementById('pm-open-picked-room').textContent,'Second room');assert.equal(context.openedRoom,'second');
+await vm.runInContext("rooms.find(x=>x.id==='second').session_state='ended';renderPickedRoomButton();openPickedRoom();",context);
+assert.ok(document.getElementById('pm-open-picked-room').classList.contains('pm-hide'));assert.ok(document.getElementById('pm-open-picked-room').disabled);
 // Desktop sidebar toggles without changing the selected main page.
 context.window.matchMedia=()=>({matches:true});
 vm.runInContext("root.classList.remove('pm-info-dismissed');root.classList.add('pm-registry-open');syncDesktopLayout();toggleInformation();",context);

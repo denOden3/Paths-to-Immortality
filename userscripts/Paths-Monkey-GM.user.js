@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.0
+// @version      0.8.1
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.0';
+  const VERSION = '0.8.1';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -285,7 +285,8 @@
 <button id="pm-open-registry" class="pm-btn pm-sidebar-action" type="button">Players Registry</button></details>
       <div id="pm-admin-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session</summary>
-      <label for="pm-character-session" class="pm-mute">Choose an active session</label><select id="pm-character-session" class="pm-text"><option value="">Choose a session</option></select>
+      <select id="pm-character-session" class="pm-text" aria-label="Active session"><option value="">Choose a session</option></select>
+      <button id="pm-open-picked-room" class="pm-btn pm-hide" type="button"></button>
       <div class="pm-divider"></div><div class="pm-h">Characters</div>
       <div id="pm-people" class="pm-mute">Participants not loaded</div>
       <div class="pm-divider"></div>
@@ -717,8 +718,18 @@
     select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=active.length?'Choose a session':!account?'Connect HUD in Settings':!roomsLoaded?'Loading active sessions…':'No active sessions available';select.append(empty);
     for(const item of active){const option=document.createElement('option');option.value=item.id;option.textContent=item.title;select.append(option);}select.value=target;
     for(const option of select.options)option.selected=option.value===target;
+    renderPickedRoomButton();
     if(target)loadCharacterParticipants(target).catch(e=>{$('people').textContent=e.message;});
     if(!target){participantRequest++;const message=!account?'Connect your HUD in Settings.':!roomsLoaded?'Loading active sessions…':'No active sessions available to this HUD.';$('people').textContent=message;$('calendar').textContent=message;}
+  }
+  function renderPickedRoomButton(){
+    const room=rooms.find(x=>x.id===$('character-session').value&&x.session_state==='active');
+    const button=$('open-picked-room');button.classList.toggle('pm-hide',!room);button.disabled=!room;
+    button.textContent=room?.title||'';button.setAttribute('aria-label',room?'Open room: '+room.title:'Open selected room');
+  }
+  async function openPickedRoom(){
+    const room=rooms.find(x=>x.id===$('character-session').value&&x.session_state==='active');
+    if(room)await chooseRoom(room);
   }
   function renderCharacterParticipants(items){
     const host=$('people');host.replaceChildren();
@@ -1057,7 +1068,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.8.09+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.8.19+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -1104,7 +1115,8 @@
   $('open-roomlogs').onclick=()=>runTask(openRoomLogs);
   $('roomlogs-back').textContent='← Back';$('roomlogs-back').onclick=()=>runTask(toggleSidebar);
   $('roomlogs-refresh').onclick=()=>runTask(async()=>{$('roomlogs-detail').replaceChildren();await loadRooms();});
-  $('character-session').onchange=()=>loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});
+  $('character-session').onchange=()=>{renderPickedRoomButton();loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});};
+  $('open-picked-room').onclick=()=>runTask(openPickedRoom);
   $('open-registry').onclick=()=>runTask(openRegistry);
   $('registry-back').textContent='← Back';$('registry-back').onclick=()=>runTask(toggleSidebar);
   $('registry-refresh').onclick=()=>runTask(refreshRegistry);

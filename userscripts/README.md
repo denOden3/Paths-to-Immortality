@@ -1,3 +1,5 @@
+HUD v0.8.1 adds a room shortcut directly below the active-session picker and removes its redundant visible label.
+
 # Paths Monkey — GM HUD
 
 Standalone **Paths of Immortality HUD** Tampermonkey userscript for the Paths world. The source lives in the Paths repository and does not modify Mizuhana's scripts or saves.
