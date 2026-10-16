@@ -90,5 +90,21 @@ assert.ok(root.classList.contains('pm-info-dismissed'));assert.ok(root.classList
 vm.runInContext('toggleInformation();',context);assert.ok(!root.classList.contains('pm-info-dismissed'));assert.ok(root.classList.contains('pm-registry-open'));assert.equal(document.getElementById('pm-sidebar').getAttribute('aria-hidden'),'false');
 assert.equal(document.getElementById('pm-settings').querySelector('.pm-panel').getAttribute('role'),'region');
 context.window.matchMedia=()=>({matches:false});vm.runInContext('syncDesktopLayout();',context);assert.equal(document.getElementById('pm-settings').querySelector('.pm-panel').getAttribute('role'),'dialog');
-console.log('PASS: native session selection/rebuild, participant/calendar loading, desktop sidebar toggle/main-page retention, mobile dialogs, navigation and Registry controls');
+// Exercise actual main-page routing, including an unconnected HUD.
+const roomPageCode=source.slice(source.indexOf('  function openRoomPage('),source.indexOf('  function resizeHudBody(){'));
+const settingsCode=source.slice(source.indexOf('  function openSettings()'),source.indexOf('  function resetIdentity()'));
+context.setConnectedState=()=>{};context.previousFocus=null;
+vm.runInContext(roomPageCode+settingsCode,context);
+await vm.runInContext("account=null;paired=false;setInfoVisible(true);openRoomPage('create');",context);
+assert.equal(document.getElementById('pm-rooms-page').classList.contains('pm-hide'),false);assert.ok(document.getElementById('pm-settings').classList.contains('pm-hide'),'Create redirected into Settings');
+assert.equal(document.getElementById('pm-manage-rooms').getAttribute('aria-current'),'page');assert.ok(!document.getElementById('pm-room-setup-settings').classList.contains('pm-hide'));
+vm.runInContext('openSettings();',context);
+assert.ok(document.getElementById('pm-rooms-page').classList.contains('pm-hide'),'Settings left Create visible');assert.equal(document.getElementById('pm-settings').classList.contains('pm-hide'),false);assert.equal(document.getElementById('pm-settings-toggle').getAttribute('aria-current'),'page');
+assert.equal(document.getElementById('pm-manage-rooms').getAttribute('aria-current'),null);
+await vm.runInContext('openRoomLogs();',context);
+assert.ok(document.getElementById('pm-settings').classList.contains('pm-hide'));assert.equal(document.getElementById('pm-open-roomlogs').getAttribute('aria-current'),'page');assert.equal(document.querySelectorAll('.pm-nav-active').length,1);
+await vm.runInContext('openRegistry();',context);
+assert.ok(!root.classList.contains('pm-roomlogs-open'));assert.equal(document.getElementById('pm-open-registry').getAttribute('aria-current'),'page');assert.equal(document.querySelectorAll('.pm-nav-active').length,1);
+vm.runInContext("openRoomPage('create');openSettings();closeSettings();",context);assert.equal(document.querySelectorAll('.pm-nav-active').length,0);
+console.log('PASS: exclusive page routing, active navigation indicator, Create/Settings separation, native session selection, desktop/sidebar/mobile behavior and Registry controls');
 })().catch(error=>{console.error(error);process.exitCode=1;});

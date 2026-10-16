@@ -1,3 +1,13 @@
+# Paths HUD v0.7.10 — Active navigation and separate Settings/Create pages
+
+Only the navigation button for the visible main page is highlighted, with aria-current=page. Create Room, Room Logs, Players Registry, Settings and Session tools update this state on entry/exit. Main-page navigation closes other tool/settings views so an old panel cannot mask the selected page.
+
+Create Room no longer automatically opens setup when unconnected: it remains a creation page with a setup explanation and an explicit Open Settings shortcut. Connection, pairing and recovery remain under the gear, now titled Settings. Desktop gear and minimize buttons are 44px controls with 24px symbols.
+
+DOM tests cover Create/Settings separation for unconnected HUDs, route exclusivity, exactly one active navigation indicator and indicator clearing. Existing picker, desktop/sidebar/mobile and Web checks pass. No database changes; Web remains v0.7.5.
+
+---
+
 # Paths HUD v0.7.9 — Desktop sidebar and explicit active-session selection
 
 Desktop widths above 790px keep Admin in a left sidebar, with Room Logs, Players Registry, chatrooms and tool/settings pages in the main area to its right. ☯ hides/restores the sidebar without changing the main page. Content reclaims the width while it is hidden. Desktop tool panels are nonmodal regions; mobile keeps the existing full-width information toggle and dialogs.

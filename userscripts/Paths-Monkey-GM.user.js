@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.9
+// @version      0.7.10
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.9';
+  const VERSION = '0.7.10';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -83,6 +83,7 @@
     #paths-monkey-root .pm-compact-version{font-size:10px;color:var(--pm-gold)}
     #paths-monkey-root .pm-btn{min-height:32px;border:1px solid var(--pm-stroke);border-radius:9px;
       padding:6px 10px;background:#3e303a;color:var(--pm-ink);font-weight:700}
+    #paths-monkey-root .pm-btn.pm-nav-active{background:#632732;border-color:var(--pm-gold);color:var(--pm-ink);box-shadow:inset 3px 0 var(--pm-gold)}
     #paths-monkey-root .pm-btn.pm-primary{background:var(--pm-red);border-color:#eb7777;color:#fff}
     #paths-monkey-root .pm-btn.pm-mini{padding:5px 8px;font-size:12px}
     #paths-monkey-root .pm-text{border:1px solid #a28a91;border-radius:10px;background:#17131b;
@@ -233,6 +234,7 @@
     #paths-monkey-root .pm-title-collapse .pm-title{flex:unset}
     #paths-monkey-root.pm-expanded{box-shadow:inset 0 0 0 2px #472a39}
     @media(min-width:791px){
+      #paths-monkey-root #pm-settings-toggle,#paths-monkey-root #pm-minimize{width:44px;height:44px;min-width:44px;padding:4px;font-size:24px;line-height:1}
       #paths-monkey-root{--pm-sidebar-width:clamp(260px,25vw,330px)}
       #paths-monkey-root.pm-info-dismissed{--pm-sidebar-width:0px}
       #paths-monkey-root .pm-left{display:block!important;right:auto;width:var(--pm-sidebar-width);bottom:var(--pm-native,95px);padding:14px;border-right:1px solid var(--pm-stroke)}
@@ -320,13 +322,13 @@
       <section class="pm-panel pm-room-page" role="dialog" aria-modal="true" aria-labelledby="pm-rooms-page-title">
         <div class="pm-row"><h2 id="pm-rooms-page-title">📂 Rooms & sessions</h2><button id="pm-rooms-page-close" class="pm-btn pm-mini" type="button">✕</button></div>
         <p id="pm-rooms-page-status">Create private rooms, choose a current session, or refresh your list.</p>
-        <div id="pm-room-management-content"></div>
+        <button id="pm-room-setup-settings" class="pm-btn pm-hide" type="button">Open Settings</button><div id="pm-room-management-content"></div>
         <button id="pm-rooms-page-done" class="pm-btn" type="button">Done</button>
       </section>
     </div>
     <div id="pm-settings" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-settings-title">
-        <div class="pm-row"><h2 id="pm-settings-title">☯ Monkey's briefcase</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
+        <div class="pm-row"><h2 id="pm-settings-title">Settings</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
         <div id="pm-pair-section" class="pm-hide">
           <div class="pm-pair-block">
             <div class="pm-h">🐒 Pairing & recovery</div>
@@ -721,8 +723,8 @@
       for(const item of group){const button=document.createElement('button');button.className='pm-btn pm-sidebar-action';button.type='button';button.textContent=item.title+' · '+title;button.onclick=()=>runTask(()=>openLoggedRoom(item.id));host.append(button);}
     }
   }
-  function closeRoomLogs(){root.classList.remove('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','true');}
-  async function openRoomLogs(){rememberHudPage();setInfoVisible(true);root.classList.add('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','false');$('roomlogs-back').focus();$('roomlogs-detail').replaceChildren();if(account)await loadRooms();else renderRoomLogs();}
+  function closeRoomLogs(){root.classList.remove('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','true');syncActiveNavigation();}
+  async function openRoomLogs(){rememberHudPage();setInfoVisible(true);root.classList.add('pm-roomlogs-open');$('roomlogs').setAttribute('aria-hidden','false');syncActiveNavigation();$('roomlogs-back').focus();$('roomlogs-detail').replaceChildren();if(account)await loadRooms();else renderRoomLogs();}
   async function openLoggedRoom(id){
     await loadRooms();const item=rooms.find(x=>x.id===id);if(!item){$('roomlogs-detail').textContent='This room is no longer available.';return;}
     if(item.session_state==='active'){await chooseRoom(item);return;}
@@ -835,20 +837,20 @@
     }
   }
   function openRoomPage(mode='manage'){
-    if(!account){openSettings();feedback('Connect your HUD in Settings first.');return;}
-    rememberHudPage();root.classList.toggle('pm-creating',mode==='create');
+    rememberHudPage();setInfoVisible(true);root.classList.toggle('pm-creating',mode==='create');
     $('rooms-page-title').textContent=mode==='create'?'Create a New Room':'Session tools';
     previousFocus=window.matchMedia('(max-width:790px)').matches?$('logo-toggle'):document.activeElement;
     $('settings').classList.add('pm-hide');
     $('rooms-page').classList.remove('pm-hide');
-    $('rooms-page-status').textContent=paired?'Trusted HUD · room ownership authorized':account?'Monkey connected · owner pairing not complete':'Connect the Monkey under ⚙ Settings first';
+    $('rooms-page-status').textContent=!paired?'Connect and pair your HUD in Settings before creating or managing rooms.':mode==='create'?'Name your new room and choose your character.':'Scene details, invitations and session controls.';
+    $('room-setup-settings').classList.toggle('pm-hide',paired);
     $('session-tools').classList.toggle('pm-hide',!paired||!selectedRoom);
     setConnectedState();
-    $('rooms-page-close').focus();
+    syncActiveNavigation();$('rooms-page-close').focus();
     if(account)runTask(loadRooms);
   }
   function closeRoomPage(){
-    $('rooms-page').classList.add('pm-hide');
+    $('rooms-page').classList.add('pm-hide');syncActiveNavigation();
     if(previousFocus?.focus)previousFocus.focus();
   }
   function resizeHudBody(){
@@ -866,6 +868,7 @@
   }
   function setInfoVisible(visible){
     root.classList.remove('pm-info-overlay','pm-info-dismissed');
+    $('settings').classList.add('pm-hide');$('rooms-page').classList.add('pm-hide');
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
     closeRegistry();closeRoomLogs();
     showSidebar=visible;
@@ -875,7 +878,7 @@
     $('logo-toggle').setAttribute('aria-expanded',String(visible||isDesktopLayout()));
     $('logo-toggle').setAttribute('aria-label',visible?'Close information panel':'Open information panel');
     showFeed=!visible;$('feed').classList.toggle('pm-hide',visible);
-    resizeHudBody();
+    resizeHudBody();syncActiveNavigation();
   }
   function toggleInformation(){
     if(isDesktopLayout()){root.classList.remove('pm-info-overlay');root.classList.toggle('pm-info-dismissed');syncDesktopLayout();resizeHudBody();return;}
@@ -887,6 +890,10 @@
     $('logo-toggle').setAttribute('aria-expanded',String(!open));
     $('logo-toggle').setAttribute('aria-label',open?'Open information panel':'Close information panel');
     if(!open)resizeHudBody();
+  }
+  function syncActiveNavigation(){
+    const page=captureHudPage();const active=page.view==='settings'?'settings-toggle':page.view==='registry'?'open-registry':page.view==='roomlogs'?'open-roomlogs':page.view==='roomtools'?(page.mode==='create'?'manage-rooms':'feed-toggle'):null;
+    for(const id of ['manage-rooms','open-roomlogs','open-registry','settings-toggle','feed-toggle']){const button=$(id),selected=id===active;button.classList.toggle('pm-nav-active',selected);if(selected)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');}
   }
   function captureHudPage(){
     const view=!$('settings').classList.contains('pm-hide')?'settings':!$('rooms-page').classList.contains('pm-hide')?'roomtools':root.classList.contains('pm-registry-open')?'registry':root.classList.contains('pm-roomlogs-open')?'roomlogs':showSidebar?'admin':'chat';
@@ -910,9 +917,9 @@
       const host=$(({admin:'sidebar',chat:'feed',registry:'registry',roomlogs:'roomlogs'})[target.view]||'sidebar');host.scrollTop=target.scroll||0;
     }finally{restoringHudPage=false;}
   }
-  function closeRegistry(){root.classList.remove('pm-registry-open');$('registry').setAttribute('aria-hidden','true');}
+  function closeRegistry(){root.classList.remove('pm-registry-open');$('registry').setAttribute('aria-hidden','true');syncActiveNavigation();}
   async function openRegistry(){
-    rememberHudPage();setInfoVisible(true);root.classList.add('pm-registry-open');$('registry').setAttribute('aria-hidden','false');$('registry-back').focus();await refreshRegistry();
+    rememberHudPage();setInfoVisible(true);root.classList.add('pm-registry-open');$('registry').setAttribute('aria-hidden','false');syncActiveNavigation();$('registry-back').focus();await refreshRegistry();
   }
   async function refreshRegistry(){
     if(!account||!paired){$('registry-list').replaceChildren();$('registry-status').textContent='Pair your HUD in Settings to manage players.';return;}
@@ -966,12 +973,12 @@
     renderRegistry(data||[]);$('registry-status').textContent=id?'Player name saved.':'Player registered.';if(!id){$('registry-name').value='';$('registry-create').classList.add('pm-hide');$('registry-toggle').setAttribute('aria-expanded','false');}
   }
   function openSettings() {
-    rememberHudPage();previousFocus=document.activeElement;
-    $('settings').classList.remove('pm-hide');setConnectedState();$('settings-close').focus();
+    rememberHudPage();previousFocus=document.activeElement;setInfoVisible(true);
+    $('settings').classList.remove('pm-hide');setConnectedState();syncActiveNavigation();$('settings-close').focus();
     if(account)runTask(loadRooms);
   }
   function closeSettings() {
-    $('settings').classList.add('pm-hide');
+    $('settings').classList.add('pm-hide');syncActiveNavigation();
     if(previousFocus?.focus)previousFocus.focus();
   }
   function resetIdentity() {
@@ -1028,7 +1035,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.99+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.109+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -1069,6 +1076,7 @@
   $('collapse-title').onclick=()=>setHudMode('paths',false);
 
   $('settings-toggle').onclick=openSettings;
+  $('room-setup-settings').onclick=openSettings;
   $('logo-toggle').onclick=toggleInformation;
   $('manage-rooms').onclick=()=>openRoomPage('create');
   $('open-roomlogs').onclick=()=>runTask(openRoomLogs);
