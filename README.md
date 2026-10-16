@@ -1,3 +1,7 @@
+## HUD v0.8.3 — compact character cards
+
+Saved characters now appear as collapsed bordered names. Expand a name to read its description and use Notion or Edit. Edit reveals the Notion importer, name, description and Save/Cancel/Remove controls. The Objective input is removed from new and existing character forms; older stored objectives are preserved when editing. Characters without a saved Notion link show the Notion control disabled until a link is checked in Edit.
+
 ## HUD v0.8.2
 
 The HUD now keeps its current page and draft forms while minimized. Players Registry adds read-only Notion character previews with editable fields and saved source links. The server importer is deployed; its Notion connection token must be configured as `NOTION_TOKEN` in Supabase Edge Function Secrets before live imports work. See `userscripts/README.md` for setup and supported summary placement.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.2
+// @version      0.8.3
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.2';
+  const VERSION = '0.8.3';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -129,7 +129,12 @@
     #paths-monkey-root .pm-player-heading{font-size:15px;margin-bottom:8px;overflow-wrap:anywhere}
     #paths-monkey-root .pm-player-heading .pm-mute{font-size:13px;font-weight:400}
     #paths-monkey-root .pm-btn.pm-registry-active{background:#632732;border-color:var(--pm-gold);color:var(--pm-ink)}
-    #paths-monkey-root .pm-character-card{border-top:1px solid var(--pm-stroke);padding:12px 0;margin-top:12px}
+    #paths-monkey-root .pm-character-card{border:1px solid var(--pm-stroke);border-radius:12px;padding:12px;margin-top:12px}
+    #paths-monkey-root .pm-saved-character>summary{cursor:pointer;font-weight:700;font-size:16px;padding:4px;min-height:28px}
+    #paths-monkey-root .pm-character-description{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
+    #paths-monkey-root .pm-character-editor{border-top:1px solid var(--pm-stroke);margin-top:12px;padding-top:12px}
+    #paths-monkey-root a.pm-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+    #paths-monkey-root a.pm-btn[aria-disabled=true]{opacity:.55;cursor:default}
     #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:65px}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
     #paths-monkey-root.pm-creating #pm-room-section,#paths-monkey-root.pm-creating #pm-prepared-invites{display:none!important}
@@ -986,35 +991,51 @@
   }
   function renderRegistryCharacters(player,host,items){
     host.replaceChildren();const note=document.createElement('p');note.className='pm-mute';note.textContent='Saved character choices. Removing one keeps past scenes and current room participation.';host.append(note);
-    const newForm=document.createElement('div');newForm.className='pm-character-card pm-hide';const newName=registryField('Character name','',40),newDescription=registryField('Description','',350,true),newGoal=registryField('Objective','',150);
+    const newForm=document.createElement('div');newForm.className='pm-character-card pm-hide';const newName=registryField('Character name','',40),newDescription=registryField('Description','',350,true);
     const addToggle=registryButton('Add Character',()=>{const open=newForm.classList.contains('pm-hide');newForm.classList.toggle('pm-hide',!open);addToggle.setAttribute('aria-expanded',String(open));if(open)newName.focus();});addToggle.setAttribute('aria-expanded','false');
-    const add=registryButton('Register Character',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value)),true);const newSource=attachNotionImporter(player,newForm,newName,newDescription,newGoal,'');newForm.append(newName,newDescription,newGoal,add);add.onclick=()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value,newSource()));host.append(addToggle,newForm);
+    const newSource=attachNotionImporter(player,newForm,newName,newDescription,'');
+    const add=registryButton('Register Character',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,'',newSource())),true);
+    newForm.append(newName,newDescription,add);host.append(addToggle,newForm);
     if(!items.length){const empty=document.createElement('p');empty.className='pm-mute';empty.textContent='No saved characters yet.';host.append(empty);}
-    for(const character of items){const row=document.createElement('div');row.className='pm-character-card';const name=registryField('Character name',character.name,40),description=registryField('Description',character.description,350,true),goal=registryField('Objective',character.goal,150);
-      const actions=document.createElement('div');actions.className='pm-row';const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,goal.value)));
-      const source=attachNotionImporter(player,row,name,description,goal,character.source_url||'');save.onclick=()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,goal.value,source()));
-      const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));actions.append(save,remove);row.append(name,description,goal,actions);host.append(row);
+    for(const character of items){
+      const card=document.createElement('details');card.className='pm-character-card pm-saved-character';
+      const heading=document.createElement('summary');heading.textContent=character.name;
+      const body=document.createElement('div');body.className='pm-character-body';
+      const descriptionText=document.createElement('p');descriptionText.className='pm-character-description';descriptionText.textContent=character.description||'No description saved yet.';
+      const editor=document.createElement('div');editor.className='pm-character-editor pm-hide';
+      const name=registryField('Character name',character.name,40),description=registryField('Description',character.description,350,true);
+      const source=attachNotionImporter(player,editor,name,description,character.source_url||'');
+      const notion=document.createElement('a');notion.className='pm-btn';notion.textContent='Notion';notion.target='_blank';notion.rel='noopener noreferrer';
+      if(/^https:\/\/www\.notion\.so\/[a-f0-9]{32}$/.test(character.source_url||''))notion.href=character.source_url;
+      else{notion.setAttribute('aria-disabled','true');notion.title='Add a Notion link through Edit → Check Page.';}
+      const edit=registryButton('Edit',()=>{const open=editor.classList.contains('pm-hide');editor.classList.toggle('pm-hide',!open);edit.setAttribute('aria-expanded',String(open));edit.classList.toggle('pm-registry-active',open);if(open)name.focus();});edit.setAttribute('aria-expanded','false');
+      const actions=document.createElement('div');actions.className='pm-row';actions.append(notion,edit);
+      const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,character.goal||'',source())),true);
+      const cancel=registryButton('Cancel',()=>{name.value=character.name;description.value=character.description||'';source.reset();editor.classList.add('pm-hide');edit.setAttribute('aria-expanded','false');edit.classList.remove('pm-registry-active');});
+      const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));
+      const editorActions=document.createElement('div');editorActions.className='pm-row';editorActions.append(save,cancel,remove);editor.append(name,description,editorActions);
+      body.append(descriptionText,actions,editor);card.append(heading,body);host.append(card);
     }
   }
-  function attachNotionImporter(player,form,name,description,goal,initialSource){
+  function attachNotionImporter(player,form,name,description,initialSource){
     let sourceUrl=initialSource;const link=registryField('Notion character page link',initialSource,2000);link.placeholder='Paste the character’s Notion page link';link.type='url';
     const status=document.createElement('p');status.className='pm-mute';status.setAttribute('role','status');
     const source=document.createElement('a');source.className='pm-link';source.target='_blank';source.rel='noopener noreferrer';source.textContent='Open character in Notion ↗';
     function showSource(){source.classList.toggle('pm-hide',!sourceUrl);if(sourceUrl)source.href=sourceUrl;else source.removeAttribute('href');}showSource();
     const check=registryButton('Check Page',()=>runTask(async()=>{
-      const input=link.value.trim(),snapshot=[name.value,description.value,goal.value];
+      const input=link.value.trim(),snapshot=[name.value,description.value];
       if(!input)throw new Error('Paste a Notion character page link first.');
       status.textContent='Checking Notion page…';
       try{
         const data=await authed('POST','/functions/v1/notion-character-preview',{body:{player_id:player.id,url:input},timeout:90000});
-        if(!form.isConnected||link.value.trim()!==input||snapshot.some((v,i)=>v!==[name.value,description.value,goal.value][i])){status.textContent='The form changed while checking. Check again to fill it.';return;}
-        name.value=data.name;description.value=data.description;goal.value=data.goal;sourceUrl=data.source_url;link.value=sourceUrl;showSource();
+        if(!form.isConnected||link.value.trim()!==input||snapshot.some((v,i)=>v!==[name.value,description.value][i])){status.textContent='The form changed while checking. Check again to fill it.';return;}
+        name.value=data.name;description.value=data.description;sourceUrl=data.source_url;link.value=sourceUrl;showSource();
         status.textContent='Draft ready. Review and edit it before saving. '+(data.warnings||[]).join(' ');
       }catch(e){status.textContent=e.message;throw e;}
     }));
     link.oninput=()=>{sourceUrl='';showSource();status.textContent='Check the new link before saving its source.';};
     const inputRow=document.createElement('div');inputRow.className='pm-input-row';inputRow.append(link,check);form.append(inputRow,status,source);
-    return ()=>sourceUrl;
+    const readSource=()=>sourceUrl;readSource.reset=()=>{sourceUrl=initialSource;link.value=initialSource;status.textContent='';showSource();};return readSource;
   }
   async function changeRegistryCharacter(player,host,action,id,name=null,description='',goal='',sourceUrl=''){
     if(!paired||!account)throw new Error('Pair your HUD before managing characters.');
