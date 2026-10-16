@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.0</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.1</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.0</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.1</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -356,11 +356,11 @@ async function refreshChatPanel(){
  host.replaceChildren(el('h2','',view==='session'?'Session Info':view==='scene'?'Scene · '+character:'Inventory · '+character));
  if(view==='session'){const facts=data.session||{};host.append(el('h3','',facts.title));for(const [label,value] of [['Status',facts.status],['In-world date',[facts.date,facts.time].filter(Boolean).join(' · ')],['Starting location',facts.starting_location],['Opening situation',facts.opening],['Session goals',facts.goals]]){const block=el('div','workspaceFact');block.append(el('strong','',label),el('p','sceneCopy',value||'Not recorded'));host.append(block);}return;}
  if(view==='scene'){if(!data.scene){host.append(el('p','muted','Your current location has not been confirmed by the Jade Emperor yet.'));return;}host.append(el('h3','',data.scene.location),el('p','sceneCopy',data.scene.description));return;}
- host.append(el('p','muted','Player-reported items. Changes are logged; the narrator confirms story outcomes.'));
+ host.append(el('p','muted','Narrator-confirmed changes update automatically. Manual changes are logged.'));
  for(const item of data.inventory||[]){const card=el('article','card'),row=el('div','inventoryActions');card.append(el('h3','',item.name+' × '+item.quantity));if(item.note)card.append(el('p','sceneCopy',item.note));const qty=workspaceField('Quantity','number','1'),remove=el('button','btn','Remove');remove.type='button';remove.onclick=()=>safe(async()=>{await changeInventory(id,character,{p_action:'remove',p_item:item.id,p_quantity:Number(qty.input.value)});});row.append(qty.wrap,remove);card.append(row);host.append(card);}
  if(!(data.inventory||[]).length)host.append(el('p','muted','No items recorded.'));
  if(data.can_edit_inventory){const form=el('form','card inventoryForm'),name=workspaceField('Item name','text',''),qty=workspaceField('Quantity','number','1'),note=workspaceField('Note (optional)','text',''),add=el('button','btn primary','Add item');add.type='submit';form.append(name.wrap,qty.wrap,note.wrap,add);form.onsubmit=e=>{e.preventDefault();safe(async()=>{await changeInventory(id,character,{p_action:'add',p_name:name.input.value.trim(),p_quantity:Number(qty.input.value),p_note:note.input.value.trim()});});};host.append(form);}
- const log=el('details','inventoryLog');log.append(el('summary','','Recent changes'));for(const entry of data.changes||[])log.append(el('p','',entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+new Date(entry.created_at).toLocaleString()));host.append(log);
+ const log=el('details','inventoryLog');log.append(el('summary','','Recent changes'));for(const entry of data.changes||[])log.append(el('p','',entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+entry.source+' · '+new Date(entry.created_at).toLocaleString()));host.append(log);
 }
 async function changeInventory(id,character,body){if(room!==id||activeCharacter!==character)return;const {data,error}=await db.rpc('change_character_inventory',{p_room:id,p_character:character,...body});if(error)throw error;if(data!==true)throw Error('Could not confirm inventory change.');if(room===id&&activeCharacter===character&&chatPanelView==='inventory')await refreshChatPanel();}
 $('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));
@@ -406,7 +406,7 @@ async function fetchMessages(){
   const active=room;
   const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
   if(error)throw error;if(room!==active)return;
-  roomMessages=data||[];
+  const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=data||[];if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
   const el=$('feed'),nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
   if(!roomMessages.length){
@@ -418,7 +418,7 @@ async function fetchMessages(){
     const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):(m.character_name||characterNameFor(m.sender_id));
     const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(m.edited_at?' · edited':'');
     by.append(name,date);
-    const body=document.createElement('div');body.className='body';body.textContent=m.body;
+    const body=document.createElement('div');body.className='body';body.textContent=m.kind==='narrator'?m.body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim():m.body;
     box.append(by,body);installLongPress(box,m);el.append(box);
   }
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;

@@ -63,7 +63,7 @@ vm.runInContext(`(async()=>{
  await toggleChatPanel('session');assert.ok(!$('feed').classList.contains('hidden'));assert.equal($('msg').value,'Unsent action');
  await toggleChatPanel('scene');assert.ok($('chatPanel').textContent.includes('has not been confirmed'));assert.ok(!$('chatPanel').textContent.includes('Opening Gate'));
  workspace.scene={location:'Garden',description:'Moss along a stone path.'};await refreshChatPanel();assert.ok($('chatPanel').textContent.includes('Moss along a stone path.'));assert.equal($('sessionInfo').getAttribute('aria-pressed'),'false');assert.equal($('currentScene').getAttribute('aria-pressed'),'true');
- await toggleChatPanel('inventory');assert.ok($('chatPanel').querySelector('form'));assert.ok($('chatPanel').textContent.includes('Player-reported'));await toggleChatPanel('inventory');assert.equal($('msg').value,'Unsent action');
+ await toggleChatPanel('inventory');assert.ok($('chatPanel').querySelector('form'));assert.ok($('chatPanel').textContent.includes('Narrator-confirmed'));await toggleChatPanel('inventory');assert.equal($('msg').value,'Unsent action');
  let signedOut=false;portalIdentity={is_admin:false};user={id:'wrong-google-account'};db={auth:{signOut:async()=>{signedOut=true;}}};await finishAdministratorSignIn();assert.ok(signedOut);assert.equal(user,null);assert.equal(currentView,'welcome');
  // A kicked, ended, or reset participant must lose the visible chat and its composer.
  for(const record of [null,{id:'room',session_state:'ended',session_generation:'old'},{id:'room',session_state:'active',session_generation:'new'}]){

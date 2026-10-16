@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.11
+// @version      0.8.12
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.11';
+  const VERSION = '0.8.12';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -187,8 +187,6 @@
     #paths-monkey-root .pm-oocBubble{border-style:dashed;background:#3a3444}
     #paths-monkey-root .pm-oocBubble .pm-by{color:#d7bce5}
     #paths-monkey-root .pm-actions{margin-top:12px;display:flex;column-gap:16px;row-gap:10px;align-items:center;flex-wrap:wrap}
-    #paths-monkey-root .pm-actions #pm-identity-toggle{margin-left:auto;
-      margin-right:clamp(0px, calc(100vw - 310px), 76px)}
     /* Desktop: give the full HUD a legible title while preserving mobile controls. */
     @media(min-width:900px){
       #paths-monkey-root .pm-hbar .pm-title{font-size:20px;line-height:1.15;letter-spacing:.018em}
@@ -342,7 +340,13 @@
       #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
       #paths-monkey-root .pm-btn.pm-mini{padding:10px 12px}
     }
-  `);
+
+    #paths-monkey-root .pm-composer-line{display:grid!important;grid-template-columns:minmax(0,1fr) auto auto;align-items:stretch;}
+    #paths-monkey-root #pm-identity-toggle{position:static!important;inset:auto!important;transform:none!important;float:none!important;margin:0!important;align-self:stretch;max-width:220px;white-space:normal;overflow-wrap:anywhere;}
+    #paths-monkey-root .pm-actions button[aria-pressed="true"]{border-color:var(--pm-gold);background:#642b36;}
+    #paths-monkey-root .pm-workspace-copy{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}
+    @media(max-width:600px){#paths-monkey-root .pm-composer-line #pm-action{grid-column:1/-1;}#paths-monkey-root #pm-identity-toggle{grid-column:2;}#paths-monkey-root #pm-send{grid-column:3;}}
+`);
 
   const root = document.createElement('div');
   root.id = 'paths-monkey-root';
@@ -390,18 +394,19 @@
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
-      <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div>
+      <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
+          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">Xiao Lan</button>
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
         <div class="pm-actions">
           <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
-          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Bright: character action. Dim: out-of-character player chat.">Xiao Lan</button>
+          <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button>
         </div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
@@ -826,7 +831,7 @@
     renderKickPlayers();renderSessionInformation();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
-    renderFeed();
+    renderFeed();const latestNarration=[...messages].reverse().find(message=>message.kind==='narrator')?.id||'',newNarration=latestNarration!==hudWorkspaceNarration;hudWorkspaceNarration=latestNarration;if(hudWorkspaceView&&(hudWorkspaceView!=='inventory'||newNarration))refreshHudWorkspace().catch(e=>feedback(e.message));
   }
   function renderOngoingSessions(){updateCharacterSessionPicker(rooms.filter(x=>x.session_state==='active'));}
   let participantRequest=0;
@@ -882,6 +887,26 @@
     const host=$('roomlogs-detail');host.replaceChildren();const heading=document.createElement('h3');heading.textContent='Scene ended';const name=document.createElement('p');name.textContent=item.title;host.append(heading,name);
     if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}host.scrollIntoView?.({block:'nearest'});
   }
+  let hudWorkspaceView='',hudWorkspaceRequest=0,hudWorkspaceNarration='';
+  function visibleNarration(body){return body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim();}
+  function closeHudWorkspace(){hudWorkspaceView='';++hudWorkspaceRequest;$('workspace').classList.add('pm-hide');$('feed-messages').classList.remove('pm-hide');for(const id of ['session-info','scene-view','inventory-view'])$(id).setAttribute('aria-pressed','false');}
+  async function toggleHudWorkspace(view){if(!selectedRoom)return;if(hudWorkspaceView===view){closeHudWorkspace();return;}hudWorkspaceView=view;const select=$('workspace-character'),prior=select.value;select.replaceChildren();const seen=new Set();for(const member of members)for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name]){if(!name||seen.has(name))continue;seen.add(name);const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}select.value=seen.has(prior)?prior:members.find(member=>member.role==='owner')?.character_name||select.options[0]?.value||'';
+    $('workspace').classList.remove('pm-hide');$('feed-messages').classList.add('pm-hide');for(const [key,id] of [['session','session-info'],['scene','scene-view'],['inventory','inventory-view']])$(id).setAttribute('aria-pressed',String(key===view));await refreshHudWorkspace();resizeHudBody();}
+  async function refreshHudWorkspace(){
+    if(!hudWorkspaceView||!selectedRoom)return;const id=selectedRoom.id,character=$('workspace-character').value,view=hudWorkspaceView,request=++hudWorkspaceRequest,host=$('workspace-content');host.textContent='Loading…';
+    const data=await authed('POST','/rest/v1/rpc/room_player_panel',{body:{p_room:id,p_character:character}});if(request!==hudWorkspaceRequest||selectedRoom?.id!==id||$('workspace-character').value!==character)return;
+    let stateStatus=null;if(paired){const statuses=await authed('POST','/rest/v1/rpc/narration_state_status',{body:{p_room:id}});stateStatus=statuses?.[0];}if(request!==hudWorkspaceRequest||selectedRoom?.id!==id)return;
+    host.replaceChildren();if(stateStatus){const status=document.createElement('p');status.className='pm-mute';status.textContent=stateStatus.status==='applied'?'Latest narrator state update applied.':'Latest narrator state update rejected: '+stateStatus.error;host.append(status);}const title=document.createElement('h2');title.textContent=view==='session'?'Session Info':view==='scene'?'Scene · '+character:'Inventory · '+character;host.append(title);
+    function text(label,value){const heading=document.createElement('h3'),copy=document.createElement('p');heading.textContent=label;copy.textContent=value||'Not recorded';copy.className='pm-workspace-copy';host.append(heading,copy);}
+    if(view==='session'){for(const [label,value] of [['Room',data.session.title],['Status',data.session.status],['In-world date',[data.session.date,data.session.time].filter(Boolean).join(' · ')],['Starting location',data.session.starting_location],['Opening situation',data.session.opening],['Session goals',data.session.goals]])text(label,value);return;}
+    if(view==='scene'){if(data.scene)text(data.scene.location,data.scene.description);else text('Current scene','No confirmed current location has been recorded yet.');return;}
+    text('Items','Narrator-confirmed changes update automatically. Manual changes are logged.');
+    for(const item of data.inventory||[]){const card=document.createElement('div');card.className='pm-pair-block';const heading=document.createElement('h3'),note=document.createElement('p'),row=document.createElement('div');heading.textContent=item.name+' × '+item.quantity;note.textContent=item.note;row.className='pm-row';const quantity=registryField('Quantity','1',7);quantity.type='number';quantity.min='1';quantity.max=String(item.quantity);row.append(registryFieldGroup(quantity),registryButton('Remove',()=>runTask(()=>changeHudInventory(id,character,{p_action:'remove',p_item:item.id,p_quantity:Number(quantity.value)}))));card.append(heading,note,row);host.append(card);}
+    if(!data.inventory?.length)text('Inventory','No items recorded.');
+    if(data.can_edit_inventory){const form=document.createElement('form');form.className='pm-pair-block';const name=registryField('Item name','',80),quantity=registryField('Quantity','1',7),note=registryField('Note (optional)','',350);quantity.type='number';quantity.min='1';quantity.max='1000000';form.append(registryFieldGroup(name),registryFieldGroup(quantity),registryFieldGroup(note),registryButton('Add item',()=>runTask(()=>changeHudInventory(id,character,{p_action:'add',p_name:name.value.trim(),p_quantity:Number(quantity.value),p_note:note.value.trim()}))));form.onsubmit=event=>event.preventDefault();host.append(form);}
+    const changes=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Recent changes';changes.append(summary);for(const entry of data.changes||[]){const copy=document.createElement('p');copy.textContent=entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+entry.source;changes.append(copy);}host.append(changes);
+  }
+  async function changeHudInventory(id,character,body){if(selectedRoom?.id!==id)return;const success=await authed('POST','/rest/v1/rpc/change_character_inventory',{body:{p_room:id,p_character:character,...body}});if(success!==true)throw new Error('Could not confirm inventory change.');if(selectedRoom?.id===id&&$('workspace-character').value===character)await refreshHudWorkspace();}
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
     const el=$('feed-messages');el.replaceChildren();
@@ -893,7 +918,7 @@
       const by=document.createElement('div');by.className='pm-by';
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
       by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
-      const content=document.createElement('div');content.textContent=msg.body;
+      const content=document.createElement('div');content.textContent=msg.kind==='narrator'?visibleNarration(msg.body):msg.body;
       bubble.append(by,content);el.append(bubble);
     }
     el.scrollTop=el.scrollHeight;
@@ -931,7 +956,7 @@
   function makeNarrateInstruction() {
     return 'Cloudveil GM: In Supabase Paths to Immortality, room '+selectedRoom.id+
       ', FIRST fetch and read the current Narration Rules at '+GM_RULES_URL+
-      ' (Sections A Universal and C Shared; Section D only when ending a scene). Fetch relevant world canon and chronology where available. If retrieval fails, disclose it and ask for the rules; do not claim compliance. Read the saved scene introduction, date/time, location and session goals; goals are directions to explore, not guaranteed outcomes. Then fetch pending CHARACTER actions (kind=player) since the last narration and IGNORE OOC chat (kind=ooc). Resolve one fair combined narration, and publish only via an actually authorized, verified Supabase write. If publishing fails, say so. Test only; no Notion edits.';
+      ' (Sections A Universal and C Shared; Section D only when ending a scene). Fetch relevant world canon and chronology where available. If retrieval fails, disclose it and ask for the rules; do not claim compliance. Read the saved scene introduction, date/time, location and session goals; goals are directions to explore, not guaranteed outcomes. Then fetch pending CHARACTER actions (kind=player) since the last narration and IGNORE OOC chat (kind=ooc). Resolve one fair combined narration, and publish only via an actually authorized, verified Supabase write. If publishing fails, say so. Test only; no Notion edits. For automatic inventory and current Scene tracking, append a [PATHS_STATE] JSON [/PATHS_STATE] block to the published narration body, using version 1 and arrays inventory and scenes. Example: [PATHS_STATE]{"version":1,"inventory":[{"character":"exact participating character name","item":"Apple","delta":2,"note":"Optional brief note"}],"scenes":[{"character":"exact participating character name","location":"Confirmed current place","description":"Confirmed visible surroundings"}]}[/PATHS_STATE]. Only include changes actually resolved in this narration: gains use positive delta; consumed, lost or thrown-away items use negative delta. Never infer ownership from plans, dialogue, failed attempts or OOC. Do not repeat earlier gains. Omit unchanged scenes and items. If no current Scene is recorded yet, include the current location and visible description actually established by this narration. Read room_player_panel first to check current inventory and scene; never subtract more than held. Publish through the authorized owner narrator RPC so the state block is applied once with that message, then verify narration_state_status reports applied. A rejected record leaves the narrative posted but applies none of its state changes; report the error. Never claim an update was saved without verification.';
   }
   function copyText(value) {
     GM_setClipboard(value,'text');
@@ -1022,7 +1047,7 @@
     $('sidebar').setAttribute('aria-hidden',String(!open));$('logo-toggle').setAttribute('aria-expanded',String(open));
   }
   function setInfoVisible(visible){
-    root.classList.remove('pm-info-overlay','pm-info-dismissed');
+    closeHudWorkspace();root.classList.remove('pm-info-overlay','pm-info-dismissed');
     $('settings').classList.add('pm-hide');$('rooms-page').classList.add('pm-hide');
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
     closeRegistry();closeRoomLogs();
@@ -1320,6 +1345,10 @@
   $('feed-close').textContent='← Back';$('feed-close').onclick=()=>runTask(toggleSidebar);
   $('feed-refresh').onclick=()=>runTask(refreshScene);
   $('minimize').onclick=()=>setHudMode('paths',false);
+  $('session-info').onclick=()=>runTask(()=>toggleHudWorkspace('session'));
+  $('scene-view').onclick=()=>runTask(()=>toggleHudWorkspace('scene'));
+  $('inventory-view').onclick=()=>runTask(()=>toggleHudWorkspace('inventory'));
+  $('workspace-character').onchange=()=>runTask(refreshHudWorkspace);
   $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
   $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});

@@ -1,3 +1,11 @@
+## HUD v0.8.12 / Web v0.8.1 — automatic published state updates
+
+The HUD speaker switch occupies its own grid cell beside Send, with a separate row on narrow screens. Session Info, Scene and Inventory sit beside Session Tools and toggle within the chat body while preserving the composer. Paired owner HUDs may inspect participating characters' panels and inventories; ordinary players remain restricted to their own participating characters. Owner characters now have persistent inventory identities too.
+
+The Narrate instruction requests a version-1 PATHS_STATE block on authorized published narration. A server trigger validates and applies inventory deltas and current-scene checkpoints once per message, logs narrator provenance, and keeps discovered descriptions in the location ideas bank. Invalid records roll back all their state changes while retaining the narration and a rejected receipt; receipt status is visible in the owner HUD panels. Player/OOC text cannot apply state records. Structured blocks are hidden in the HUD and Web story display. Plain prose, unpublished ChatGPT replies and old messages are not automatically inferred or backfilled.
+
+Also corrected the existing active-room guard to allow authorized owner narration with a null player sender while retaining membership checks for player posts. Tests cover published gains/use, owner and guest inventory, scene changes, spoof attempts, retries and atomic rejection.
+
 ## Web v0.8.0 / HUD v0.8.11 — player workspace
 
 The speaker switch sits beside Send; Session Info, Scene and Inventory replace the message feed when selected, preserve the composer/draft, and return to chat on a second click. Session Info is read-only. Scene uses only owner-confirmed current-location checkpoints, never the starting location as a fallback. HUD Session Tools includes Current scene & location ideas bank: record a participating character's current location/description and browse the latest 50 saved discoveries across rooms. This bank is stored in Supabase; nothing is automatically published to Notion.
