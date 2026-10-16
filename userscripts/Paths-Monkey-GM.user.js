@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.10
+// @version      0.8.11
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.10';
+  const VERSION = '0.8.11';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -463,6 +463,7 @@
           <button id="pm-join" type="button" class="pm-btn pm-primary">Join invited room</button></div>
           <div id="pm-session-tools" class="pm-pair-block pm-hide">
             <div class="pm-h">Current session</div><div id="pm-current-session-info" aria-live="polite"></div><div class="pm-divider"></div>
+            <details id="pm-scene-checkpoint"><summary>Current scene &amp; location ideas bank</summary><p class="pm-mute">Record a confirmed current location for each character. Each save also keeps the description in your ideas bank.</p><label class="pm-label" for="pm-scene-character">Character</label><select id="pm-scene-character" class="pm-text"></select><label class="pm-label" for="pm-current-place">Current location</label><input id="pm-current-place" class="pm-text" maxlength="150"><label class="pm-label" for="pm-current-description">Confirmed description</label><textarea id="pm-current-description" class="pm-text" rows="4" maxlength="4000"></textarea><button id="pm-record-current-scene" class="pm-btn" type="button">Record current scene</button><details><summary>Recent location ideas</summary><button id="pm-refresh-location-ideas" class="pm-btn" type="button">↻ Refresh ideas</button><div id="pm-location-ideas"></div></details></details><div class="pm-divider"></div>
             <div class="pm-h">☯ Session control</div><p id="pm-session-status" class="pm-mute"></p>
             <label class="pm-label" for="pm-kick-player">Player in this room</label><select id="pm-kick-player" class="pm-text"><option value="">Select a player</option></select><button id="pm-kick-player-button" class="pm-btn" type="button">Kick player from the room</button>
             <div class="pm-row"><button id="pm-end-session" class="pm-btn" type="button">End session</button><button id="pm-reset-session" class="pm-btn" type="button">Reset session</button></div><div class="pm-divider"></div>
@@ -734,6 +735,14 @@
     await loadRooms();
     setConnectedState();
   }
+  async function loadSceneLocationIdeas(){
+    if(!paired||!selectedRoom)return;const id=selectedRoom.id,select=$('scene-character'),previous=select.value;select.replaceChildren();const seen=new Set();for(const member of members){for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name]){if(!name||seen.has(name))continue;seen.add(name);const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}}if(seen.has(previous))select.value=previous;
+    const data=await authed('POST','/rest/v1/rpc/hud_location_ideas',{body:{}});if(selectedRoom?.id!==id)return;const host=$('location-ideas');host.replaceChildren();for(const entry of data||[]){const details=document.createElement('details'),title=document.createElement('summary'),copy=document.createElement('p');title.textContent=entry.location_name+' · '+entry.character_name+' · '+entry.title;copy.textContent=entry.description;details.append(title,copy);host.append(details);}if(!data?.length)host.textContent='No confirmed locations recorded yet.';
+  }
+  async function recordCurrentCharacterScene(){
+    if(!paired||!selectedRoom)throw new Error('Select an ongoing owner room.');const id=selectedRoom.id,character=$('scene-character').value,place=$('current-place').value.trim(),description=$('current-description').value.trim();if(!character||!place||!description)throw new Error('Choose a character and provide the confirmed location and description.');
+    const result=await authed('POST','/rest/v1/rpc/record_character_scene',{body:{p_room:id,p_character:character,p_location:place,p_description:description}});if(result!==true)throw new Error('Could not confirm the scene checkpoint.');if(selectedRoom?.id===id){await loadSceneLocationIdeas();feedback('Current scene saved for '+character+' and added to your location ideas bank.');}
+  }
   function renderSessionInformation(){
     const host=$('current-session-info');host.replaceChildren();if(!selectedRoom){host.textContent='No chatroom selected.';return;}
     const heading=document.createElement('h3');heading.className='pm-name';heading.textContent=selectedRoom.title;host.append(heading);
@@ -991,7 +1000,7 @@
     renderSessionInformation();setConnectedState();syncActiveNavigation();$('rooms-page-close').focus();
     renderPreparedInvites();if(account)runTask(async()=>{
       if(mode==='create'){await loadRooms();if(paired)await loadRoomSetup();}
-      else{const roomId=selectedRoom.id;await refreshScene();if(selectedRoom?.id!==roomId)return;if(paired){await loadSceneIntro();await loadRoomSetup();}renderSessionInformation();}
+      else{const roomId=selectedRoom.id;await refreshScene();if(selectedRoom?.id!==roomId)return;if(paired){await loadSceneIntro();await loadRoomSetup();await loadSceneLocationIdeas();}renderSessionInformation();}
     });
   }
   function closeRoomPage(){
@@ -1291,6 +1300,8 @@
   $('pair-create-room').onclick=()=>runTask(createOwnerRoom);
   $('setup-refresh').onclick=()=>runTask(loadRoomSetup);
   $('new-place').onchange=()=>updateLocationChoice('new');$('scene-place').onchange=()=>updateLocationChoice('scene');
+  $('record-current-scene').onclick=()=>runTask(recordCurrentCharacterScene);
+  $('refresh-location-ideas').onclick=()=>runTask(loadSceneLocationIdeas);
   $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
   $('kick-player-button').onclick=()=>runTask(()=>controlSession('kick'));
   $('end-session').onclick=()=>runTask(()=>controlSession('end'));

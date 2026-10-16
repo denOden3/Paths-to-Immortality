@@ -1,3 +1,9 @@
+## Web v0.8.0 / HUD v0.8.11 — player workspace
+
+The speaker switch sits beside Send; Session Info, Scene and Inventory replace the message feed when selected, preserve the composer/draft, and return to chat on a second click. Session Info is read-only. Scene uses only owner-confirmed current-location checkpoints, never the starting location as a fallback. HUD Session Tools includes Current scene & location ideas bank: record a participating character's current location/description and browse the latest 50 saved discoveries across rooms. This bank is stored in Supabase; nothing is automatically published to Notion.
+
+Player-owned inventory supports quantities, notes, add/remove and a retained change log. Established characters use stable saved-character IDs; temporary characters use their scene appearance IDs. Inventory entries are player-reported, not automatic canon confirmation. New RPCs enforce active membership, the caller's participating character and owner-only scene recording. Automatic narrator-driven inventory or scene extraction, maps and full character-sheet fields are not part of this release.
+
 ## Web v0.7.10 / HUD v0.8.10 — quieter selection and location hierarchy
 
 Removed redundant character reminder buttons and duplicate description panels. Selecting a temporary character changes Suggest Temporary Characters to Cancel; Cancel clears and hides the temporary choices. Clicking a selected role keeps it selected. The HUD location picker renders a single indented ancestry tree, including Cloudveil Sect → Mountain Gate → Mountain Path, with accessible full-path labels. Catalog ancestry and access context now guide suggestions: Cloudveil paths use disciples on routine sect duties, while explicitly marked wilderness can offer mundane hunters, gatherers and petty bandits. No new world locations or permanent NPC records were added. The recruitment forecourt's canonical visitor permissions are unchanged.

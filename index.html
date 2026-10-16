@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.10</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.0</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.10</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.0</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -139,7 +139,7 @@ body.authOpen{overflow:hidden}
 <button id="selectionDelete" class="btn sm" type="button">Delete</button>
 <button id="selectionCancel" class="btn sm" type="button">Cancel</button></div>
 
-<div id="feed" class="feed" aria-live="polite"></div>
+<div id="feed" class="feed" aria-live="polite"></div><section id="chatPanel" class="chatPanel hidden" aria-live="polite" aria-label="Character workspace"></section>
 </section>
 <section id="tools" class="scroll toolsPage hidden" aria-label="Paths Web tools">
 <div class="toolPageHeader"><h2>☯ Paths Web Tools</h2><button id="toolsBack" class="btn sm" type="button">← Back</button></div>
@@ -160,10 +160,8 @@ body.authOpen{overflow:hidden}
 </section>
 </div>
 <div id="composer" class="compose hidden">
-<div class="speakerRow">
-<button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Speaking as Xu Yi. Tap to switch to Puuchan.">🎭 Xu Yi</button>
-<span class="speakerModeHint" id="speakerModeHint">Character action</span>
-</div><div class="send"><textarea id="msg" maxlength="8000" placeholder="What does Xu Yi do?" aria-label="Xu Yi character action or Puuchan chat"></textarea><button id="send" class="btn primary">Send</button></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
+<div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button></div>
+<div class="send"><textarea id="msg" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
 </div>
 <div id="headerMenuOverlay" class="headerMenuOverlay hidden" role="presentation"><section id="headerMenu" class="headerMenu" role="dialog" aria-modal="true" aria-label="Navigation"><button id="menuBack" class="btn" type="button" aria-label="Go back" title="Go back">←</button><button id="menuSignout" class="btn" type="button">Sign out</button></section></div>
 <div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><section aria-labelledby="ongoingSessionsTitle"><h2 id="ongoingSessionsTitle">Your ongoing sessions</h2><p id="playerSessionsStatus" class="muted" role="status"></p><div id="playerSessions" class="playerSessionLinks"></div></section><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Check invitation</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
@@ -233,8 +231,8 @@ function updateSpeakerDisplay(){
   $('modeSpeaker').classList.toggle('oocActive',!isCharacter);
   $('modeSpeaker').setAttribute('aria-pressed',String(isCharacter));
   $('modeSpeaker').setAttribute('aria-label','Speaking as '+label.replace(/^[🎭💬] /u,'')+'. Tap to switch speaker.');
-  $('speakerModeHint').textContent=isCharacter?'Character action':'Out of character';
-  $('msg').placeholder=isCharacter?'What does '+character+' do?':'Let your voice be heard';
+
+  $('msg').placeholder=isCharacter?'What does '+character+' do?':'What does '+playerNameFor(user?.id)+' say out of character?';
 }
 function setChatMode(mode){
   if(mode!=='player'&&mode!=='ooc')return;
@@ -249,13 +247,14 @@ $('modeSpeaker').onclick=()=>{
   else if(choices.length>1&&choices.indexOf(activeCharacter)<choices.length-1){
     activeCharacter=choices[choices.indexOf(activeCharacter)+1];pending=null;pendingCharacter=null;
   }else setChatMode('ooc');
-  updateSpeakerDisplay();
+  updateSpeakerDisplay();if(chatPanelView)refreshChatPanel().catch(e=>notice(e.message,'error'));
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveArchiveLink'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
+  if(where!=='chat')closeChatPanel();
   for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
@@ -346,11 +345,30 @@ $('ownerTools').classList.toggle('hidden',!isOwner);
 if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
 updateSpeakerDisplay();}
 
+let chatPanelView='',chatPanelRequest=0;
+const chatPanelIds={session:'sessionInfo',scene:'currentScene',inventory:'inventoryPanel'};
+function closeChatPanel(){chatPanelView='';++chatPanelRequest;$('chatPanel').classList.add('hidden');$('chatPanel').replaceChildren();$('feed').classList.remove('hidden');for(const id of Object.values(chatPanelIds))$(id).setAttribute('aria-pressed','false');}
+async function toggleChatPanel(view){if(chatPanelView===view){closeChatPanel();return;}chatPanelView=view;for(const [key,id] of Object.entries(chatPanelIds))$(id).setAttribute('aria-pressed',String(key===view));$('feed').classList.add('hidden');$('selectionBar').classList.add('hidden');$('chatPanel').classList.remove('hidden');await refreshChatPanel();}
+function workspaceField(label,type,value){const wrap=el('label','workspaceField',label),input=el('input');input.type=type;input.value=value||'';if(type==='number'){input.min='1';input.max='1000000';input.step='1';}else input.maxLength=label==='Item name'?80:350;wrap.append(input);return {wrap,input};}
+async function refreshChatPanel(){
+ if(!chatPanelView||!room)return;const view=chatPanelView,id=room,character=activeCharacter,request=++chatPanelRequest,host=$('chatPanel');host.replaceChildren(el('p','muted','Loading…'));
+ const {data,error}=await db.rpc('room_player_panel',{p_room:id,p_character:character});if(request!==chatPanelRequest||room!==id||activeCharacter!==character||chatPanelView!==view)return;if(error){host.replaceChildren(el('p','',error.message));return;}
+ host.replaceChildren(el('h2','',view==='session'?'Session Info':view==='scene'?'Scene · '+character:'Inventory · '+character));
+ if(view==='session'){const facts=data.session||{};host.append(el('h3','',facts.title));for(const [label,value] of [['Status',facts.status],['In-world date',[facts.date,facts.time].filter(Boolean).join(' · ')],['Starting location',facts.starting_location],['Opening situation',facts.opening],['Session goals',facts.goals]]){const block=el('div','workspaceFact');block.append(el('strong','',label),el('p','sceneCopy',value||'Not recorded'));host.append(block);}return;}
+ if(view==='scene'){if(!data.scene){host.append(el('p','muted','Your current location has not been confirmed by the Jade Emperor yet.'));return;}host.append(el('h3','',data.scene.location),el('p','sceneCopy',data.scene.description));return;}
+ host.append(el('p','muted','Player-reported items. Changes are logged; the narrator confirms story outcomes.'));
+ for(const item of data.inventory||[]){const card=el('article','card'),row=el('div','inventoryActions');card.append(el('h3','',item.name+' × '+item.quantity));if(item.note)card.append(el('p','sceneCopy',item.note));const qty=workspaceField('Quantity','number','1'),remove=el('button','btn','Remove');remove.type='button';remove.onclick=()=>safe(async()=>{await changeInventory(id,character,{p_action:'remove',p_item:item.id,p_quantity:Number(qty.input.value)});});row.append(qty.wrap,remove);card.append(row);host.append(card);}
+ if(!(data.inventory||[]).length)host.append(el('p','muted','No items recorded.'));
+ if(data.can_edit_inventory){const form=el('form','card inventoryForm'),name=workspaceField('Item name','text',''),qty=workspaceField('Quantity','number','1'),note=workspaceField('Note (optional)','text',''),add=el('button','btn primary','Add item');add.type='submit';form.append(name.wrap,qty.wrap,note.wrap,add);form.onsubmit=e=>{e.preventDefault();safe(async()=>{await changeInventory(id,character,{p_action:'add',p_name:name.input.value.trim(),p_quantity:Number(qty.input.value),p_note:note.input.value.trim()});});};host.append(form);}
+ const log=el('details','inventoryLog');log.append(el('summary','','Recent changes'));for(const entry of data.changes||[])log.append(el('p','',entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+new Date(entry.created_at).toLocaleString()));host.append(log);
+}
+async function changeInventory(id,character,body){if(room!==id||activeCharacter!==character)return;const {data,error}=await db.rpc('change_character_inventory',{p_room:id,p_character:character,...body});if(error)throw error;if(data!==true)throw Error('Could not confirm inventory change.');if(room===id&&activeCharacter===character&&chatPanelView==='inventory')await refreshChatPanel();}
+$('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));
 const isMine=m=>m&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
 function updateSelection(){
   const all=new Set(roomMessages.map(x=>x.id));
   for(const id of selectedIds)if(!all.has(id))selectedIds.delete(id);
-  $('selectionBar').classList.toggle('hidden',selectedIds.size===0);
+  $('selectionBar').classList.toggle('hidden',selectedIds.size===0||!!chatPanelView);
   $('selectionCount').textContent=selectedIds.size+' selected';
   const selected=roomMessages.filter(m=>selectedIds.has(m.id));
   const allOoc=selected.length>0&&selected.every(m=>m.kind==='ooc');
@@ -406,13 +424,13 @@ async function fetchMessages(){
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;
 }
 async function openRoom(id,expectedGeneration=null){
- endLive();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  await fetchMembers();if(room!==id)return false;await fetchMessages();
  subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;});
- poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);}},18000);
+ poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView&&chatPanelView!=='inventory')refreshChatPanel().catch(console.warn);}},18000);
  guardTimer=setInterval(()=>{if(document.visibilityState==='visible')checkOngoingSession().catch(console.warn);},4000);
  if(!portalIdentity.is_admin)try{localStorage.setItem('paths.activeSession',JSON.stringify({id,generation:activeGeneration}));}catch{}
  return true;

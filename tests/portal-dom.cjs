@@ -55,6 +55,15 @@ vm.runInContext(`(async()=>{
  localStorage.setItem('paths.activeSession','remember');returnToStart();assert.equal(localStorage.getItem('paths.activeSession'),'remember','start erased shortcut');
  db={from:()=>({select(){return this;},eq(){return this;},then(resolve){resolve({data:[]});}})};await openPlayerEntrance();assert.equal($('playerSessions').children.length,0);assert.ok($('playerSessionsStatus').textContent.includes('No ongoing sessions'));
  db={from:()=>({select(){return this;},eq(){return this;},then(resolve){resolve({error:new Error('Offline')});}})};await openPlayerEntrance();assert.ok($('playerSessionsStatus').textContent.includes('Could not load'),'network error masqueraded as no membership');
+ // Chat panels replace only the feed; the composer and its draft remain mounted.
+ user={id:'player'};room='workspace-room';members=[{user_id:'player',character_name:'Traveller',allowed_characters:['Traveller'],player_alias:'Puuchan'}];activeCharacter='Traveller';show('chat');$('msg').value='Unsent action';
+ let workspace={session:{title:'Test room',status:'active',starting_location:'Opening Gate',opening:'The opening'},scene:null,inventory:[],changes:[],can_edit_inventory:true};db={rpc:async()=>({data:workspace})};
+ assert.equal($('speakerModeHint'),null);assert.equal($('modeSpeaker').parentElement.className,'sendControls');assert.ok(!$('modeSpeaker').parentElement.contains($('msg')));
+ await toggleChatPanel('session');assert.ok($('chatPanel').textContent.includes('Opening Gate'));assert.equal($('chatPanel').querySelectorAll('input,textarea').length,0);assert.ok(!$('composer').classList.contains('hidden'));assert.ok($('feed').classList.contains('hidden'));assert.equal($('sessionInfo').getAttribute('aria-pressed'),'true');
+ await toggleChatPanel('session');assert.ok(!$('feed').classList.contains('hidden'));assert.equal($('msg').value,'Unsent action');
+ await toggleChatPanel('scene');assert.ok($('chatPanel').textContent.includes('has not been confirmed'));assert.ok(!$('chatPanel').textContent.includes('Opening Gate'));
+ workspace.scene={location:'Garden',description:'Moss along a stone path.'};await refreshChatPanel();assert.ok($('chatPanel').textContent.includes('Moss along a stone path.'));assert.equal($('sessionInfo').getAttribute('aria-pressed'),'false');assert.equal($('currentScene').getAttribute('aria-pressed'),'true');
+ await toggleChatPanel('inventory');assert.ok($('chatPanel').querySelector('form'));assert.ok($('chatPanel').textContent.includes('Player-reported'));await toggleChatPanel('inventory');assert.equal($('msg').value,'Unsent action');
  let signedOut=false;portalIdentity={is_admin:false};user={id:'wrong-google-account'};db={auth:{signOut:async()=>{signedOut=true;}}};await finishAdministratorSignIn();assert.ok(signedOut);assert.equal(user,null);assert.equal(currentView,'welcome');
  // A kicked, ended, or reset participant must lose the visible chat and its composer.
  for(const record of [null,{id:'room',session_state:'ended',session_generation:'old'},{id:'room',session_state:'active',session_generation:'new'}]){

@@ -1,0 +1,36 @@
+begin;
+create temp table qa_workspace(owner_id uuid,monkey_id uuid,player_user uuid,pid uuid,r uuid,code text,item uuid);
+insert into qa_workspace(owner_id,monkey_id,player_user) select owner_id,monkey_id,(select id from auth.users where is_anonymous and id not in(select monkey_id from private.monkey_delegations) and id not in(select user_id from private.portal_accounts) limit 1) from private.monkey_delegations where revoked_at is null and owner_id in(select user_id from private.portal_admins) limit 1;
+grant select,update on qa_workspace to authenticated;
+select set_config('request.jwt.claims',jsonb_build_object('sub',monkey_id,'role','authenticated')::text,true) from qa_workspace;set local role authenticated;
+do $$declare new_pid uuid;data jsonb;begin
+ perform public.hud_player_registry(null,'__QA Workspace');select (x->>'id')::uuid into new_pid from jsonb_array_elements(public.hud_player_registry())x where x->>'alias'='__QA Workspace';perform public.hud_player_characters(new_pid,'save',null,'QA Traveller','A test character','');
+ data:=public.create_prepared_room(gen_random_uuid(),'__QA Workspace room','Owner','Year 312 · Early Spring, 2nd','Morning','mountain-path','','','An opening.','Explore',array[new_pid]);update qa_workspace set pid=new_pid,r=(data->>'id')::uuid,code=data->'invitations'->0->>'code';
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',player_user,'role','authenticated')::text,true) from qa_workspace;set local role authenticated;
+do $$declare q record;data jsonb;denied boolean:=false;begin
+ select * into q from qa_workspace;perform public.portal_redeem(q.code,array['QA Traveller']);data:=public.room_player_panel(q.r,'QA Traveller');assert data->'scene'='null';assert data->'session'->>'starting_location'='Mountain Path';
+ assert public.change_character_inventory(q.r,'QA Traveller','add',null,'Stone',3,'A smooth stone');data:=public.room_player_panel(q.r,'QA Traveller');assert (data->'inventory'->0->>'quantity')::int=3;update qa_workspace set item=(data->'inventory'->0->>'id')::uuid;
+ assert public.change_character_inventory(q.r,'QA Traveller','remove',(data->'inventory'->0->>'id')::uuid,'',2,'');data:=public.room_player_panel(q.r,'QA Traveller');assert (data->'inventory'->0->>'quantity')::int=1;assert jsonb_array_length(data->'changes')=2;
+ begin perform public.room_player_panel(q.r,'Owner');exception when others then denied:=true;end;assert denied,'another character sheet read';
+ denied:=false;begin perform public.change_character_inventory(q.r,'Owner','add',null,'Forged item',1,'');exception when others then denied:=true;end;assert denied,'another character inventory changed';
+ denied:=false;begin perform public.record_character_scene(q.r,'QA Traveller','Secret palace','Invented');exception when others then denied:=true;end;assert denied,'player confirmed scene';
+ denied:=false;begin perform public.change_character_inventory(q.r,'QA Traveller','remove',(select item from qa_workspace),'',2,'');exception when others then denied:=true;end;assert denied,'removed more than owned';
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',monkey_id,'role','authenticated')::text,true) from qa_workspace;set local role authenticated;
+select public.record_character_scene(r,'QA Traveller','Bathhouse','Steam curls above the water.') from qa_workspace;
+select public.record_character_scene(r,'QA Traveller','Garden','A winding stone path borders the herb beds.') from qa_workspace;
+do $$begin assert jsonb_array_length(public.hud_location_ideas())>=2;end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',player_user,'role','authenticated')::text,true) from qa_workspace;set local role authenticated;
+do $$declare q record;data jsonb;begin select * into q from qa_workspace;data:=public.room_player_panel(q.r,'QA Traveller');assert data->'scene'->>'location'='Garden';assert data->'session'->>'starting_location'='Mountain Path','current overwrote opening';end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',gen_random_uuid(),'role','authenticated')::text,true);set local role authenticated;
+do $$declare denied boolean:=false;begin begin perform public.room_player_panel((select r from qa_workspace),'QA Traveller');exception when others then denied:=true;end;assert denied,'non-member read';end;$$;
+reset role;set local role anon;
+do $$declare denied boolean:=false;begin begin perform public.room_player_panel(gen_random_uuid(),'QA Traveller');exception when others then denied:=true;end;assert denied,'anon read';end;$$;
+reset role;
+select 'PASS: session read-only, no opening-as-current fallback, own inventory changes and audit, cross-character/non-member denial, owner-only scene recording and location history' as result;
+rollback;
