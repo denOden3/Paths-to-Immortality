@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.6
+// @version      0.8.7
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.6';
+  const VERSION = '0.8.7';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -65,6 +65,13 @@
   let suppressPickerClick = false;
 
   GM_addStyle(`
+    #paths-monkey-root .pm-date-fields{border:0;padding:0;margin:16px 0;min-width:0;}
+    #paths-monkey-root .pm-date-fields legend{font-weight:600;margin-bottom:8px;}
+    #paths-monkey-root .pm-date-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+    #paths-monkey-root .pm-time-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0;}
+    #paths-monkey-root .pm-date-grid label,#paths-monkey-root .pm-time-grid label{display:flex;flex-direction:column;gap:8px;min-width:0;}
+    @media(max-width:600px){#paths-monkey-root .pm-date-grid{grid-template-columns:repeat(2,minmax(0,1fr));}#paths-monkey-root .pm-time-grid{grid-template-columns:minmax(0,1fr);}}
+
     #paths-monkey-root{position:fixed;inset:0;z-index:1500;pointer-events:none;
       --pm-ink:#fff3e6;--pm-muted:#ddc3b5;--pm-bg:#17141a;--pm-panel:#2b222c;--pm-red:#a82d3b;
       --pm-gold:#f6c280;--pm-stroke:#876c74;--pm-green:#9ce5cd;
@@ -426,8 +433,12 @@
             <input id="pm-pair-room-name" class="pm-text" maxlength="80" value="New Jianghu Session">
             <label class="pm-label" for="pm-pair-character-name">Your character</label>
             <input id="pm-pair-character-name" class="pm-text" maxlength="40" value="Xiao Lan">
-<label class="pm-label" for="pm-new-date">In-world date</label><input id="pm-new-date" class="pm-text" maxlength="90" placeholder="Year 312 · Early Spring, 2nd">
- <label class="pm-label" for="pm-new-time">Time of day (optional)</label><select id="pm-new-time" class="pm-text"><option value="">Unspecified</option><option>Morning</option><option>Midday</option><option>Afternoon</option><option>Evening</option><option>Night</option></select>
+<fieldset class="pm-date-fields"><legend>In-world date</legend><input id="pm-new-date" type="hidden"><p id="pm-new-date-existing" class="pm-mute pm-hide"></p><div class="pm-date-grid">
+<label>Year<input id="pm-new-year" class="pm-text" maxlength="24" placeholder="312"></label>
+<label>Stage<select id="pm-new-stage" class="pm-text"><option value="">Choose…</option><option>Early</option><option>Mid</option><option>End</option></select></label>
+<label>Season<select id="pm-new-season" class="pm-text"><option value="">Choose…</option><option>Spring</option><option>Summer</option><option>Autumn</option><option>Winter</option></select></label>
+<label>Day<input id="pm-new-day" class="pm-text" maxlength="24" placeholder="2nd"></label></div></fieldset>
+ <div class="pm-time-grid"><label>Time of day (optional)<select id="pm-new-time" class="pm-text"><option value="">Unspecified</option><option>Morning</option><option>Midday</option><option>Afternoon</option><option>Evening</option><option>Night</option></select></label><label>Custom time<input id="pm-new-time-custom" class="pm-text" maxlength="90" placeholder="Optional — overrides the picker"></label></div>
  <label class="pm-label" for="pm-new-place">Beginning location</label><select id="pm-new-place" class="pm-text"><option value="">Load the Codex locations…</option></select>
  <a id="pm-new-location-source" class="pm-link pm-hide" target="_blank" rel="noopener noreferrer">Open location in Notion ↗</a>
  <div id="pm-new-custom-row" class="pm-hide"><label class="pm-label" for="pm-new-custom">Custom location (this session only)</label><input id="pm-new-custom" class="pm-text" maxlength="100" placeholder="Name a place for this scene"></div>
@@ -454,9 +465,13 @@
             <label class="pm-label" for="pm-kick-player">Player in this room</label><select id="pm-kick-player" class="pm-text"><option value="">Select a player</option></select><button id="pm-kick-player-button" class="pm-btn" type="button">Kick player from the room</button>
             <div class="pm-row"><button id="pm-end-session" class="pm-btn" type="button">End session</button><button id="pm-reset-session" class="pm-btn" type="button">Reset session</button></div><div class="pm-divider"></div>
             <details id="pm-session-details-editor"><summary>Edit session details</summary>
-            <p>Update the details prepared when this room was created. Changes also appear on its invitations.</p>
-<label class="pm-label" for="pm-scene-date">In-world date</label><input id="pm-scene-date" class="pm-text" maxlength="90" placeholder="Year 312 · Early Spring, 2nd">
- <label class="pm-label" for="pm-scene-time">Time of day (optional)</label><select id="pm-scene-time" class="pm-text"><option value="">Unspecified</option><option>Morning</option><option>Midday</option><option>Afternoon</option><option>Evening</option><option>Night</option></select>
+            <p>Update the details prepared when this room was created. Changes also appear on its invitations.</p><label class="pm-label" for="pm-scene-title">Room name</label><input id="pm-scene-title" class="pm-text" maxlength="80">
+<fieldset class="pm-date-fields"><legend>In-world date</legend><input id="pm-scene-date" type="hidden"><p id="pm-scene-date-existing" class="pm-mute pm-hide"></p><div class="pm-date-grid">
+<label>Year<input id="pm-scene-year" class="pm-text" maxlength="24" placeholder="312"></label>
+<label>Stage<select id="pm-scene-stage" class="pm-text"><option value="">Choose…</option><option>Early</option><option>Mid</option><option>End</option></select></label>
+<label>Season<select id="pm-scene-season" class="pm-text"><option value="">Choose…</option><option>Spring</option><option>Summer</option><option>Autumn</option><option>Winter</option></select></label>
+<label>Day<input id="pm-scene-day" class="pm-text" maxlength="24" placeholder="2nd"></label></div></fieldset>
+ <div class="pm-time-grid"><label>Time of day (optional)<select id="pm-scene-time" class="pm-text"><option value="">Unspecified</option><option>Morning</option><option>Midday</option><option>Afternoon</option><option>Evening</option><option>Night</option></select></label><label>Custom time<input id="pm-scene-time-custom" class="pm-text" maxlength="90" placeholder="Optional — overrides the picker"></label></div>
  <label class="pm-label" for="pm-scene-place">Beginning location</label><select id="pm-scene-place" class="pm-text"><option value="">Load the Codex locations…</option></select>
  <a id="pm-scene-location-source" class="pm-link pm-hide" target="_blank" rel="noopener noreferrer">Open location in Notion ↗</a>
  <div id="pm-scene-custom-row" class="pm-hide"><label class="pm-label" for="pm-scene-custom">Custom location (this session only)</label><input id="pm-scene-custom" class="pm-text" maxlength="100" placeholder="Name a place for this scene"></div>
@@ -641,8 +656,22 @@
     for(const player of roomSetup.players){const label=document.createElement('label');label.className='pm-player-option';const box=document.createElement('input');box.type='checkbox';box.value=player.id;box.checked=checked.has(player.id)&&player.character_count>0;box.disabled=!player.character_count;const text=document.createElement('span');text.textContent=player.alias+(!player.character_count?' · Add characters in Registry first':'');label.append(box,text);host.append(label);}if(!roomSetup.players.length)host.textContent='No registered players yet. You can create a solo room or add players in Players Registry.';
     const select=$('invite-player'),previous=select.value;select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Choose a player';select.append(empty);for(const player of roomSetup.players){const option=document.createElement('option');option.value=player.id;option.textContent=player.alias+(!player.character_count?' · No saved characters':'');option.disabled=!player.character_count;select.append(option);}select.value=previous;
   }
+  function readSetupDate(prefix){
+    const parts=['year','stage','season','day'].map(key=>$(prefix+'-'+key).value.trim());
+    if(parts.every(value=>!value))return $(prefix+'-date').value.trim();
+    if(parts.some(value=>!value))throw new Error('Complete the in-world year, stage, season and day.');
+    return 'Year '+parts[0]+' · '+parts[1]+' '+parts[2]+', '+parts[3];
+  }
+  function fillSetupDate(prefix,value){
+    $(prefix+'-date').value=value;const match=/^Year (.+?) · (Early|Mid|End) (Spring|Summer|Autumn|Winter), (.+)$/.exec(value);
+    ['year','stage','season','day'].forEach((key,index)=>{$(prefix+'-'+key).value=match?match[index+1]:'';});
+    const note=$(prefix+'-date-existing');note.textContent=value&&!match?'Existing date: '+value+'. Fill all four fields to replace it.':'';note.classList.toggle('pm-hide',!value||!!match);
+  }
+  function fillSetupTime(prefix,value){
+    const picker=$(prefix+'-time'),known=[...picker.options].some(option=>option.value===value);picker.value=known?value:'';$(prefix+'-time-custom').value=known?'':value;
+  }
   function setupPayload(prefix){
-    const fields={p_date:$(prefix+'-date').value.trim(),p_time:$(prefix+'-time').value,p_location:$(prefix+'-place').value,p_custom:$(prefix+'-custom').value.trim(),p_spot:$(prefix+'-spot').value.trim(),p_opening:$(prefix+'-intro').value.trim(),p_goals:$(prefix+'-goals').value.trim()};
+    const fields={p_date:readSetupDate(prefix),p_time:$(prefix+'-time-custom').value.trim()||$(prefix+'-time').value,p_location:$(prefix+'-place').value,p_custom:$(prefix+'-custom').value.trim(),p_spot:$(prefix+'-spot').value.trim(),p_opening:$(prefix+'-intro').value.trim(),p_goals:$(prefix+'-goals').value.trim()};
     if(!fields.p_date||!fields.p_location||!fields.p_opening)throw new Error('Provide the scene date, beginning location and opening situation.');if(fields.p_location==='__custom__'&&!fields.p_custom)throw new Error('Name the custom location.');return fields;
   }
   async function createOwnerRoom(){
@@ -660,7 +689,9 @@
   }
   async function saveSceneIntroduction(){
     if(!paired||!selectedRoom)throw new Error('Select an owner room first.');
-    const body=setupPayload('scene'),success=await authed('POST','/rest/v1/rpc/save_room_setup',{body:{p_room:selectedRoom.id,...body}});if(success!==true)throw new Error('Saving scene introduction could not be confirmed.');await loadSceneIntro();$('session-details-editor').open=false;feedback('Session details saved for '+selectedRoom.title);
+    const roomId=selectedRoom.id,title=$('scene-title').value.trim();if(!title)throw new Error('Enter a room name.');
+    const body=setupPayload('scene'),success=await authed('POST','/rest/v1/rpc/save_room_details',{body:{p_room:roomId,p_title:title,...body}});if(success!==true)throw new Error('Saving session details could not be confirmed.');
+    rooms=rooms.map(room=>room.id===roomId?{...room,title}:room);if(selectedRoom?.id!==roomId)return;selectedRoom={...selectedRoom,title};put('room',selectedRoom);$('rooms-page-status').textContent='Tools for '+title;renderOngoingSessions();renderRoomLogs();await loadSceneIntro();$('session-details-editor').open=false;feedback('Session details saved for '+title);
   }
   function renderPreparedInvites(){
     const host=$('prepared-invites');host.replaceChildren();const items=selectedRoom?.session_state==='active'?get('preparedInvites.'+selectedRoom.id,[]):[];host.classList.toggle('pm-hide',!items.length);if(!items.length)return;const title=document.createElement('h3');title.textContent='Prepared invitations';host.append(title);
@@ -684,7 +715,7 @@
     const prompt=action==='reset'?'Reset this session? This erases its chat messages and scene introduction, removes all players and invalidates all invitations. Character reminders are kept.':action==='end'?'End this session? Players lose access and all invitations stop working. Messages are kept.':'Remove the selected player from this room and invalidate their pending invitations?';
     if(!confirm(prompt))return;
     const ok=await authed('POST','/rest/v1/rpc/control_session',{body:{p_room_id:selectedRoom.id,p_action:action,p_user_id:target}});if(ok!==true)throw new Error('The server did not confirm this action.');
-    if(action==='reset'){messages=[];currentIntro={};renderSessionInformation();$('session-details-editor').open=true;for(const key of ['date','time','place','custom','spot','intro','goals'])$('scene-'+key).value='';}if(action==='reset'||action==='end'){put('preparedInvites.'+selectedRoom.id,[]);renderPreparedInvites();}
+    if(action==='reset'){messages=[];currentIntro={};renderSessionInformation();$('session-details-editor').open=true;fillSetupDate('scene','');fillSetupTime('scene','');for(const key of ['place','custom','spot','intro','goals'])$('scene-'+key).value='';}if(action==='reset'||action==='end'){put('preparedInvites.'+selectedRoom.id,[]);renderPreparedInvites();}
     $('invite-output').classList.add('pm-hide');$('invite-link').value='';$('invite-code').value='';
     await loadRooms();await refreshScene();feedback(action==='reset'?'Session reset. Open Edit session details to prepare it again, then issue fresh invitations.':action==='end'?'Session ended. Players return to the starting page.':'Player removed.');
   }
@@ -712,7 +743,7 @@
     const data=await authed('POST','/rest/v1/rpc/get_scene_introduction_as_owner',{body:{p_room_id:roomId}});
     if(selectedRoom?.id!==roomId||selectedRoom.session_generation!==generation)return;
     currentIntro=data&&typeof data==='object'?data:{};populateLocationPicker('scene');
-    $('scene-date').value=currentIntro.scene_date||'';$('scene-time').value=currentIntro.time_of_day||'';$('scene-place').value=currentIntro.location_slug||(currentIntro.location?'__legacy__':'');$('scene-custom').value=currentIntro.custom_location||'';$('scene-spot').value=currentIntro.starting_spot||'';$('scene-intro').value=currentIntro.opening||'';$('scene-goals').value=currentIntro.session_goals||'';updateLocationChoice('scene');
+    $('scene-title').value=selectedRoom.title;fillSetupDate('scene',currentIntro.scene_date||'');fillSetupTime('scene',currentIntro.time_of_day||'');$('scene-place').value=currentIntro.location_slug||(currentIntro.location?'__legacy__':'');$('scene-custom').value=currentIntro.custom_location||'';$('scene-spot').value=currentIntro.starting_spot||'';$('scene-intro').value=currentIntro.opening||'';$('scene-goals').value=currentIntro.session_goals||'';updateLocationChoice('scene');
     if($('character-session').value===roomId)$('calendar').textContent=[currentIntro.scene_date,currentIntro.time_of_day].filter(Boolean).join(' · ')||'No confirmed scene date saved for this session.';
     renderSessionInformation();
   }

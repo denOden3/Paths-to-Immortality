@@ -1,3 +1,7 @@
+## HUD v0.8.7 — room names and date/time controls
+
+Edit session details now includes Room name; name and setup save atomically through the owner-authorized save_room_details API. Create Room and Edit use Year, Early/Mid/End, Season and Day controls. Existing nonstandard dates are kept until replaced. Time uses a preset picker plus an optional custom field; custom text takes precedence and survives reload. Backend custom times are limited to 90 characters.
+
 ## HUD v0.8.6 — current-chat Session Tools
 
 Session Tools shows the current chatroom’s information: title, status, in-world date/time, location, opening, goals and participants. My rooms and Refresh room list are removed. Opening these tools refreshes the selected chat only; room browsing remains in Room Logs and the sidebar picker. Closing with Close, Done, the backdrop or Escape returns to the active chatroom. Existing setup fields live in a collapsed Edit session details section for corrections and reset recovery; room creation still collects the initial setup. Legacy invitation joining stays in Settings.
