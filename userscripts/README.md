@@ -1,3 +1,7 @@
+## HUD v0.8.8 — visible typing cursor
+
+All HUD inputs, textareas and editable text areas use an explicit bright gold caret, overriding inherited host-page caret colors. The browser retains its native cursor placement and blinking behavior.
+
 ## HUD v0.8.7 — room names and date/time controls
 
 Edit session details now includes Room name; name and setup save atomically through the owner-authorized save_room_details API. Create Room and Edit use Year, Early/Mid/End, Season and Day controls. Existing nonstandard dates are kept until replaced. Time uses a preset picker plus an optional custom field; custom text takes precedence and survives reload. Backend custom times are limited to 90 characters.
