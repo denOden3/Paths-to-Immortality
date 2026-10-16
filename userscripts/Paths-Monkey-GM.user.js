@@ -132,7 +132,7 @@
     #paths-monkey-root .pm-character-card{border-top:1px solid var(--pm-stroke);padding:12px 0;margin-top:12px}
     #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:65px}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
-    #paths-monkey-root.pm-creating #pm-room-section,#paths-monkey-root.pm-creating #pm-prepared-invites{display:none}
+    #paths-monkey-root.pm-creating #pm-room-section,#paths-monkey-root.pm-creating #pm-prepared-invites{display:none!important}
     #paths-monkey-root:not(.pm-creating) #pm-room-management-content > #pm-pair-new-room{display:none}
     #paths-monkey-root .pm-logo[aria-expanded="true"]{background:#7b3646;border-color:var(--pm-gold)}
     #paths-monkey-root .pm-h{font-weight:850;color:var(--pm-gold);font-size:12px;letter-spacing:.065em;
