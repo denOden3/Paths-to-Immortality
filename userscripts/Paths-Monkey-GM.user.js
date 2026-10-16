@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.7.8
+// @version      0.7.9
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.7.8';
+  const VERSION = '0.7.9';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -41,6 +41,7 @@
   let paired=false;
   let selectedRoom = get('room', null);
   let rooms = [];
+  let roomsLoaded=false;
   let members = [];
   let messages = [];
   let busy = false;
@@ -231,8 +232,17 @@
       min-width:0;flex:1;padding:1px 0}
     #paths-monkey-root .pm-title-collapse .pm-title{flex:unset}
     #paths-monkey-root.pm-expanded{box-shadow:inset 0 0 0 2px #472a39}
-    @media(min-width:1180px){
-      #paths-monkey-root .pm-compose{right:0;left:0;padding-left:calc(12px + max(0px,(100vw - 1200px)/4));}
+    @media(min-width:791px){
+      #paths-monkey-root{--pm-sidebar-width:clamp(260px,25vw,330px)}
+      #paths-monkey-root.pm-info-dismissed{--pm-sidebar-width:0px}
+      #paths-monkey-root .pm-left{display:block!important;right:auto;width:var(--pm-sidebar-width);bottom:var(--pm-native,95px);padding:14px;border-right:1px solid var(--pm-stroke)}
+      #paths-monkey-root .pm-feed,#paths-monkey-root .pm-registry,#paths-monkey-root .pm-roomlogs{left:var(--pm-sidebar-width)}
+      #paths-monkey-root .pm-compose{left:var(--pm-sidebar-width);padding:8px 12px 9px}
+      #paths-monkey-root .pm-backdrop{left:var(--pm-sidebar-width);top:var(--pm-header-height,53px);bottom:var(--pm-native,95px);padding:18px;background:var(--pm-bg);place-items:stretch}
+      #paths-monkey-root .pm-panel{width:100%;max-height:100%;height:100%;border:0;border-radius:0;box-shadow:none}
+      #paths-monkey-root.pm-info-overlay .pm-feed,#paths-monkey-root.pm-info-overlay .pm-compose,
+      #paths-monkey-root.pm-info-overlay .pm-registry,#paths-monkey-root.pm-info-overlay .pm-roomlogs,
+      #paths-monkey-root.pm-info-overlay .pm-backdrop{visibility:visible}
     }
     @media(max-width:790px){
       #paths-monkey-root .pm-hbar{padding:6px 8px;gap:6px}
@@ -605,7 +615,7 @@
     if (!account) return;
     await refreshPairing();
     const data = await authed('GET','/rest/v1/rooms?select=id,title,created_at,ended_at,session_state,session_generation&order=created_at.desc');
-    rooms = Array.isArray(data) ? data : [];
+    rooms = Array.isArray(data) ? data : [];roomsLoaded=true;
     const box = $('room-list');box.replaceChildren();
     if (!rooms.length) { box.textContent='No rooms yet. Pair the HUD or use a legacy invitation.'; }
     for (const item of rooms) {
@@ -680,18 +690,19 @@
   function updateCharacterSessionPicker(active){
     const select=$('character-session'),previous=select.value;
     const target=active.some(x=>x.id===previous)?previous:active.some(x=>x.id===selectedRoom?.id)?selectedRoom.id:active[0]?.id||'';
-    select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=active.length?'Choose a session':'No active sessions';select.append(empty);
-    for(const item of active){const option=document.createElement('option');option.value=item.id;option.textContent=item.title;option.selected=item.id===target;select.append(option);}if(!target)empty.selected=true;
-    if(target)loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});
-    if(!target){participantRequest++;$('people').textContent='No active session selected.';$('calendar').textContent='No active session selected.';}
+    select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=active.length?'Choose a session':!account?'Connect HUD in Settings':!roomsLoaded?'Loading active sessions…':'No active sessions available';select.append(empty);
+    for(const item of active){const option=document.createElement('option');option.value=item.id;option.textContent=item.title;select.append(option);}select.value=target;
+    for(const option of select.options)option.selected=option.value===target;
+    if(target)loadCharacterParticipants(target).catch(e=>{$('people').textContent=e.message;});
+    if(!target){participantRequest++;const message=!account?'Connect your HUD in Settings.':!roomsLoaded?'Loading active sessions…':'No active sessions available to this HUD.';$('people').textContent=message;$('calendar').textContent=message;}
   }
   function renderCharacterParticipants(items){
     const host=$('people');host.replaceChildren();
     if(!items.length){host.textContent='No participants loaded for this session.';return;}
     for(const member of items){const line=document.createElement('div');const chars=member.allowed_characters?.length?member.allowed_characters:[member.character_name];line.textContent=(member.player_alias||(member.role==='owner'?'Jade Emperor':'Player'))+' · '+chars.filter(Boolean).join(', ');host.append(line);}
   }
-  async function loadCharacterParticipants(){
-    const id=$('character-session').value,request=++participantRequest;if(!id||!account){$('people').textContent='No active session selected.';$('calendar').textContent='No active session selected.';return;}
+  async function loadCharacterParticipants(sessionId=$('character-session').value){
+    const id=sessionId,request=++participantRequest;if(!id||!account){$('people').textContent='No active session selected.';$('calendar').textContent='No active session selected.';return;}
     $('people').textContent='Loading participants…';$('calendar').textContent='Loading scene date…';
     const [participants,scene]=await Promise.allSettled([
       authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role,allowed_characters&room_id=eq.'+encodeURIComponent(id)),
@@ -846,6 +857,13 @@
     if(header>0)root.style.setProperty('--pm-header-height',Math.ceil(header)+'px');
     if(composer>0)root.style.setProperty('--pm-compose-height',Math.ceil(composer)+'px');
   }
+  function isDesktopLayout(){return typeof window!=='undefined'&&window.matchMedia('(min-width:791px)').matches;}
+  function syncDesktopLayout(){
+    const desktop=isDesktopLayout();if(desktop)root.classList.remove('pm-info-overlay');
+    for(const id of ['settings','rooms-page']){const panel=$(id).querySelector('.pm-panel');panel.setAttribute('role',desktop?'region':'dialog');if(desktop)panel.removeAttribute('aria-modal');else panel.setAttribute('aria-modal','true');}
+    const open=desktop?!root.classList.contains('pm-info-dismissed'):root.classList.contains('pm-info-overlay')||(captureHudPage().view==='admin'&&!root.classList.contains('pm-info-dismissed'));
+    $('sidebar').setAttribute('aria-hidden',String(!open));$('logo-toggle').setAttribute('aria-expanded',String(open));
+  }
   function setInfoVisible(visible){
     root.classList.remove('pm-info-overlay','pm-info-dismissed');
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
@@ -853,13 +871,14 @@
     showSidebar=visible;
     root.classList.toggle('pm-admin',visible);
     $('sidebar').classList.toggle('pm-open',visible);
-    $('sidebar').setAttribute('aria-hidden',String(!visible));
-    $('logo-toggle').setAttribute('aria-expanded',String(visible));
+    $('sidebar').setAttribute('aria-hidden',String(!visible&&!isDesktopLayout()));
+    $('logo-toggle').setAttribute('aria-expanded',String(visible||isDesktopLayout()));
     $('logo-toggle').setAttribute('aria-label',visible?'Close information panel':'Open information panel');
     showFeed=!visible;$('feed').classList.toggle('pm-hide',visible);
     resizeHudBody();
   }
   function toggleInformation(){
+    if(isDesktopLayout()){root.classList.remove('pm-info-overlay');root.classList.toggle('pm-info-dismissed');syncDesktopLayout();resizeHudBody();return;}
     const baseAdmin=captureHudPage().view==='admin';
     const open=root.classList.contains('pm-info-overlay')||(baseAdmin&&!root.classList.contains('pm-info-dismissed'));
     root.classList.toggle('pm-info-overlay',!open&&!baseAdmin);
@@ -958,7 +977,7 @@
   function resetIdentity() {
     if(!confirm('Forget ONLY the temporary Paths Monkey identity and its room links? Your Google login on the Paths website and all existing messages will remain.'))return;
     saveDraft();
-    account=null;paired=false;rooms=[];members=[];messages=[];selectedRoom=null;
+    account=null;paired=false;rooms=[];roomsLoaded=false;members=[];messages=[];selectedRoom=null;
     $('registry-list').replaceChildren();$('registry-status').textContent='';hudHistory=[];closeRegistry();$('roomlogs-list').replaceChildren();$('roomlogs-detail').replaceChildren();closeRoomLogs();
     remove('account');remove('room');$('room-list').textContent='No rooms loaded';renderOngoingSessions();renderFeed();
     restoreDraft();setConnectedState();feedback('Monkey guest reset. Existing shared room data is untouched.');
@@ -1009,7 +1028,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.7.89+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.7.99+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');
@@ -1107,7 +1126,7 @@
     else if(!showSidebar)toggleSidebar();
     else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
   });
-  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();resizeHudBody();});
+  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();resizeHudBody();syncDesktopLayout();});
   const bodyLayoutObserver=new ResizeObserver(resizeHudBody);
   bodyLayoutObserver.observe(root.querySelector('.pm-hbar'));
   bodyLayoutObserver.observe($('compose'));
@@ -1119,7 +1138,7 @@
     GM_registerMenuCommand('Paths HUD: Rooms & sessions',()=>{showPaths();openRoomPage();});
   }
   setInfoVisible(true);renderOngoingSessions();setConnectedState();restoreDraft();renderFeed();updateSpeakerToggle();
-  setHudMode(hudMode,hudExpanded);
+  setHudMode(hudMode,hudExpanded);syncDesktopLayout();
   // If Mizuhana is the selected script, allow a dropdown option to return here.
   const hudSwitcherObserver=new MutationObserver(extendMizuhanaPicker);
   hudSwitcherObserver.observe(document.body,{childList:true,subtree:true});

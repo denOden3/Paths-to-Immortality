@@ -1,5 +1,5 @@
-const fs=require('fs'),assert=require('node:assert/strict');const {parseHTML}=require(process.env.PORTAL_DOM_MODULE||'/tmp/paths-qa/node_modules/linkedom');
-const source=fs.readFileSync('userscripts/Paths-Monkey-GM.user.js','utf8');const template=source.split('root.innerHTML = `')[1].split('`;')[0];const {document}=parseHTML('<html><body>'+template+'</body></html>');
+const fs=require('fs'),assert=require('node:assert/strict');const {JSDOM}=require(process.env.HUD_DOM_MODULE||'/tmp/paths-qa/node_modules/jsdom');
+const source=fs.readFileSync('userscripts/Paths-Monkey-GM.user.js','utf8');const template=source.split('root.innerHTML = `')[1].split('`;')[0];const {document}=new JSDOM('<html><body>'+template+'</body></html>').window;
 const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
 for(const m of source.matchAll(/\$\('([^']+)'\)/g)){assert.ok(document.getElementById('pm-'+m[1]),'missing HUD control: '+m[1]);}
 for(const id of ['pm-kick-player','pm-kick-player-button','pm-end-session','pm-reset-session','pm-copy-invite-code'])assert.ok(document.getElementById(id));assert.equal(document.getElementById('pm-invite-kind'),null);
@@ -8,7 +8,7 @@ const vm=require('vm');const infoCode=source.slice(source.indexOf('  function re
 document.getElementById('pm-compose').getBoundingClientRect=()=>({height:130});
 const root={classList:document.body.classList,querySelector:()=>({getBoundingClientRect:()=>({height:55})}),style:{setProperty(){}}};
 const sourceToggle=source.slice(source.indexOf('  function toggleInformation(){'),source.indexOf('  function captureHudPage(){'));
-const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
+const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],roomsLoaded:true,window:{matchMedia:()=>({matches:false})},runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
 (async()=>{
 vm.runInContext(listCode,context);
@@ -78,5 +78,17 @@ assert.ok(root.classList.contains('pm-info-dismissed'),'Admin information did no
 vm.runInContext('toggleInformation();',context);
 assert.ok(!root.classList.contains('pm-info-dismissed'));
 
-console.log('PASS: HUD navigation, picker, expandable registration/rename forms, inline player status and character editor controls');
+// Real select semantics: a loaded active room must be selected, including after periodic rebuilds.
+await vm.runInContext(`rooms=[{id:'native-room',title:'New Jianghu Session',session_state:'active'}];selectedRoom=null;renderOngoingSessions();`,context);
+assert.equal(document.getElementById('pm-character-session').value,'native-room');assert.equal(document.getElementById('pm-character-session').selectedIndex,1);
+await vm.runInContext('renderOngoingSessions();',context);assert.equal(document.getElementById('pm-character-session').value,'native-room');
+await vm.runInContext('loadCharacterParticipants();',context);assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.ok(!document.getElementById('pm-calendar').textContent.includes('No active'));
+// Desktop sidebar toggles without changing the selected main page.
+context.window.matchMedia=()=>({matches:true});
+vm.runInContext("root.classList.remove('pm-info-dismissed');root.classList.add('pm-registry-open');syncDesktopLayout();toggleInformation();",context);
+assert.ok(root.classList.contains('pm-info-dismissed'));assert.ok(root.classList.contains('pm-registry-open'));
+vm.runInContext('toggleInformation();',context);assert.ok(!root.classList.contains('pm-info-dismissed'));assert.ok(root.classList.contains('pm-registry-open'));assert.equal(document.getElementById('pm-sidebar').getAttribute('aria-hidden'),'false');
+assert.equal(document.getElementById('pm-settings').querySelector('.pm-panel').getAttribute('role'),'region');
+context.window.matchMedia=()=>({matches:false});vm.runInContext('syncDesktopLayout();',context);assert.equal(document.getElementById('pm-settings').querySelector('.pm-panel').getAttribute('role'),'dialog');
+console.log('PASS: native session selection/rebuild, participant/calendar loading, desktop sidebar toggle/main-page retention, mobile dialogs, navigation and Registry controls');
 })().catch(error=>{console.error(error);process.exitCode=1;});

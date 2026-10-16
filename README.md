@@ -1,3 +1,11 @@
+# Paths HUD v0.7.9 — Desktop sidebar and explicit active-session selection
+
+Desktop widths above 790px keep Admin in a left sidebar, with Room Logs, Players Registry, chatrooms and tool/settings pages in the main area to its right. ☯ hides/restores the sidebar without changing the main page. Content reclaims the width while it is hidden. Desktop tool panels are nonmodal regions; mobile keeps the existing full-width information toggle and dialogs.
+
+The session picker now assigns its value explicitly after appending every option, then loads the selected room’s participants and calendar using that exact ID. Loading and unavailable states are distinct. Native select tests use jsdom rather than linkedom and cover first load and periodic option rebuilds. Tests also cover desktop sidebar/main-page retention and mobile region/dialog semantics. Supabase read-only verification confirms New Jianghu Session is active. No database changes; Web stays v0.7.5. Browser visual QA was unavailable.
+
+---
+
 # Paths HUD v0.7.8 — Information symbol toggle
 
 The ☯ symbol opens and closes the information/Admin panel while leaving the underlying HUD page mounted. Closing it restores the same chat, Registry, Room Logs or settings page. On the Admin home itself it can close the information body to reveal ChatGPT and reopen it on the next tap. Explicit Back buttons keep previous-page navigation. No database changes; Web remains v0.7.5. Notion summary/link import remains planned, not implemented.
