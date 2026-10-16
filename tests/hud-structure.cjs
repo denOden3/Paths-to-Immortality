@@ -114,7 +114,7 @@ context.window.matchMedia=()=>({matches:false});vm.runInContext('syncDesktopLayo
 const roomPageCode=source.slice(source.indexOf('  function openRoomPage('),source.indexOf('  function resizeHudBody(){'));
 const settingsCode=source.slice(source.indexOf('  function openSettings()'),source.indexOf('  function resetIdentity()'));
 context.setConnectedState=()=>{};context.previousFocus=null;
-vm.runInContext(roomPageCode+settingsCode,context);
+vm.runInContext(source.slice(source.indexOf('  function renderSessionInformation(){'),source.indexOf('  async function loadSceneIntro(){'))+roomPageCode+settingsCode,context);
 await vm.runInContext("account=null;paired=false;setInfoVisible(true);openRoomPage('create');",context);
 assert.equal(document.getElementById('pm-rooms-page').classList.contains('pm-hide'),false);assert.ok(document.getElementById('pm-settings').classList.contains('pm-hide'),'Create redirected into Settings');
 assert.equal(document.getElementById('pm-manage-rooms').getAttribute('aria-current'),'page');assert.ok(!document.getElementById('pm-room-setup-settings').classList.contains('pm-hide'));
@@ -126,6 +126,13 @@ assert.ok(document.getElementById('pm-settings').classList.contains('pm-hide'));
 await vm.runInContext('openRegistry();',context);
 assert.ok(!root.classList.contains('pm-roomlogs-open'));assert.equal(document.getElementById('pm-open-registry').getAttribute('aria-current'),'page');assert.equal(document.querySelectorAll('.pm-nav-active').length,1);
 vm.runInContext("openRoomPage('create');openSettings();closeSettings();",context);assert.equal(document.querySelectorAll('.pm-nav-active').length,0);
+// Session Tools belongs to the current chat, not the independently inspected picker room.
+assert.equal(document.getElementById('pm-reload-rooms'),null);assert.equal(document.getElementById('pm-room-list'),null);
+let listReloads=0;context.loadRooms=async()=>{listReloads++;};context.refreshScene=async()=>{};context.loadSceneIntro=async()=>{};context.loadRoomSetup=async()=>{};context.runTask=fn=>{context.roomTask=fn();return context.roomTask;};
+vm.runInContext("account={};paired=true;selectedRoom={id:'chat-room',title:'Actual chat',session_state:'active'};currentIntro={scene_date:'Early Spring, 2nd',location:'Mountain Gate',opening:'A quiet morning',session_goals:'Explore'};members=[{player_alias:'Puuchan',character_name:'Xu Yi'}];setInfoVisible(false);openRoomPage('manage');",context);await context.roomTask;
+const sessionInfo=document.getElementById('pm-current-session-info');assert.ok(sessionInfo.textContent.includes('Actual chat'));assert.ok(sessionInfo.textContent.includes('Mountain Gate'));assert.ok(sessionInfo.textContent.includes('Puuchan'));assert.equal(listReloads,0,'Session Tools reloaded every room');assert.equal(document.getElementById('pm-session-details-editor').open,false);
+vm.runInContext('closeRoomPage();',context);assert.equal(vm.runInContext('captureHudPage().view',context),'chat');assert.ok(!document.getElementById('pm-feed').classList.contains('pm-hide'));
+context.runTask=fn=>fn();
 // Minimize/restore retains the existing page and unsaved form DOM.
 context.hudMode='paths';context.hudExpanded=true;context.resizeNativeInset=()=>{};
 vm.runInContext(source.slice(source.indexOf('  function closePickerMenu() {'),source.indexOf('  function switchToMizuhana(){')),context);

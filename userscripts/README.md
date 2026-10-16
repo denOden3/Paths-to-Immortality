@@ -1,3 +1,7 @@
+## HUD v0.8.6 — current-chat Session Tools
+
+Session Tools shows the current chatroom’s information: title, status, in-world date/time, location, opening, goals and participants. My rooms and Refresh room list are removed. Opening these tools refreshes the selected chat only; room browsing remains in Room Logs and the sidebar picker. Closing with Close, Done, the backdrop or Escape returns to the active chatroom. Existing setup fields live in a collapsed Edit session details section for corrections and reset recovery; room creation still collects the initial setup. Legacy invitation joining stays in Settings.
+
 ## HUD v0.8.5 — character card columns
 
 An expanded saved-character card has a full-width bordered name header, a description column and a separated right-hand Notion/Edit action column. The editor spans both columns; narrow screens stack the action area below the description.
