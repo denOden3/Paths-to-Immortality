@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.1</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.2</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.1</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.2</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -131,7 +131,7 @@ body.authOpen{overflow:hidden}
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
-<div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
+<div class="roomMeta"><div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
@@ -139,7 +139,7 @@ body.authOpen{overflow:hidden}
 <button id="selectionDelete" class="btn sm" type="button">Delete</button>
 <button id="selectionCancel" class="btn sm" type="button">Cancel</button></div>
 
-<div id="feed" class="feed" aria-live="polite"></div><section id="chatPanel" class="chatPanel hidden" aria-live="polite" aria-label="Character workspace"></section>
+<div id="chatWorkspace" class="chatWorkspace"><div id="feed" class="feed" aria-live="polite" aria-label="Room messages" tabindex="0"></div><section id="chatPanel" class="chatPanel hidden" aria-live="polite" aria-label="Character workspace" tabindex="0"></section></div>
 </section>
 <section id="tools" class="scroll toolsPage hidden" aria-label="Paths Web tools">
 <div class="toolPageHeader"><h2>☯ Paths Web Tools</h2><button id="toolsBack" class="btn sm" type="button">← Back</button></div>
@@ -161,7 +161,7 @@ body.authOpen{overflow:hidden}
 </div>
 <div id="composer" class="compose hidden">
 <div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button></div>
-<div class="send"><textarea id="msg" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
+<div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
 </div>
 <div id="headerMenuOverlay" class="headerMenuOverlay hidden" role="presentation"><section id="headerMenu" class="headerMenu" role="dialog" aria-modal="true" aria-label="Navigation"><button id="menuBack" class="btn" type="button" aria-label="Go back" title="Go back">←</button><button id="menuSignout" class="btn" type="button">Sign out</button></section></div>
 <div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><section aria-labelledby="ongoingSessionsTitle"><h2 id="ongoingSessionsTitle">Your ongoing sessions</h2><p id="playerSessionsStatus" class="muted" role="status"></p><div id="playerSessions" class="playerSessionLinks"></div></section><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Check invitation</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
@@ -258,6 +258,7 @@ const show=where=>{
   for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
+  document.querySelector('.app').classList.toggle('inChat',where==='chat');
   currentView=where;
   if(rosterTimer){clearInterval(rosterTimer);rosterTimer=null;}
   if(where==='adminPlayers'&&portalIdentity.is_admin)rosterTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshRegistry().catch(()=>{if(currentView==='adminPlayers')$('rosterFeedback').textContent='Could not refresh. Tap Refresh players to try again.';});},15000);
@@ -347,8 +348,8 @@ updateSpeakerDisplay();}
 
 let chatPanelView='',chatPanelRequest=0;
 const chatPanelIds={session:'sessionInfo',scene:'currentScene',inventory:'inventoryPanel'};
-function closeChatPanel(){chatPanelView='';++chatPanelRequest;$('chatPanel').classList.add('hidden');$('chatPanel').replaceChildren();$('feed').classList.remove('hidden');for(const id of Object.values(chatPanelIds))$(id).setAttribute('aria-pressed','false');}
-async function toggleChatPanel(view){if(chatPanelView===view){closeChatPanel();return;}chatPanelView=view;for(const [key,id] of Object.entries(chatPanelIds))$(id).setAttribute('aria-pressed',String(key===view));$('feed').classList.add('hidden');$('selectionBar').classList.add('hidden');$('chatPanel').classList.remove('hidden');await refreshChatPanel();}
+function closeChatPanel(){ $('chatWorkspace').classList.remove('panelOpen');chatPanelView='';++chatPanelRequest;$('chatPanel').classList.add('hidden');$('chatPanel').replaceChildren();$('feed').classList.remove('hidden');for(const id of Object.values(chatPanelIds))$(id).setAttribute('aria-pressed','false');}
+async function toggleChatPanel(view){if(chatPanelView===view){closeChatPanel();return;}chatPanelView=view;$('chatWorkspace').classList.add('panelOpen');for(const [key,id] of Object.entries(chatPanelIds))$(id).setAttribute('aria-pressed',String(key===view));$('feed').classList.add('hidden');$('selectionBar').classList.add('hidden');$('chatPanel').classList.remove('hidden');await refreshChatPanel();}
 function workspaceField(label,type,value){const wrap=el('label','workspaceField',label),input=el('input');input.type=type;input.value=value||'';if(type==='number'){input.min='1';input.max='1000000';input.step='1';}else input.maxLength=label==='Item name'?80:350;wrap.append(input);return {wrap,input};}
 async function refreshChatPanel(){
  if(!chatPanelView||!room)return;const view=chatPanelView,id=room,character=activeCharacter,request=++chatPanelRequest,host=$('chatPanel');host.replaceChildren(el('p','muted','Loading…'));
@@ -407,7 +408,7 @@ async function fetchMessages(){
   const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
   if(error)throw error;if(room!==active)return;
   const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=data||[];if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
-  const el=$('feed'),nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
+  const el=$('feed'),previousScroll=el.scrollTop,nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
   if(!roomMessages.length){
     const p=document.createElement('p');p.className='muted';p.textContent='The hall is quiet. Who will speak first?';el.append(p);
@@ -421,14 +422,14 @@ async function fetchMessages(){
     const body=document.createElement('div');body.className='body';body.textContent=m.kind==='narrator'?m.body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim():m.body;
     box.append(by,body);installLongPress(box,m);el.append(box);
   }
-  updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;
+  updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
  closeChatPanel();endLive();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
- await fetchMembers();if(room!==id)return false;await fetchMessages();
+ resizeComposer();await fetchMembers();if(room!==id)return false;await fetchMessages();
  subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;});
  poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView&&chatPanelView!=='inventory')refreshChatPanel().catch(console.warn);}},18000);
  guardTimer=setInterval(()=>{if(document.visibilityState==='visible')checkOngoingSession().catch(console.warn);},4000);
@@ -626,7 +627,8 @@ $('back').textContent='← Sessions';$('back').onclick=()=>safe(lobby);
 $('invite').onclick=()=>safe(async()=>{const {data,error}=await db.rpc('create_room_invite',{p_room_id:room});if(error)throw error;$('inviteText').textContent=data;$('inviteBox').classList.remove('hidden');notice('Invitation ready. Copy the code and send it to your friend privately.','good');});
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('inviteText').textContent);notice('Invite copied!','good');}catch{notice('Select the code and copy it manually.','error');}};
 $('closeInvite').onclick=()=>{$('inviteBox').classList.add('hidden');$('inviteText').textContent='';};
-$('msg').addEventListener('input',saveDraft);
+function resizeComposer(){const field=$('msg');field.style.height='auto';field.style.height=Math.max(64,Math.min(field.scrollHeight,160))+'px';}
+$('msg').addEventListener('input',()=>{saveDraft();resizeComposer();});
 async function send(){await safe(async()=>{
  if(!room||!user)throw Error('Enter a room first.');
  if(!await checkOngoingSession())return;
@@ -642,7 +644,7 @@ async function send(){await safe(async()=>{
   p_room_id:room,p_body:body,p_kind:kind,p_character:selectedCharacter,p_client_message_id:id
  });
  if(error)throw error;
- $('msg').value='';pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
+ $('msg').value='';resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
 });}
 $('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
 window.addEventListener('beforeunload',saveDraft);window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
@@ -670,7 +672,7 @@ async function enterPortal(){if(!db)throw Error('The entrance is still loading.'
 function openCodeDialog(){renderPlayerSessions([]);invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
 function closeCodeDialog(){$('codeOverlay').classList.add('hidden');document.body.classList.remove('authOpen');}
 function returnToStart(options={}){
- endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
+ endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
  try{if(options.clearResume===true)localStorage.removeItem('paths.activeSession');}catch{}closeHeaderMenu(false);closeCodeDialog();closeAuthDialog();clearInviteAddress();$('sessionCode').value='';invalidateScene();clear();show('welcome');
 }
 async function chooseAdministrator(){

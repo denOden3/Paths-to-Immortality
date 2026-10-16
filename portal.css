@@ -24,3 +24,75 @@
 
 .chatPanel{flex:1;min-height:0;overflow:auto;padding:20px;}.chatPanelButtons{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;}.chatPanelButtons .btn{flex-shrink:0;}.chatPanelButtons [aria-pressed=true]{background:#642b36;border-color:var(--gold);}.sendControls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}.sendControls .speakerToggle{max-width:220px;overflow-wrap:anywhere;min-height:44px;}.compose .send{display:flex;align-items:flex-end;gap:12px;}.compose .send textarea{flex:1;min-width:0;}.workspaceFact{border-bottom:1px solid var(--border);padding:12px 0;}.workspaceFact p{margin:6px 0;}.workspaceField{display:flex;flex-direction:column;gap:6px;min-width:0;}.inventoryActions,.inventoryForm{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}.inventoryActions input[type=number]{max-width:100px;}.inventoryForm .workspaceField{flex:1 1 140px;}.inventoryLog{margin-top:24px;}input,textarea{caret-color:#ffd483;}
 @media(max-width:600px){.compose .send{flex-wrap:wrap;}.compose .send textarea{flex-basis:100%;}.sendControls{width:100%;justify-content:flex-end;}.chatPanel{padding:16px;}}
+
+/* Web v0.8.2: story-first chatroom; wide screens keep reference panels beside chat. */
+.app.inChat{max-width:1280px;width:100%;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;}
+.inChat button,.inChat input,.inChat textarea{font:inherit;}
+.inChat .head{min-height:64px;padding:10px 20px;gap:12px;}
+.inChat .head>div:not(.state){min-width:0;flex:1;}
+.inChat .head h1{overflow-wrap:anywhere;font-size:21px;letter-spacing:.02em;}
+.inChat .sig{width:44px;height:44px;}
+.inChat .state{font-size:12px;color:var(--muted);}
+.inChat .content{padding:12px 20px 0;}
+.inChat #portalNav{display:none!important;}
+.inChat .roombar{gap:12px;padding-bottom:6px;flex-wrap:nowrap;}
+.inChat .roomTitle{font-size:18px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;}
+.inChat .btn,.inChat .speakerToggle{min-height:44px;font-size:14px;font-weight:650;line-height:1.4;}
+.inChat .btn.sm{padding:8px 12px;}
+.inChat .roomMeta{display:flex;gap:16px;align-items:baseline;justify-content:space-between;padding-bottom:8px;}
+.inChat .members{min-height:0;min-width:0;font-size:14px;color:var(--muted);overflow-wrap:anywhere;}
+.inChat #networkStatus{font-size:13px;white-space:nowrap;flex-shrink:0;}
+.chatWorkspace{display:flex;flex:1;min-height:0;min-width:0;gap:20px;}
+.inChat .feed{padding:12px 4px 20px;gap:16px;min-width:0;scrollbar-width:thin;scrollbar-color:#a58b92 #211b23;}
+.inChat .bubble{max-width:min(76%,70ch);padding:12px 16px;border-radius:12px;flex-shrink:0;}
+.inChat .bubble.narrator{width:100%;max-width:72ch;align-self:center;background:#211e23;border:1px solid #786047;border-left:3px solid var(--gold);padding:18px 22px;}
+.inChat .body{font-size:17px;line-height:1.65;margin-top:8px;}
+.inChat .by{font-size:14px;line-height:1.4;gap:16px;}
+.inChat .time{font-size:12px;color:var(--muted);white-space:nowrap;}
+.inChat .chatPanel{flex:1;min-width:0;background:#211b23;border:1px solid #9c7e87;border-radius:12px;padding:16px;margin-bottom:12px;overflow-wrap:anywhere;}
+.inChat .chatPanel h2{font-size:20px;margin:0 0 16px;line-height:1.4;}
+.inChat .chatPanel h3{font-size:17px;}
+.inChat .chatPanel p,.inChat .chatPanel label,.inChat .chatPanel .muted{font-size:14px;line-height:1.6;}
+.inChat .compose{padding:10px 20px calc(12px + env(safe-area-inset-bottom));}
+.inChat .chatPanelButtons{margin-bottom:8px;gap:8px;padding:3px;}
+.inChat .chatPanelButtons .btn{background:transparent;border-color:#9c7e87;}
+.inChat .chatPanelButtons [aria-pressed=true]{background:#572b37;border-color:var(--gold);box-shadow:inset 0 -3px var(--gold);}
+.inChat .compose .send{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;}
+.inChat .compose textarea{height:64px;min-height:64px;max-height:160px;resize:none;overflow-y:auto;font-size:16px;line-height:1.5;padding:10px 12px;}
+.inChat textarea::placeholder{color:#c5afb8;opacity:1;}
+.inChat .sendControls{flex-wrap:nowrap;align-items:stretch;gap:8px;}
+.inChat .sendControls .speakerToggle{position:static;max-width:200px;min-width:0;background:#332932;border:1px solid #a58b92;color:var(--text);padding:10px 14px;}
+.inChat .sendControls .speakerToggle.oocActive{background:#49384d;border-color:#c5a8ce;}
+.inChat #send{background:#aa2f3d;border-color:#f18b85;padding:10px 20px;}
+.inChat .compose small{font-size:12px;line-height:1.5;margin-top:6px;}
+.inChat :is(button,input,textarea,[tabindex]):focus-visible{outline:3px solid #ffd483;outline-offset:2px;}
+.inChat .feed:focus-visible{outline-offset:-3px;}
+@media(min-width:1100px){
+ .inChat .chatWorkspace.panelOpen .feed.hidden{display:flex!important;flex:1;}
+ .inChat .chatWorkspace.panelOpen .chatPanel{flex:0 0 320px;}
+ .inChat .chatWorkspace.panelOpen .bubble{max-width:90%;}
+ .inChat .chatWorkspace.panelOpen .bubble.narrator{max-width:72ch;}
+}
+@media(max-width:650px){
+ .inChat .head{padding:8px 12px;min-height:60px;}
+ .inChat .head h1{font-size:18px;}
+ .inChat .state{max-width:58px;font-size:11px;}
+ .inChat .content{padding:10px 12px 0;}
+ .inChat .roomTitle{font-size:16px;}
+ .inChat .roomMeta{gap:8px;}
+ .inChat .members{font-size:13px;}
+ .inChat .bubble{max-width:92%;padding:12px;}
+ .inChat .bubble.narrator{padding:14px;max-width:100%;}
+ .inChat .body{font-size:16px;line-height:1.6;}
+ .inChat .compose{padding:8px 12px calc(10px + env(safe-area-inset-bottom));}
+ .inChat .compose .send{grid-template-columns:minmax(0,1fr);gap:8px;}
+ .inChat .sendControls{width:100%;justify-content:flex-end;}
+ .inChat .sendControls .speakerToggle{max-width:calc(100% - 90px);}
+ .inChat .compose small{font-size:12px;}
+}
+@media(max-height:500px){
+ .inChat .head{min-height:52px;padding:4px 12px;}
+ .inChat .compose small{display:none;}
+ .inChat .compose textarea{min-height:48px;max-height:80px;}
+ .inChat .compose{max-height:45dvh;overflow:auto;}
+}

@@ -1,3 +1,7 @@
+## Web v0.8.2 — chatroom reading comfort
+
+Compact room and brand headers leave more height for the story. Narration uses a restrained gold accent, a readable line length and consistent typography. The two-line composer grows with typing; the neutral character switcher stays beside the red Send button and moves below the field on narrow screens. Session Info, Scene and Inventory open beside the conversation on wide desktops, or replace the message area on narrow screens, with exclusive active indicators and retained drafts. Message refreshes preserve the reading position when scrolled back. Keyboard focus, readable helper text and comfortable touch targets are retained. HUD unchanged.
+
 ## HUD v0.8.12 / Web v0.8.1 — automatic published state updates
 
 The HUD speaker switch occupies its own grid cell beside Send, with a separate row on narrow screens. Session Info, Scene and Inventory sit beside Session Tools and toggle within the chat body while preserving the composer. Paired owner HUDs may inspect participating characters' panels and inventories; ordinary players remain restricted to their own participating characters. Owner characters now have persistent inventory identities too.
