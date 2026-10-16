@@ -1,3 +1,11 @@
+# Paths Web v0.7.6 — Inline HUD pairing on Administration
+
+Administration now displays pairing status, code input, Approve Paths HUD, Refresh status and Revoke access directly. Removed the extra Open HUD pairing & tools button and moved the existing controls out of the tools view. Pairing status loads on entry. Approval resolves an owned room for the existing server ownership check without opening a room or leaving Administration. Owner authorization remains enforced; no database or HUD update required.
+
+DOM checks cover inline placement, removed intermediary button, status loading and approving with no current room while staying on Administration. Web module syntax check passes. HUD remains v0.7.10.
+
+---
+
 # Paths HUD v0.7.10 — Active navigation and separate Settings/Create pages
 
 Only the navigation button for the visible main page is highlighted, with aria-current=page. Create Room, Room Logs, Players Registry, Settings and Session tools update this state on entry/exit. Main-page navigation closes other tool/settings views so an old panel cannot mask the selected page.

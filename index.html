@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.5</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.6</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.5</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.6</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -108,7 +108,18 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="administration" class="scroll hidden" role="tabpanel" aria-labelledby="navAdmin">
 
-<div class="card"><h3>HUD pairing &amp; tools</h3><p>Connect your Paths HUD to your administrator account. Prepare rooms, invitations and scene introductions in the HUD.</p><div class="buttons"><button id="adminConnections" class="btn">Open HUD pairing &amp; tools</button></div></div>
+<div class="card" id="monkeyApproval">
+<h3>HUD pairing &amp; tools</h3>
+<p>Get a pairing code from Paths HUD → Settings, then paste it here while signed in as the Jade Emperor. The HUD can manage <strong>all rooms owned by this account</strong> without appearing as another character. Never share the code with anyone else.</p>
+<p id="monkeyApprovalStatus" class="muted" aria-live="polite">Checking authorization…</p>
+<label for="monkeyApprovalCode">48-character pairing code from Paths HUD</label>
+<input id="monkeyApprovalCode" maxlength="48" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your HUD's pairing code">
+<div class="buttons">
+<button id="monkeyApprove" class="btn primary sm" type="button">Approve Paths HUD</button>
+<button id="monkeyRefresh" class="btn sm" type="button">Refresh status</button>
+<button id="monkeyRevoke" class="btn sm" type="button">Revoke access</button>
+</div>
+</div>
 </section>
 <section id="adminPlayers" class="scroll hidden" role="tabpanel" aria-labelledby="navPlayers"><div class="row rosterHeader"><h2>Players</h2><button id="refreshPlayers" class="btn sm">Refresh players</button></div><p class="muted">Players registered through your HUD invitations. “In a session” means they have joined an ongoing room.</p><p id="rosterSummary" class="muted" role="status" aria-live="polite"></p><div id="registeredPlayers" class="playerRoster"></div><p id="rosterFeedback" class="muted" role="status"></p></section>
 <section id="lobby" class="scroll hidden" role="tabpanel" aria-labelledby="navSessions">
@@ -139,18 +150,7 @@ body.authOpen{overflow:hidden}
 <div class="buttons hidden"><button id="invite" class="btn sm" type="button">Legacy invitation code</button></div>
 <div id="inviteBox" class="card hidden"><h3>Legacy invite (recovery only)</h3><p>Send this code privately to your friend. Anyone who receives it can use it once while it's valid.</p><div id="inviteText" class="code"></div><div class="buttons"><button id="copy" class="btn sm">Copy code</button><button id="closeInvite" class="btn sm">Hide</button></div></div>
 <div class="buttons"><button id="narrate" class="btn sm" type="button">✦ Narrator test tools</button></div>
-<div class="toolCard" id="monkeyApproval" style="margin-top:13px">
-<h3>🐒 Trusted Paths HUD</h3>
-<p>One-time ritual: obtain a pairing code in your Paths HUD, then approve it here while signed in as this room's owner. The HUD can manage <strong>all rooms owned by this account</strong> without appearing as another character. Never share the code with anyone else.</p>
-<p id="monkeyApprovalStatus" class="muted" aria-live="polite">Checking authorization…</p>
-<label for="monkeyApprovalCode">48-character pairing code from Paths HUD</label>
-<input id="monkeyApprovalCode" maxlength="48" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your HUD's pairing code">
-<div class="buttons">
-<button id="monkeyApprove" class="btn primary sm" type="button">Approve Paths HUD</button>
-<button id="monkeyRefresh" class="btn sm" type="button">Refresh status</button>
-<button id="monkeyRevoke" class="btn sm" type="button">Revoke access</button>
-</div>
-</div>
+
 </div>
 <div class="toolCard"><h3>About this test</h3>
 <p>Paths Web is the shared player chat. Story narration is controlled separately from Paths HUD inside ChatGPT.</p>
@@ -277,8 +277,8 @@ function openTools(){
   show('tools');
 }
 async function refreshOwnerMonkeyStatus(){
- if(!user||!room||!members.some(x=>x.user_id===user.id&&x.role==='owner')){
-  $('monkeyApprovalStatus').textContent='Only the signed-in room owner can pair a HUD.';
+ if(!user||!portalIdentity.is_admin){
+  $('monkeyApprovalStatus').textContent='Sign in as the Jade Emperor to pair a HUD.';
   $('monkeyRevoke').disabled=true;return;
  }
  const {data,error}=await db.rpc('owner_monkey_pair_status');
@@ -287,11 +287,13 @@ async function refreshOwnerMonkeyStatus(){
  $('monkeyRevoke').disabled=!data;
 }
 $('monkeyApprove').onclick=()=>safe(async()=>{
- if(!room||!user)throw Error('Open a room you own before pairing.');
+ if(!user||!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
  const code=$('monkeyApprovalCode').value.trim().toLowerCase();
  if(!/^[0-9a-f]{48}$/.test(code))throw Error('Paste the full 48-character pairing code from Paths HUD.');
  if(!confirm('Authorize this Paths HUD identity to access and manage ALL private rooms owned by your signed-in account?'))return;
- const {data,error}=await db.rpc('approve_monkey_pair_code',{p_code:code,p_owner_room:room});
+ const owned=await db.from('rooms').select('id').eq('owner_id',user.id).order('created_at',{ascending:false}).limit(1);if(owned.error)throw owned.error;
+ if(!owned.data?.length)throw Error('An owned room is required before pairing.');
+ const {data,error}=await db.rpc('approve_monkey_pair_code',{p_code:code,p_owner_room:owned.data[0].id});
  if(error)throw error;
  if(data!==true)throw Error('Supabase did not confirm pairing.');
  $('monkeyApprovalCode').value='';
@@ -718,8 +720,9 @@ async function refreshRegistry(){
 async function openAdministration(){
  if(!portalIdentity.is_admin)throw Error('Jade Emperor access required.');
  show('administration');
+ try{await refreshOwnerMonkeyStatus();}catch(e){$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;}
 }
-$('refreshPlayers').onclick=()=>safe(refreshRegistry);$('adminConnections').onclick=()=>safe(async()=>{if(!room){const {data,error}=await db.from('rooms').select('id').eq('owner_id',user.id).eq('session_state','active').order('created_at',{ascending:false}).limit(1);if(error)throw error;if(!data?.length){notice('Create an ongoing room from the HUD before opening room pairing tools.');return;}await openRoom(data[0].id);}openTools();});
+$('refreshPlayers').onclick=()=>safe(refreshRegistry);
 
 async function boot(){try{
  const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
