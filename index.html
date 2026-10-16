@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.6</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.7</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.6</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.7</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -101,7 +101,7 @@ body.authOpen{overflow:hidden}
 <section id="identityGate" class="scroll hidden" aria-label="Choose your identity"><div class="portalHero"><h2>Before we begin your journey, please tell me who you are:</h2></div><div class="identityChoices"><button id="chooseAdministrator" class="identityChoice" type="button"><span class="identityIcon">☯</span><strong>The Jade Emperor</strong><span>The Administrator</span></button><button id="choosePlayer" class="identityChoice" type="button"><span class="identityIcon">☁</span><strong>A Wandering Cultivator</strong><span>A Player</span></button></div></section>
 <section id="intro" class="scroll hidden" aria-label="Session introduction">
 <div class="portalHero"><h2 id="playerWelcome"></h2><p id="playerGreeting"></p></div>
-<div id="sceneResult"><article class="card sceneBox"><h2 id="introTitle"></h2><div class="sceneMeta"><span id="introDate"></span><span id="introPlace"></span></div><div id="introText" class="sceneCopy"></div></article>
+<div id="sceneResult"><article class="card sceneBox"><h2 id="introTitle"></h2><div class="sceneMeta"><span id="introDate"></span><span id="introPlace"></span></div><div id="introText" class="sceneCopy"></div><p id="introGoals" class="sceneCopy hidden"></p></article>
 <h3 id="characterHeading">Choose your characters</h3><div id="characterChoices" class="choices"></div>
 <div id="characterReminders" class="characterReminders" aria-label="Character reminders"></div><div id="characterReminderInfo" class="card hidden" role="status"></div>
 <div class="beginRow"><button id="introEnter" class="btn primary" type="button">Begin your journey!</button></div></div>
@@ -127,7 +127,7 @@ body.authOpen{overflow:hidden}
 <div class="card"><h3>Room log</h3><div id="roomList" class="muted">Loading rooms…</div></div>
 
 </section>
-<section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
+<section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
 <div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" aria-live="polite"></div>
@@ -329,7 +329,7 @@ async function lobby(){
 }
 function renderConcludedRoom(data){
  concludedScene=data;$('concludedTitle').textContent=data.title;$('concludedDate').textContent=data.ended_at?'Concluded '+new Date(data.ended_at).toLocaleString():'';
- $('concludedMeta').textContent=[data.scene_date,data.location].filter(Boolean).join(' · ');$('concludedOpening').textContent=data.opening||'';
+ $('concludedMeta').textContent=[data.scene_date,data.time_of_day,data.location].filter(Boolean).join(' · ');$('concludedOpening').textContent=data.opening||'';$('concludedGoals').textContent=data.session_goals?'Session goals: '+data.session_goals:'';$('concludedGoals').classList.toggle('hidden',!data.session_goals);
  $('archiveStatus').textContent=data.notion_url?'Notion link saved':'No Notion link recorded';$('archiveUrl').value=data.notion_url||'';
  const link=$('archiveLink');link.classList.toggle('hidden',!data.notion_url);if(data.notion_url)link.href=data.notion_url;else link.removeAttribute('href');
  show('concludedRoom');
@@ -653,7 +653,7 @@ function renderCharacterReminders(){
 async function generateSession(){
  let code,data;try{code=parseInvitation($('sessionCode').value);const r=await db.rpc('preview_scene_invitation',{p_code:code});if(r.error||!r.data){returnToStart();return;}data=r.data;}catch{returnToStart();return;}
  invalidateScene();loadedInvitationCode=code;inviteCode=code;invitePreview=data;updateGreeting(data);
- $('introTitle').textContent=data.title;$('introDate').textContent=data.scene_date?'📅 '+data.scene_date:'';$('introPlace').textContent=data.location?'📍 '+data.location:'';$('introText').textContent=data.opening||'';
+ $('introTitle').textContent=data.title;$('introDate').textContent=[data.scene_date,data.time_of_day].filter(Boolean).join(' · ');$('introPlace').textContent=data.location?'📍 '+data.location:'';$('introText').textContent=data.opening||'';$('introGoals').textContent=data.session_goals?'Session goals: '+data.session_goals:'';$('introGoals').classList.toggle('hidden',!data.session_goals);
  const seen=new Set();sessionChoices=[];for(const name of data.characters||[]){if(seen.has(name))continue;seen.add(name);const detail=(data.character_details||[]).find(x=>x.name===name)||{},prior=(data.previous_characters||[]).find(x=>x.name===name)||{};sessionChoices.push({...prior,...detail,name});}
  for(const c of data.previous_characters||[]){if(!seen.has(c.name)){sessionChoices.push({...c,previous:true});seen.add(c.name);}}
  const box=$('characterChoices');box.replaceChildren();sessionChoices.forEach((c,i)=>{const input=characterOption(box,c,'checkbox',i,sessionChoices.length===1);input.addEventListener('change',renderCharacterReminders);});

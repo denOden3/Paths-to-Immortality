@@ -2,7 +2,13 @@
 
 Standalone **Paths of Immortality HUD** Tampermonkey userscript for the Paths world. The source lives in the Paths repository and does not modify Mizuhana's scripts or saves.
 
-## HUD v0.7.10
+## HUD v0.8.0
+
+Create Room prepares the date/time, Codex or custom location, starting spot, opening, goals and invited players. Select people only; players choose their saved characters on Web. Add a player’s characters in Registry first. Prepared private codes appear in Session tools for copying after creation. Session tools also edits the same setup and can issue new player codes. A solo room needs no invitees.
+
+The location list is a checked snapshot of 21 established Notion places, with source links. It does not automatically sync later Notion edits. Custom locations stay with the session. Use Session tools to edit the setup after creation.
+
+## Previous HUD v0.7.10
 
 The visible main page highlights only its matching navigation button. Create Room and Settings now open separate views; setup/pairing is under the gear. Unconnected HUDs get an explicit Open Settings shortcut in Create Room. Desktop gear and minimize controls are larger.
 
@@ -48,7 +54,7 @@ Open this URL in Firefox for Android with Tampermonkey enabled:
 
 https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js
 
-Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.7.10**. Because the display name changed, check that you don't have a second older Paths script enabled.
+Approve installation (or **Check for userscript updates** if already installed) and reload https://chatgpt.com/. Verify the Tampermonkey entry name is **Paths of Immortality HUD** and the version is **0.8.0**. Because the display name changed, check that you don't have a second older Paths script enabled.
 
 ## Connect to an existing room
 

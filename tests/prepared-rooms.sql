@@ -1,0 +1,52 @@
+begin;
+create temp table qa_setup(owner_id uuid,monkey_id uuid,player_user uuid,player_id uuid,empty_id uuid,r uuid,code text,request uuid);
+insert into qa_setup(owner_id,monkey_id,player_user,request) select (select user_id from private.portal_admins limit 1),(select monkey_id from private.monkey_delegations where revoked_at is null limit 1),(select id from auth.users where is_anonymous and id not in(select monkey_id from private.monkey_delegations) and id not in(select user_id from private.portal_accounts) limit 1),gen_random_uuid();
+grant select,update on qa_setup to authenticated;grant select on qa_setup to anon;
+select set_config('request.jwt.claims',jsonb_build_object('sub',owner_id,'role','authenticated')::text,true) from qa_setup;
+set local role authenticated;
+do $$declare rows jsonb;pid uuid;begin
+ perform public.hud_player_registry(null,'__QA Setup player');perform public.hud_player_registry(null,'__QA Empty player');
+ select (x->>'id')::uuid into pid from jsonb_array_elements(public.hud_player_registry())x where x->>'alias'='__QA Setup player';update qa_setup set player_id=pid;
+ perform public.hud_player_characters(pid,'save',null,'QA Choice A','One disciple','Explore');perform public.hud_player_characters(pid,'save',null,'QA Choice B','Another disciple','Learn');
+ select (x->>'id')::uuid into pid from jsonb_array_elements(public.hud_player_registry())x where x->>'alias'='__QA Empty player';update qa_setup set empty_id=pid;
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',monkey_id,'role','authenticated')::text,true) from qa_setup;
+set local role authenticated;
+do $$declare s record;data jsonb;again jsonb;before_count int;denied boolean:=false;rid uuid;begin
+ select * into s from qa_setup;data:=public.hud_room_setup();assert jsonb_array_length(data->'locations')>=20;assert data->'locations' @> '[{"id":"dining-hall"}]';assert not (data->'locations') @> '[{"name":"Lingxuan"}]';
+ data:=public.create_prepared_room(s.request,'__QA Prepared room','QA Owner','Year 312 · Early Spring, 2nd','Morning','dining-hall','','By the doorway','A messenger arrives.','Investigate the letter.',array[s.player_id]);
+ update qa_setup set r=(data->>'id')::uuid,code=data->'invitations'->0->>'code';assert jsonb_array_length(data->'invitations')=1;
+ again:=public.create_prepared_room(s.request,'__QA Prepared room','QA Owner','Year 312 · Early Spring, 2nd','Morning','dining-hall','','By the doorway','A messenger arrives.','Investigate the letter.',array[s.player_id]);assert again->>'id'=data->>'id';assert (again->>'recovered')::boolean,'retry created another room';
+ data:=public.get_scene_introduction_as_owner((data->>'id')::uuid);assert data->>'location'='Dining Hall · By the doorway';assert data->>'time_of_day'='Morning';assert data->>'session_goals'='Investigate the letter.';
+ select count(*) into before_count from public.rooms;
+ begin perform public.create_prepared_room(gen_random_uuid(),'__QA Invalid room','Owner','Day','Morning','missing-place','','','Start','',array[s.player_id]);exception when others then denied:=true;end;assert denied;assert (select count(*)=before_count from public.rooms),'invalid location left a room';
+ denied:=false;begin perform public.create_prepared_room(gen_random_uuid(),'__QA Partial room','Owner','Day','','mountain-gate','','','Start','',array[s.player_id,s.empty_id]);exception when others then denied:=true;end;assert denied;assert (select count(*)=before_count from public.rooms),'failed invitation left a partial room';
+ data:=public.create_prepared_room(gen_random_uuid(),'__QA Custom room','Owner','Day','Night','__custom__','Roadside tea stall','Corner table','Rain begins.','Seek shelter',array[]::uuid[]);rid:=(data->>'id')::uuid;
+ data:=public.get_scene_introduction_as_owner(rid);assert data->>'location'='Roadside tea stall · Corner table';assert data->>'location_slug'='__custom__';assert not (public.hud_room_setup()->'locations') @> '[{"name":"Roadside tea stall"}]','custom location promoted to Codex';
+end;$$;
+reset role;
+select set_config('request.jwt.claims','{}',true);
+set local role anon;
+do $$declare data jsonb;denied boolean:=false;begin
+ data:=public.preview_scene_invitation((select code from qa_setup));assert data->>'time_of_day'='Morning';assert data->>'session_goals'='Investigate the letter.';assert jsonb_array_length(data->'characters')=0;assert jsonb_array_length(data->'previous_characters')=2,'player choices were not from their own character list';
+ begin perform public.hud_room_setup();exception when others then denied:=true;end;assert denied,'anon read owner setup';
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',player_user,'role','authenticated')::text,true) from qa_setup;
+set local role authenticated;
+do $$declare s record;denied boolean:=false;begin
+ select * into s from qa_setup;
+ begin perform public.hud_room_setup();exception when others then denied:=true;end;assert denied,'player read owner setup';
+ denied:=false;begin perform public.create_prepared_room(gen_random_uuid(),'Forged','Bad','Day','','mountain-gate','','','Bad','',array[]::uuid[]);exception when others then denied:=true;end;assert denied,'player created owner room';
+ denied:=false;begin perform public.invite_registered_player(s.r,s.player_id);exception when others then denied:=true;end;assert denied,'player issued invitation';
+ denied:=false;begin perform public.save_room_setup(s.r,'Day','','mountain-gate','','','Forged','');exception when others then denied:=true;end;assert denied,'player edited setup';
+ perform public.portal_redeem(s.code,array['QA Choice B']);assert (select allowed_characters=array['QA Choice B'] from public.room_members where room_id=s.r and user_id=s.player_user),'owner selected characters instead of player';
+end;$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',owner_id,'role','authenticated')::text,true) from qa_setup;
+set local role authenticated;
+do $$declare s record;data jsonb;begin select * into s from qa_setup;perform public.control_session(s.r,'end');data:=public.portal_concluded_room(s.r);assert data->>'time_of_day'='Morning';assert data->>'session_goals'='Investigate the letter.';perform public.control_session(s.r,'reset');assert public.preview_scene_invitation(s.code) is null;assert public.get_scene_introduction_as_owner(s.r)->>'scene_date'='';end;$$;
+reset role;
+select 'PASS: sourced locations, custom isolation, atomic preparation/invitations, retry deduplication, metadata, player choices, owner-only permissions and reset' as result;
+rollback;

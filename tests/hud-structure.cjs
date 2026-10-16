@@ -8,10 +8,11 @@ const vm=require('vm');const infoCode=source.slice(source.indexOf('  function re
 document.getElementById('pm-compose').getBoundingClientRect=()=>({height:130});
 const root={classList:document.body.classList,querySelector:()=>({getBoundingClientRect:()=>({height:55})}),style:{setProperty(){}}};
 const sourceToggle=source.slice(source.indexOf('  function toggleInformation(){'),source.indexOf('  function captureHudPage(){'));
-const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],roomsLoaded:true,window:{matchMedia:()=>({matches:false})},runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
+const context=vm.createContext({document,root,$:id=>document.getElementById('pm-'+id),showSidebar:false,showFeed:true,busy:false,account:null,paired:true,roomSetup:{locations:[],players:[]},currentIntro:{},get:(key,fallback)=>fallback,put:()=>{},hudHistory:[],restoringHudPage:false,selectedRoom:null,rooms:[],roomsLoaded:true,window:{matchMedia:()=>({matches:false})},runTask:fn=>fn(),loadRooms:()=>{},chooseRoom:()=>{},authed:async()=>[]});
 const listCode=source.slice(source.indexOf('  function renderOngoingSessions(){'),source.indexOf('  function renderFeed()'));
 (async()=>{
 vm.runInContext(listCode,context);
+vm.runInContext(source.slice(source.indexOf('  function populateLocationPicker('),source.indexOf('  function renderKickPlayers()')),context);
 vm.runInContext(infoCode+`;setInfoVisible(false);`,context);
 assert.ok(root.classList.contains('pm-admin'),'no room must show Admin');
 assert.equal(document.getElementById('pm-sidebar').getAttribute('aria-hidden'),'false');

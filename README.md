@@ -1,3 +1,17 @@
+# Paths HUD v0.8.0 / Web v0.7.7 — Prepared rooms and Codex location picker
+
+Create Room now collects title, owner character, in-world date, optional time of day, beginning location, optional starting spot, opening situation, optional session goals and registered players. The location dropdown groups 21 established places by region and parent, with Notion source links and a Custom location option. Custom entries are session-specific and never added to the catalog. The checked 16 October 2026 catalog snapshot is documented in db/location-catalog.json; it is not a live Notion integration. Future Codex changes require a catalog update. The HUD refresh button reloads the saved lists, not Notion itself.
+
+Selected players receive individual invitation codes generated during preparation. The owner selects people, while players choose their own saved characters on Web. Players with no saved characters are shown but disabled until their Registry has character entries. Room creation can be solo. Session tools uses the same location picker and scene fields for subsequent edits and offers a registered-player dropdown for additional invitations. Generated codes are shown privately for copying; the application does not send invitations to anyone.
+
+The new owner/paired-HUD APIs atomically create a room, its introduction and invitations. Invalid data or a failed invitation rolls back the entire creation. A private request ID/fingerprint deduplicates retries; raw invitation tokens are not stored in that request table. The HUD retains returned codes in private userscript storage. If the original response was completely lost, recover the room and generate fresh invitations in Session tools. End/Reset invalidates codes as before; reset clears setup metadata. Historical scenes remain intact. Existing free-text locations can be retained when editing older rooms.
+
+Web Intro and concluded-scene pages now show time of day and session goals. Narrate instructions reference the saved setup and treat goals as directions, not predetermined outcomes. Manual character selection fields were removed from the HUD invitation workflow.
+
+Applied database definition: db/prepared-rooms.sql. New transactional tests cover source/custom location behavior, metadata, atomic rollback, deduplication, player-selected characters, ended-scene metadata, owner-only operations and reset. DOM tests cover preparation fields, native location grouping, private codes, retry recovery, required fields and Web display. Existing lifecycle and navigation tests pass. Browser visual QA was unavailable.
+
+---
+
 # Paths Web v0.7.6 — Inline HUD pairing on Administration
 
 Administration now displays pairing status, code input, Approve Paths HUD, Refresh status and Revoke access directly. Removed the extra Open HUD pairing & tools button and moved the existing controls out of the tools view. Pairing status loads on entry. Approval resolves an owned room for the existing server ownership check without opening a room or leaving Administration. Owner authorization remains enforced; no database or HUD update required.
