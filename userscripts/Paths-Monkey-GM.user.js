@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.3
+// @version      0.8.4
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.3';
+  const VERSION = '0.8.4';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -66,30 +66,34 @@
 
   GM_addStyle(`
     #paths-monkey-root{position:fixed;inset:0;z-index:1500;pointer-events:none;
-      --pm-ink:#fff3e6;--pm-muted:#ddc3b5;--pm-bg:#17141a;--pm-panel:#2b222c;--pm-red:#bb3642;
+      --pm-ink:#fff3e6;--pm-muted:#ddc3b5;--pm-bg:#17141a;--pm-panel:#2b222c;--pm-red:#a82d3b;
       --pm-gold:#f6c280;--pm-stroke:#876c74;--pm-green:#9ce5cd;
-      color:var(--pm-ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
-    #paths-monkey-root *{box-sizing:border-box}
-    #paths-monkey-root button,#paths-monkey-root input,#paths-monkey-root textarea{font:inherit}
+      --pm-space-1:8px;--pm-space-2:16px;--pm-space-3:24px;--pm-content:1000px;
+      color:var(--pm-ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif;text-align:left;text-shadow:none}
+    #paths-monkey-root *{box-sizing:border-box;text-shadow:none}
+    #paths-monkey-root h2,#paths-monkey-root h3,#paths-monkey-root p{margin:0}
+    #paths-monkey-root strong{font-weight:700}
+    #paths-monkey-root button,#paths-monkey-root input,#paths-monkey-root textarea,#paths-monkey-root select{font:inherit;letter-spacing:normal}
     #paths-monkey-root button{cursor:pointer}
     #paths-monkey-root button:disabled{opacity:.55;cursor:wait}
     #paths-monkey-root button:focus-visible,#paths-monkey-root a:focus-visible,
-    #paths-monkey-root textarea:focus-visible,#paths-monkey-root input:focus-visible{
+    #paths-monkey-root textarea:focus-visible,#paths-monkey-root input:focus-visible,
+    #paths-monkey-root select:focus-visible,#paths-monkey-root summary:focus-visible{
       outline:3px solid var(--pm-gold);outline-offset:2px}
-    #paths-monkey-root .pm-hbar{position:absolute;inset:0 0 auto;min-height:53px;padding:6px 10px;
+    #paths-monkey-root .pm-hbar{position:absolute;inset:0 0 auto;min-height:72px;padding:12px 16px;
       background:linear-gradient(100deg,#211922,#3c252e);border-bottom:1px solid var(--pm-stroke);
-      pointer-events:auto;display:flex;align-items:center;gap:9px;box-shadow:0 2px 12px #07040888}
+      pointer-events:auto;display:flex;align-items:center;gap:12px;box-shadow:0 2px 12px #07040888}
     #paths-monkey-root .pm-logo{background:#632732;border:1px solid #98505d;border-radius:10px;
-      height:34px;width:34px;display:grid;place-items:center;font-size:21px;flex-shrink:0}
-    #paths-monkey-root .pm-title{font-size:14px;font-weight:800;line-height:1.12;letter-spacing:.01em;flex:1}
-    #paths-monkey-root .pm-compact-version{font-size:10px;color:var(--pm-gold)}
-    #paths-monkey-root .pm-btn{min-height:32px;border:1px solid var(--pm-stroke);border-radius:9px;
-      padding:6px 10px;background:#3e303a;color:var(--pm-ink);font-weight:700}
+      height:44px;width:44px;display:grid;place-items:center;font-size:21px;flex-shrink:0}
+    #paths-monkey-root .pm-title{font-size:18px;font-weight:700;line-height:1.3;letter-spacing:.01em;flex:1}
+    #paths-monkey-root .pm-compact-version{font-size:14px;color:var(--pm-gold)}
+    #paths-monkey-root .pm-btn{min-height:44px;min-width:44px;font-size:16px;line-height:1.4;border:1px solid var(--pm-stroke);border-radius:9px;
+      padding:10px 16px;background:#3e303a;color:var(--pm-ink);font-weight:700}
     #paths-monkey-root .pm-btn.pm-nav-active{background:#632732;border-color:var(--pm-gold);color:var(--pm-ink);box-shadow:inset 3px 0 var(--pm-gold)}
     #paths-monkey-root .pm-btn.pm-primary{background:var(--pm-red);border-color:#eb7777;color:#fff}
-    #paths-monkey-root .pm-btn.pm-mini{padding:5px 8px;font-size:12px}
+    #paths-monkey-root .pm-btn.pm-mini{padding:10px 12px;font-size:16px}
     #paths-monkey-root .pm-text{border:1px solid #a28a91;border-radius:10px;background:#17131b;
-      color:var(--pm-ink);padding:10px 11px;width:100%;outline:none}
+      color:var(--pm-ink);padding:10px 12px;min-height:48px;width:100%;outline:none}
     #paths-monkey-root .pm-text::placeholder{color:#baa9ae}
     #paths-monkey-root .pm-left{display:none;position:absolute;left:0;right:0;
       top:var(--pm-header-height,53px);bottom:calc(var(--pm-native,95px) + var(--pm-compose-height,120px));
@@ -107,63 +111,66 @@
 
     #paths-monkey-root.pm-admin .pm-left{bottom:var(--pm-native,95px)}
     #paths-monkey-root.pm-admin .pm-compose{display:none}
-    #paths-monkey-root .pm-session-list summary{cursor:pointer;min-height:42px;font-weight:800;color:var(--pm-gold);padding:9px 0}
+    #paths-monkey-root .pm-session-list summary{cursor:pointer;min-height:44px;font-weight:700;color:var(--pm-gold);padding:10px 0}
     #paths-monkey-root #pm-people{font-size:16px;line-height:1.65;color:var(--pm-ink)}
     #paths-monkey-root #pm-people > div{padding:8px 0;border-bottom:1px solid var(--pm-stroke);overflow-wrap:anywhere}
-    #paths-monkey-root #pm-character-session{margin-top:6px}
-    #paths-monkey-root .pm-admin-group > summary{font-size:16px;font-weight:800;cursor:pointer;min-height:44px;padding:8px 0}
+    #paths-monkey-root #pm-character-session{margin:8px 0 12px}
+    #paths-monkey-root #pm-open-picked-room{width:100%;text-align:left}
+    #paths-monkey-root .pm-admin-group > summary{font-size:18px;font-weight:700;cursor:pointer;min-height:44px;padding:8px 0;margin-bottom:12px}
     #paths-monkey-root .pm-admin-group + .pm-admin-group{border-top:1px solid var(--pm-stroke);margin-top:16px;padding-top:12px}
     #paths-monkey-root .pm-roomlogs,
-    #paths-monkey-root .pm-registry{display:none;position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);overflow-y:auto;background:var(--pm-bg);pointer-events:auto;padding:18px}
+    #paths-monkey-root .pm-registry{display:none;position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);overflow-y:auto;background:var(--pm-bg);pointer-events:auto;padding:24px clamp(16px,3vw,40px) 32px}
     #paths-monkey-root.pm-roomlogs-open .pm-roomlogs{display:block}
     #paths-monkey-root.pm-roomlogs-open .pm-left{display:none}
     #paths-monkey-root.pm-registry-open .pm-registry{display:block}
     #paths-monkey-root.pm-registry-open .pm-left{display:none}
-    #paths-monkey-root .pm-player-card{border:1px solid var(--pm-stroke);border-radius:10px;padding:12px;margin:12px 0}
-    #paths-monkey-root .pm-player-card input{margin:8px 0}
+    #paths-monkey-root .pm-player-card{border:1px solid var(--pm-stroke);border-radius:16px;padding:20px;margin:0;background:#211b24}
+    #paths-monkey-root .pm-player-card input{margin:0}
     #paths-monkey-root #pm-registry-toggle{background:transparent}
-    #paths-monkey-root .pm-input-row{display:flex;gap:8px;align-items:center;margin:8px 0}
+    #paths-monkey-root .pm-input-row{display:flex;gap:12px;align-items:center;margin:0}
     #paths-monkey-root .pm-input-row > .pm-text{flex:1;min-width:0}
-    #paths-monkey-root .pm-player-option{display:flex;gap:9px;align-items:center;min-height:36px;margin:4px 0}
+    #paths-monkey-root .pm-input-row>.pm-field{flex:1;min-width:0;margin:0}
+    #paths-monkey-root .pm-labeled-input-row{align-items:flex-end}
+    #paths-monkey-root .pm-player-option{display:flex;gap:9px;align-items:center;min-height:44px;margin:8px 0}
     #paths-monkey-root .pm-player-option input{width:18px;height:18px;flex-shrink:0}
-    #paths-monkey-root .pm-player-heading{font-size:15px;margin-bottom:8px;overflow-wrap:anywhere}
-    #paths-monkey-root .pm-player-heading .pm-mute{font-size:13px;font-weight:400}
+    #paths-monkey-root .pm-player-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;font-size:18px;line-height:1.5;margin-bottom:12px;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-player-heading .pm-mute{font-size:14px;font-weight:400}
     #paths-monkey-root .pm-btn.pm-registry-active{background:#632732;border-color:var(--pm-gold);color:var(--pm-ink)}
-    #paths-monkey-root .pm-character-card{border:1px solid var(--pm-stroke);border-radius:12px;padding:12px;margin-top:12px}
-    #paths-monkey-root .pm-saved-character>summary{cursor:pointer;font-weight:700;font-size:16px;padding:4px;min-height:28px}
-    #paths-monkey-root .pm-character-description{white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0}
-    #paths-monkey-root .pm-character-editor{border-top:1px solid var(--pm-stroke);margin-top:12px;padding-top:12px}
+    #paths-monkey-root .pm-character-card{border:1px solid var(--pm-stroke);border-radius:12px;padding:16px;margin-top:16px}
+    #paths-monkey-root .pm-saved-character>summary{cursor:pointer;font-weight:700;font-size:18px;line-height:1.5;padding:8px;min-height:44px;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-character-description{white-space:pre-wrap;overflow-wrap:anywhere;max-width:70ch;line-height:1.7;margin:16px 0}
+    #paths-monkey-root .pm-character-editor{border-top:1px solid var(--pm-stroke);margin-top:20px;padding-top:20px}
     #paths-monkey-root a.pm-btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
     #paths-monkey-root a.pm-btn[aria-disabled=true]{opacity:.55;cursor:default}
-    #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:65px}
+    #paths-monkey-root .pm-character-card textarea{resize:vertical;min-height:112px}
     #paths-monkey-root .pm-session-list .pm-btn{display:block;width:100%;text-align:left;margin:7px 0}
     #paths-monkey-root.pm-creating #pm-room-section,#paths-monkey-root.pm-creating #pm-prepared-invites{display:none!important}
     #paths-monkey-root:not(.pm-creating) #pm-room-management-content > #pm-pair-new-room{display:none}
     #paths-monkey-root .pm-logo[aria-expanded="true"]{background:#7b3646;border-color:var(--pm-gold)}
-    #paths-monkey-root .pm-h{font-weight:850;color:var(--pm-gold);font-size:12px;letter-spacing:.065em;
-      text-transform:uppercase;margin:8px 0}
-    #paths-monkey-root .pm-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    #paths-monkey-root .pm-mute{color:var(--pm-muted);font-size:12px}
-    #paths-monkey-root .pm-name{font-size:16px;font-weight:800;margin:4px 0;overflow-wrap:anywhere}
-    #paths-monkey-root .pm-divider{height:1px;background:#6c525d;margin:15px 0}
+    #paths-monkey-root .pm-h{font-weight:700;color:var(--pm-gold);font-size:14px;letter-spacing:.015em;
+      text-transform:none;margin:16px 0 8px}
+    #paths-monkey-root .pm-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    #paths-monkey-root .pm-mute{color:var(--pm-muted);font-size:14px;line-height:1.6}
+    #paths-monkey-root .pm-name{font-size:20px;font-weight:700;line-height:1.35;margin:0;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-divider{height:1px;background:#6c525d;margin:24px 0}
     #paths-monkey-root .pm-link{color:var(--pm-gold);display:block;text-decoration:underline;
-      padding:7px 0;font-size:12px}
+      padding:10px 0;font-size:16px;min-height:44px}
     #paths-monkey-root .pm-compose{position:absolute;bottom:var(--pm-native,95px);
       left:0;right:0;max-width:100%;padding:8px 12px 9px;border-top:1px solid var(--pm-stroke);
       background:linear-gradient(110deg,#271d28,#39262e);box-shadow:0 -4px 14px #0b080caa;
       pointer-events:auto}
     #paths-monkey-root .pm-composer-line{display:flex;gap:10px;align-items:flex-start}
     #paths-monkey-root .pm-compose .pm-editor{display:block;resize:none;overflow-y:hidden;
-      flex:1;min-width:0;height:40px;min-height:40px;max-height:124px;font-size:14px;line-height:20px;padding:9px 11px}
-    #paths-monkey-root .pm-composer-line #pm-send{height:40px;min-height:40px;align-self:flex-start;
-      padding:8px 14px;flex-shrink:0;font-size:13px}
-    #paths-monkey-root .pm-actions #pm-narrate{background:#2479ea;border-color:#78b5ff;color:#fff;
+      flex:1;min-width:0;height:48px;min-height:48px;max-height:144px;font-size:16px;line-height:24px;padding:11px 12px}
+    #paths-monkey-root .pm-composer-line #pm-send{min-height:48px;align-self:flex-start;
+      padding:11px 16px;flex-shrink:0;font-size:16px}
+    #paths-monkey-root .pm-actions #pm-narrate{background:#1458aa;border-color:#78b5ff;color:#fff;
       box-shadow:0 1px 8px #1155bb55}
-    #paths-monkey-root .pm-actions #pm-narrate:hover{background:#176bde}
-    #paths-monkey-root .pm-pair-code{overflow-wrap:anywhere;font:12px ui-monospace,monospace;user-select:text;color:var(--pm-gold);background:#211b24;border:1px solid var(--pm-gold);padding:10px;border-radius:9px}
-    #paths-monkey-root .pm-pair-block{border:1px solid var(--pm-stroke);border-radius:10px;margin:12px 0;padding:10px;background:#302631}
+    #paths-monkey-root .pm-actions #pm-narrate:hover{background:#104b94}
+    #paths-monkey-root .pm-pair-code{overflow-wrap:anywhere;font:14px/1.6 ui-monospace,monospace;user-select:text;color:var(--pm-gold);background:#211b24;border:1px solid var(--pm-gold);padding:10px;border-radius:9px}
+    #paths-monkey-root .pm-pair-block{border:1px solid var(--pm-stroke);border-radius:12px;margin:16px 0;padding:20px;background:#302631}
     #paths-monkey-root .pm-pair-block .pm-btn{margin-top:8px}
-    #paths-monkey-root .pm-mode-btn{min-height:40px;min-width:86px;background:#b73543;
+    #paths-monkey-root .pm-mode-btn{min-height:48px;min-width:86px;background:#b73543;
       border:1px solid #f09b8b;color:#fff5e8;border-radius:10px;padding:7px 10px;
       font-weight:800;box-shadow:0 0 0 1px #f4c9a633}
     #paths-monkey-root .pm-mode-btn.pm-dim{background:#322a33;color:#deccd1;
@@ -177,35 +184,80 @@
     @media(min-width:900px){
       #paths-monkey-root .pm-hbar .pm-title{font-size:20px;line-height:1.15;letter-spacing:.018em}
     }
-    #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:11px;overflow-wrap:anywhere;margin-top:4px}
+    #paths-monkey-root .pm-feedback{color:var(--pm-gold);font-size:14px;line-height:1.6;overflow-wrap:anywhere;margin-top:8px}
     #paths-monkey-root .pm-feedback:empty{display:none}
     #paths-monkey-root .pm-feed{position:absolute;left:0;right:0;top:var(--pm-header-height,53px);
       bottom:calc(var(--pm-native,95px) + var(--pm-compose-height,120px));overflow-y:auto;
-      overscroll-behavior:contain;background:var(--pm-bg);pointer-events:auto;padding:14px}
+      overscroll-behavior:contain;background:var(--pm-bg);pointer-events:auto;padding:24px}
     #paths-monkey-root .pm-bubble{background:#382a34;border:1px solid #775b63;border-radius:9px;
-      margin:7px 0;padding:8px;font-size:12px;overflow-wrap:anywhere;white-space:pre-wrap}
+      margin:16px 0;padding:16px;font-size:16px;line-height:1.7;overflow-wrap:anywhere;white-space:pre-wrap}
     #paths-monkey-root .pm-bubble.pm-narrator{background:#363021;border-color:var(--pm-gold)}
-    #paths-monkey-root .pm-by{font-weight:800;font-size:11px;color:var(--pm-gold);margin-bottom:4px}
+    #paths-monkey-root .pm-by{font-weight:700;font-size:14px;color:var(--pm-gold);margin-bottom:8px}
     #paths-monkey-root .pm-backdrop{position:absolute;inset:0;background:#08060ac9;
       pointer-events:auto;display:grid;place-items:center;padding:14px}
     #paths-monkey-root .pm-panel{width:min(500px,100%);max-height:92vh;overflow-y:auto;
       border-radius:17px;padding:17px;border:1px solid #a47c81;background:#29212b;
       box-shadow:0 14px 50px #000b}
-    #paths-monkey-root .pm-panel h2{font-size:19px;font-weight:800;margin:4px 0}
+    #paths-monkey-root .pm-panel h2{font-size:24px;line-height:1.35;font-weight:700;margin:0}
     #paths-monkey-root .pm-logo{cursor:pointer;color:var(--pm-ink)}
     #paths-monkey-root .pm-logo:focus-visible{outline:3px solid var(--pm-gold);outline-offset:2px}
-    #paths-monkey-root .pm-sidebar-action{width:100%;text-align:left;margin:4px 0 8px}
+    #paths-monkey-root .pm-sidebar-action{width:100%;text-align:left;margin:0 0 12px}
     #paths-monkey-root .pm-room-page{max-height:85vh}
     #paths-monkey-root .pm-room-page #pm-room-section{display:block}
     #paths-monkey-root .pm-room-page .pm-pair-block{margin:8px 0}
 
-    #paths-monkey-root .pm-label{display:block;font-size:12px;color:var(--pm-muted);font-weight:700;margin:11px 0 5px}
+    #paths-monkey-root .pm-label{display:block;font-size:14px;line-height:1.5;color:var(--pm-muted);font-weight:600;margin:16px 0 8px}
     #paths-monkey-root .pm-panel .pm-text{margin-bottom:5px}
-    #paths-monkey-root .pm-panel p{color:var(--pm-muted);font-size:12px;margin:8px 0}
-    #paths-monkey-root .pm-panel .pm-btn{margin:5px 4px 5px 0}
+    #paths-monkey-root .pm-panel p{color:var(--pm-muted);font-size:14px;line-height:1.6;margin:12px 0}
+    #paths-monkey-root .pm-panel .pm-btn{margin:8px 8px 0 0}
+    #paths-monkey-root .pm-panel .pm-row .pm-btn{margin:0}
     #paths-monkey-root .pm-hide{display:none!important}
-    #paths-monkey-root .pm-pill{font-size:11px;border-radius:30px;background:#4e343d;color:var(--pm-gold);
+    #paths-monkey-root .pm-pill{font-size:14px;border-radius:30px;background:#4e343d;color:var(--pm-gold);
       padding:4px 9px;border:1px solid #855663}
+
+    /* Shared typography and spacing rhythm across all HUD pages. */
+    #paths-monkey-root .pm-registry>*,#paths-monkey-root .pm-roomlogs>*{max-width:var(--pm-content);margin-left:auto;margin-right:auto}
+    #paths-monkey-root .pm-registry>.pm-row,#paths-monkey-root .pm-roomlogs>.pm-row{margin-bottom:16px}
+    #paths-monkey-root .pm-registry>.pm-row .pm-name,#paths-monkey-root .pm-roomlogs>.pm-row .pm-name{font-size:24px;margin-right:auto}
+    #paths-monkey-root .pm-registry>p{margin-top:12px;margin-bottom:16px;max-width:var(--pm-content)}
+    #paths-monkey-root #pm-registry-list{display:grid;gap:16px}
+    #paths-monkey-root #pm-registry-toggle{display:block;margin-top:16px;margin-bottom:12px;margin-left:max(0px,calc((100% - var(--pm-content))/2))}
+    #paths-monkey-root #pm-registry-create{padding:16px 0}
+    #paths-monkey-root #pm-registry-status:empty,#paths-monkey-root #pm-roomlogs-detail:empty{display:none}
+    #paths-monkey-root .pm-player-card>.pm-row{margin-bottom:12px}
+    #paths-monkey-root .pm-player-card>.pm-hide+p{margin-top:12px}
+    #paths-monkey-root .pm-character-card{background:#19151d}
+    #paths-monkey-root .pm-character-note{margin-bottom:12px}
+    #paths-monkey-root .pm-character-card p[role=status]:not(:empty){margin:12px 0}
+    #paths-monkey-root .pm-character-body{padding:0 8px 8px}
+    #paths-monkey-root .pm-character-editor>.pm-text,#paths-monkey-root .pm-character-card>.pm-text{margin:12px 0}
+    #paths-monkey-root .pm-character-editor>.pm-row{margin-top:16px}
+    #paths-monkey-root .pm-character-card p[role=status]:empty{display:none}
+    #paths-monkey-root .pm-character-card .pm-link{margin:8px 0}
+    #paths-monkey-root .pm-field{display:block;margin:16px 0}
+    #paths-monkey-root .pm-field>span{display:block;font-size:14px;font-weight:600;color:var(--pm-muted);margin-bottom:8px}
+    #paths-monkey-root .pm-field>.pm-text{display:block}
+    #paths-monkey-root .pm-btn:not(:disabled):hover{border-color:var(--pm-gold);filter:brightness(1.08)}
+    #paths-monkey-root summary:hover{color:var(--pm-gold)}
+    #paths-monkey-root #pm-feed>.pm-row,#paths-monkey-root #pm-feed-messages{max-width:var(--pm-content);margin-inline:auto}
+    #paths-monkey-root .pm-bubble{max-width:76ch}
+    #paths-monkey-root #pm-feed>.pm-row{margin-bottom:24px}
+    #paths-monkey-root #pm-chat-title{font-size:20px;margin-right:auto}
+    #paths-monkey-root .pm-panel{padding:24px}
+    #paths-monkey-root .pm-panel>.pm-row:first-child{gap:16px;margin-bottom:20px;justify-content:space-between}
+    #paths-monkey-root #pm-settings-toggle,#paths-monkey-root #pm-minimize{width:44px;height:44px;min-width:44px;padding:4px;font-size:24px;line-height:1}
+    #paths-monkey-root select{max-width:100%}
+    @media(max-width:790px){
+      #paths-monkey-root .pm-registry,#paths-monkey-root .pm-roomlogs,#paths-monkey-root .pm-feed{padding:20px 16px 28px}
+      #paths-monkey-root .pm-player-card{padding:16px}
+      #paths-monkey-root .pm-character-card{padding:12px}
+      #paths-monkey-root .pm-panel{padding:20px 16px}
+      #paths-monkey-root .pm-compact-version{font-size:14px}
+      #paths-monkey-root .pm-input-row{flex-wrap:wrap}
+      #paths-monkey-root .pm-input-row>.pm-text,#paths-monkey-root .pm-input-row>.pm-field{flex-basis:180px}
+      #paths-monkey-root .pm-input-row>.pm-btn{flex-shrink:0}
+    }
+    @media(prefers-reduced-motion:reduce){#paths-monkey-root *,#paths-monkey-root *::before,#paths-monkey-root *::after{scroll-behavior:auto;transition:none;animation:none}}
 
     /* Shared-style HUD picker: a single capsule only while Paths is collapsed. */
     html.pm-paths-selected #mizu-hud-switcher,
@@ -235,7 +287,7 @@
       display:grid;gap:5px}
     #paths-monkey-root .pm-picker-option{display:block;width:100%;padding:11px 12px;
       background:#40313e;border:1px solid #81616c;border-radius:9px;
-      color:#fff3e6;text-align:left;font-size:13px;font-weight:700}
+      color:#fff3e6;text-align:left;font-size:16px;font-weight:700}
     #paths-monkey-root .pm-picker-option:disabled{opacity:.5}
     #paths-monkey-root .pm-title-collapse{background:none;border:0;color:inherit;
       font:inherit;display:flex;flex-direction:column;text-align:left;cursor:pointer;
@@ -246,23 +298,23 @@
       #paths-monkey-root #pm-settings-toggle,#paths-monkey-root #pm-minimize{width:44px;height:44px;min-width:44px;padding:4px;font-size:24px;line-height:1}
       #paths-monkey-root{--pm-sidebar-width:clamp(260px,25vw,330px)}
       #paths-monkey-root.pm-info-dismissed{--pm-sidebar-width:0px}
-      #paths-monkey-root .pm-left{display:block!important;right:auto;width:var(--pm-sidebar-width);bottom:var(--pm-native,95px);padding:14px;border-right:1px solid var(--pm-stroke)}
+      #paths-monkey-root .pm-left{display:block!important;right:auto;width:var(--pm-sidebar-width);bottom:var(--pm-native,95px);padding:20px 16px;border-right:1px solid var(--pm-stroke)}
       #paths-monkey-root .pm-feed,#paths-monkey-root .pm-registry,#paths-monkey-root .pm-roomlogs{left:var(--pm-sidebar-width)}
       #paths-monkey-root .pm-compose{left:var(--pm-sidebar-width);padding:8px 12px 9px}
       #paths-monkey-root .pm-backdrop{left:var(--pm-sidebar-width);top:var(--pm-header-height,53px);bottom:var(--pm-native,95px);padding:18px;background:var(--pm-bg);place-items:stretch}
-      #paths-monkey-root .pm-panel{width:100%;max-height:100%;height:100%;border:0;border-radius:0;box-shadow:none}
+      #paths-monkey-root .pm-panel{width:100%;max-width:var(--pm-content);margin-inline:auto;max-height:100%;height:100%;border:0;border-radius:0;box-shadow:none}
       #paths-monkey-root.pm-info-overlay .pm-feed,#paths-monkey-root.pm-info-overlay .pm-compose,
       #paths-monkey-root.pm-info-overlay .pm-registry,#paths-monkey-root.pm-info-overlay .pm-roomlogs,
       #paths-monkey-root.pm-info-overlay .pm-backdrop{visibility:visible}
     }
     @media(max-width:790px){
-      #paths-monkey-root .pm-hbar{padding:6px 8px;gap:6px}
-      #paths-monkey-root .pm-title{font-size:13px}
+      #paths-monkey-root .pm-hbar{padding:10px 12px;gap:8px}
+      #paths-monkey-root .pm-title{font-size:16px}
       #paths-monkey-root .pm-logo{cursor:pointer;touch-action:manipulation}
       #paths-monkey-root .pm-compose{left:0;right:0;padding:7px 8px 8px}
-      #paths-monkey-root .pm-compose .pm-editor{height:40px;min-height:40px;max-height:112px}
+      #paths-monkey-root .pm-compose .pm-editor{height:48px;min-height:48px;max-height:144px}
       #paths-monkey-root .pm-actions{column-gap:13px;row-gap:10px}
-      #paths-monkey-root .pm-btn.pm-mini{padding:5px 7px}
+      #paths-monkey-root .pm-btn.pm-mini{padding:10px 12px}
     }
   `);
 
@@ -280,7 +332,7 @@
       <button id="pm-logo-toggle" class="pm-logo" type="button" aria-label="Toggle information panel" aria-expanded="false" aria-controls="pm-sidebar" title="Open or close information panel">☯</button>
       <button id="pm-collapse-title" class="pm-title-collapse" type="button" title="Collapse the full Paths HUD"><span class="pm-title">Paths to Immortality</span></button>
       <span class="pm-compact-version">v${VERSION}</span>
-      <button id="pm-settings-toggle" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
+      <button id="pm-settings-toggle" aria-label="Settings" type="button" class="pm-btn pm-mini" title="Connections and settings">⚙</button>
       <button id="pm-minimize" type="button" class="pm-btn pm-mini" title="Collapse the entire Paths HUD" aria-label="Collapse Paths HUD">▁</button>
     </div>
     <section id="pm-sidebar" class="pm-left" aria-label="Admin page" aria-hidden="true" tabindex="-1">
@@ -306,12 +358,12 @@
     <section id="pm-roomlogs" class="pm-roomlogs" aria-label="Room Logs" aria-hidden="true"><div class="pm-row"><h2 class="pm-name">Room Logs</h2><button id="pm-roomlogs-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-roomlogs-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh room logs">↻</button></div><div id="pm-roomlogs-detail" role="status"></div><div id="pm-roomlogs-list"></div></section>
     <section id="pm-registry" class="pm-registry" aria-label="Players Registry" aria-hidden="true">
     <div class="pm-row"><h2 class="pm-name">Players Registry</h2><button id="pm-registry-back" class="pm-btn pm-mini" type="button">← Admin</button><button id="pm-registry-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh players">↻</button></div>
-    <p class="pm-mute">Register names, rename player records, and see their ongoing rooms. Invitations control entry.</p>
+    <p class="pm-mute">Manage players, their characters, and current sessions.</p>
     <button id="pm-registry-toggle" class="pm-btn" type="button" aria-expanded="false" aria-controls="pm-registry-create">Register Player</button>
     <div id="pm-registry-create" class="pm-hide"><label for="pm-registry-name" class="pm-label">New player name</label><div class="pm-input-row"><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register</button></div></div>
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
-      <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
+      <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div>
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
@@ -330,7 +382,7 @@
     </section>
     <div id="pm-rooms-page" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel pm-room-page" role="dialog" aria-modal="true" aria-labelledby="pm-rooms-page-title">
-        <div class="pm-row"><h2 id="pm-rooms-page-title">📂 Rooms & sessions</h2><button id="pm-rooms-page-close" class="pm-btn pm-mini" type="button">✕</button></div>
+        <div class="pm-row"><h2 id="pm-rooms-page-title">📂 Rooms & sessions</h2><button id="pm-rooms-page-close" aria-label="Close session tools" class="pm-btn pm-mini" type="button">✕</button></div>
         <p id="pm-rooms-page-status">Create private rooms, choose a current session, or refresh your list.</p>
         <button id="pm-room-setup-settings" class="pm-btn pm-hide" type="button">Open Settings</button><div id="pm-room-management-content"></div>
         <button id="pm-rooms-page-done" class="pm-btn" type="button">Done</button>
@@ -338,7 +390,7 @@
     </div>
     <div id="pm-settings" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-settings-title">
-        <div class="pm-row"><h2 id="pm-settings-title">Settings</h2><button id="pm-settings-close" class="pm-btn pm-mini" type="button">✕</button></div>
+        <div class="pm-row"><h2 id="pm-settings-title">Settings</h2><button id="pm-settings-close" aria-label="Close settings" class="pm-btn pm-mini" type="button">✕</button></div>
         <div id="pm-pair-section" class="pm-hide">
           <div class="pm-pair-block">
             <div class="pm-h">🐒 Pairing & recovery</div>
@@ -472,9 +524,9 @@
   function autoGrowAction() {
     const field=$('action');
     // Start at exactly one line, expanding only as text wraps or has newlines.
-    field.style.height='40px';
-    const maxHeight=window.matchMedia('(max-width:790px)').matches?112:124;
-    const desired=Math.max(40,Math.min(maxHeight,field.scrollHeight));
+    field.style.height='48px';
+    const maxHeight=144;
+    const desired=Math.max(48,Math.min(maxHeight,field.scrollHeight));
     field.style.height=desired+'px';
     field.style.overflowY=field.scrollHeight>maxHeight?'auto':'hidden';
   }
@@ -965,6 +1017,7 @@
     const data=await authed('POST','/rest/v1/rpc/hud_player_registry',{body:{p_id:null,p_alias:null}});
     if(!account||!paired)return;renderRegistry(data||[]);$('registry-status').textContent=(data||[]).length+' players registered.';
   }
+  function registryFieldGroup(field){const group=document.createElement('label');group.className='pm-field';const text=document.createElement('span');text.textContent=field.getAttribute('aria-label');group.append(text,field);return group;}
   function registryButton(text,handler,primary=false){const button=document.createElement('button');button.className='pm-btn pm-mini'+(primary?' pm-primary':'');button.type='button';button.textContent=text;button.onclick=handler;return button;}
   function registryField(label,value,max,multiline=false){const field=document.createElement(multiline?'textarea':'input');field.className='pm-text';field.value=value||'';field.maxLength=max;field.setAttribute('aria-label',label);field.placeholder=label;return field;}
   function renderRegistry(items){
@@ -990,12 +1043,12 @@
     host.textContent='Loading characters…';const data=await authed('POST','/rest/v1/rpc/hud_player_characters',{body:{p_player:player.id}});renderRegistryCharacters(player,host,data||[]);
   }
   function renderRegistryCharacters(player,host,items){
-    host.replaceChildren();const note=document.createElement('p');note.className='pm-mute';note.textContent='Saved character choices. Removing one keeps past scenes and current room participation.';host.append(note);
+    host.replaceChildren();const note=document.createElement('p');note.className='pm-mute pm-character-note';note.textContent='Manage this player’s saved characters.';host.append(note);
     const newForm=document.createElement('div');newForm.className='pm-character-card pm-hide';const newName=registryField('Character name','',40),newDescription=registryField('Description','',350,true);
     const addToggle=registryButton('Add Character',()=>{const open=newForm.classList.contains('pm-hide');newForm.classList.toggle('pm-hide',!open);addToggle.setAttribute('aria-expanded',String(open));if(open)newName.focus();});addToggle.setAttribute('aria-expanded','false');
     const newSource=attachNotionImporter(player,newForm,newName,newDescription,'');
     const add=registryButton('Register Character',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,'',newSource())),true);
-    newForm.append(newName,newDescription,add);host.append(addToggle,newForm);
+    newForm.append(registryFieldGroup(newName),registryFieldGroup(newDescription),add);host.append(addToggle,newForm);
     if(!items.length){const empty=document.createElement('p');empty.className='pm-mute';empty.textContent='No saved characters yet.';host.append(empty);}
     for(const character of items){
       const card=document.createElement('details');card.className='pm-character-card pm-saved-character';
@@ -1013,7 +1066,7 @@
       const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,character.goal||'',source())),true);
       const cancel=registryButton('Cancel',()=>{name.value=character.name;description.value=character.description||'';source.reset();editor.classList.add('pm-hide');edit.setAttribute('aria-expanded','false');edit.classList.remove('pm-registry-active');});
       const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));
-      const editorActions=document.createElement('div');editorActions.className='pm-row';editorActions.append(save,cancel,remove);editor.append(name,description,editorActions);
+      const editorActions=document.createElement('div');editorActions.className='pm-row';editorActions.append(save,cancel,remove);editor.append(registryFieldGroup(name),registryFieldGroup(description),editorActions);
       body.append(descriptionText,actions,editor);card.append(heading,body);host.append(card);
     }
   }
@@ -1034,7 +1087,7 @@
       }catch(e){status.textContent=e.message;throw e;}
     }));
     link.oninput=()=>{sourceUrl='';showSource();status.textContent='Check the new link before saving its source.';};
-    const inputRow=document.createElement('div');inputRow.className='pm-input-row';inputRow.append(link,check);form.append(inputRow,status,source);
+    const inputRow=document.createElement('div');inputRow.className='pm-input-row pm-labeled-input-row';inputRow.append(registryFieldGroup(link),check);form.append(inputRow,status,source);
     const readSource=()=>sourceUrl;readSource.reset=()=>{sourceUrl=initialSource;link.value=initialSource;status.textContent='';showSource();};return readSource;
   }
   async function changeRegistryCharacter(player,host,action,id,name=null,description='',goal='',sourceUrl=''){

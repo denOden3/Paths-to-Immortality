@@ -1,0 +1,23 @@
+const fs=require('fs'),assert=require('node:assert/strict'),{JSDOM}=require('/tmp/paths-qa/node_modules/jsdom');
+const source=fs.readFileSync('userscripts/Paths-Monkey-GM.user.js','utf8');
+const css=source.split('GM_addStyle(`')[1].split('`);')[0];
+const html=source.split('root.innerHTML = `')[1].split('`;')[0];
+const dom=new JSDOM('<style>'+css+'</style><div id="paths-monkey-root">'+html+'</div>');
+const {document}=dom.window,style=x=>dom.window.getComputedStyle(x);
+assert.equal(style(document.getElementById('paths-monkey-root')).fontSize,'16px');
+for(const button of document.querySelectorAll('.pm-btn')){assert.ok(parseFloat(style(button).minHeight)>=44,button.id+' undersized');assert.equal(style(button).fontSize,['pm-settings-toggle','pm-minimize'].includes(button.id)?'24px':'16px');}
+assert.equal(style(document.querySelector('#pm-registry>p.pm-mute')).fontSize,'14px');
+assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'24px');
+assert.equal(style(document.querySelector('.pm-admin-group>summary')).fontSize,'18px');
+assert.equal(style(document.querySelector('#pm-registry-toggle')).marginTop,'16px');
+assert.ok(!/font-size:1[0-3]px/.test(css),'tiny labels remain');
+for(const id of ['pm-settings-toggle','pm-settings-close','pm-rooms-page-close','pm-feed-refresh'])assert.ok(document.getElementById(id).getAttribute('aria-label'));
+assert.ok(css.includes('select:focus-visible'));assert.ok(css.includes('summary:focus-visible'));
+// Check actual opaque palette pairs against the 4.5:1 normal-text threshold.
+const luminance=hex=>{const c=hex.match(/[a-f0-9]{2}/gi).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
+const contrast=(a,b)=>{let x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+const tokens=Object.fromEntries([...css.matchAll(/--pm-([a-z]+):(#(?:[a-f0-9]{6}))/gi)].map(m=>[m[1],m[2]]));
+const pairs=[[tokens.ink,tokens.bg],[tokens.muted,tokens.bg],[tokens.ink,'#211b24'],[tokens.ink,'#3e303a'],[tokens.gold,'#302631'],['#ffffff',tokens.red],['#ffffff','#1458aa'],['#baa9ae','#17131b']];
+for(const [fg,bg] of pairs)assert.ok(contrast(fg,bg)>=4.5,fg+' on '+bg+' insufficient contrast');
+assert.ok(contrast(tokens.stroke,tokens.bg)>=3,'control boundary contrast');
+console.log('PASS: consistent type hierarchy, 44px controls, named icon controls, focus selectors and text/control contrast');

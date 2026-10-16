@@ -1,3 +1,9 @@
+## HUD v0.8.4 — readability and visual comfort
+
+A shared 16px body/control size, 14px helper text, 18px section labels and 24px page headings replace the previous scattered 10–16px sizes. Cards and actions use consistent spacing, 44px minimum button targets, scoped text styling, narrower reading widths, visible form labels, and keyboard focus outlines. The burgundy/gold palette remains; primary red and narration blue are darkened for text contrast. Desktop forms are width-limited, and mobile input rows wrap. Page routing, Notion imports and minimize retention are unchanged.
+
+Design basis: W3C WCAG 2.2 contrast, keyboard focus and target-size guidance. This is an implementation improvement, not a claim of full WCAG certification. Automated DOM, CSS and color checks are run; no live browser visual inspection is available in this environment.
+
 ## HUD v0.8.3 — compact character cards
 
 Saved characters now appear as collapsed bordered names. Expand a name to read its description and use Notion or Edit. Edit reveals the Notion importer, name, description and Save/Cancel/Remove controls. The Objective input is removed from new and existing character forms; older stored objectives are preserved when editing. Characters without a saved Notion link show the Notion control disabled until a link is checked in Edit.
