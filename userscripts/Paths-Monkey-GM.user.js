@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.1
+// @version      0.8.2
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.1';
+  const VERSION = '0.8.2';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -988,16 +988,39 @@
     host.replaceChildren();const note=document.createElement('p');note.className='pm-mute';note.textContent='Saved character choices. Removing one keeps past scenes and current room participation.';host.append(note);
     const newForm=document.createElement('div');newForm.className='pm-character-card pm-hide';const newName=registryField('Character name','',40),newDescription=registryField('Description','',350,true),newGoal=registryField('Objective','',150);
     const addToggle=registryButton('Add Character',()=>{const open=newForm.classList.contains('pm-hide');newForm.classList.toggle('pm-hide',!open);addToggle.setAttribute('aria-expanded',String(open));if(open)newName.focus();});addToggle.setAttribute('aria-expanded','false');
-    const add=registryButton('Add',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value)),true);newForm.append(newName,newDescription,newGoal,add);host.append(addToggle,newForm);
+    const add=registryButton('Register Character',()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value)),true);const newSource=attachNotionImporter(player,newForm,newName,newDescription,newGoal,'');newForm.append(newName,newDescription,newGoal,add);add.onclick=()=>runTask(()=>changeRegistryCharacter(player,host,'save',null,newName.value,newDescription.value,newGoal.value,newSource()));host.append(addToggle,newForm);
     if(!items.length){const empty=document.createElement('p');empty.className='pm-mute';empty.textContent='No saved characters yet.';host.append(empty);}
     for(const character of items){const row=document.createElement('div');row.className='pm-character-card';const name=registryField('Character name',character.name,40),description=registryField('Description',character.description,350,true),goal=registryField('Objective',character.goal,150);
       const actions=document.createElement('div');actions.className='pm-row';const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,goal.value)));
+      const source=attachNotionImporter(player,row,name,description,goal,character.source_url||'');save.onclick=()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,goal.value,source()));
       const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));actions.append(save,remove);row.append(name,description,goal,actions);host.append(row);
     }
   }
-  async function changeRegistryCharacter(player,host,action,id,name=null,description='',goal=''){
+  function attachNotionImporter(player,form,name,description,goal,initialSource){
+    let sourceUrl=initialSource;const link=registryField('Notion character page link',initialSource,2000);link.placeholder='Paste the character’s Notion page link';link.type='url';
+    const status=document.createElement('p');status.className='pm-mute';status.setAttribute('role','status');
+    const source=document.createElement('a');source.className='pm-link';source.target='_blank';source.rel='noopener noreferrer';source.textContent='Open character in Notion ↗';
+    function showSource(){source.classList.toggle('pm-hide',!sourceUrl);if(sourceUrl)source.href=sourceUrl;else source.removeAttribute('href');}showSource();
+    const check=registryButton('Check Page',()=>runTask(async()=>{
+      const input=link.value.trim(),snapshot=[name.value,description.value,goal.value];
+      if(!input)throw new Error('Paste a Notion character page link first.');
+      status.textContent='Checking Notion page…';
+      try{
+        const data=await authed('POST','/functions/v1/notion-character-preview',{body:{player_id:player.id,url:input},timeout:90000});
+        if(!form.isConnected||link.value.trim()!==input||snapshot.some((v,i)=>v!==[name.value,description.value,goal.value][i])){status.textContent='The form changed while checking. Check again to fill it.';return;}
+        name.value=data.name;description.value=data.description;goal.value=data.goal;sourceUrl=data.source_url;link.value=sourceUrl;showSource();
+        status.textContent='Draft ready. Review and edit it before saving. '+(data.warnings||[]).join(' ');
+      }catch(e){status.textContent=e.message;throw e;}
+    }));
+    link.oninput=()=>{sourceUrl='';showSource();status.textContent='Check the new link before saving its source.';};
+    const inputRow=document.createElement('div');inputRow.className='pm-input-row';inputRow.append(link,check);form.append(inputRow,status,source);
+    return ()=>sourceUrl;
+  }
+  async function changeRegistryCharacter(player,host,action,id,name=null,description='',goal='',sourceUrl=''){
     if(!paired||!account)throw new Error('Pair your HUD before managing characters.');
-    const data=await authed('POST','/rest/v1/rpc/hud_player_characters',{body:{p_player:player.id,p_action:action,p_character:id,p_name:name?.trim()||null,p_description:description,p_objective:goal}});
+    const body={p_player:player.id,p_character:id,p_name:name?.trim()||null,p_description:description,p_objective:goal};
+    if(action==='save')body.p_source_url=sourceUrl;else body.p_action=action;
+    const data=await authed('POST','/rest/v1/rpc/'+(action==='save'?'hud_save_character_source':'hud_player_characters'),{body});
     renderRegistryCharacters(player,host,data||[]);$('registry-status').textContent=action==='remove'?'Character removed from saved choices. Past scenes kept.':'Character saved.';
   }
   async function saveRegistryPlayer(id,alias){
@@ -1051,13 +1074,13 @@
     root.classList.toggle('pm-expanded',mode==='paths'&&hudExpanded);
     root.classList.toggle('pm-collapsed',mode==='paths'&&!hudExpanded);
     $('picker').classList.toggle('pm-hide',mode!=='paths'||hudExpanded);
-    if(!hudExpanded)closeAllPanels();
+    closePickerMenu(); // Minimize only hides the shell; retain page DOM, forms and scroll positions.
     // The real Mizuhana script owns all its own saves and interface state.
     // We only yield display control or hide its launcher while Paths is selected.
     if(mode==='paths'&&hudExpanded){
       const activeMizuhana=document.querySelector('#mizuhana-hud #mizu-brand-collapse');
       if(activeMizuhana)activeMizuhana.click();
-      setInfoVisible(showSidebar);resizeNativeInset();
+      syncDesktopLayout();resizeHudBody();resizeNativeInset();
     }
   }
   function switchToMizuhana(){
@@ -1068,7 +1091,7 @@
     if(control)control.click();
   }
   function extendMizuhanaPicker(){
-    // Mizuhana v0.8.19+ has its own native HUD picker. Add a route back
+    // Mizuhana v0.8.09+ has its own native HUD picker. Add a route back
     // without changing its repository, saved world, or script internals.
     if(hudMode!=='mizuhana')return;
     const m=document.querySelector('#mizu-hud-menu');

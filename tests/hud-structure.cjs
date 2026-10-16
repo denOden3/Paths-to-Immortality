@@ -115,5 +115,30 @@ assert.ok(document.getElementById('pm-settings').classList.contains('pm-hide'));
 await vm.runInContext('openRegistry();',context);
 assert.ok(!root.classList.contains('pm-roomlogs-open'));assert.equal(document.getElementById('pm-open-registry').getAttribute('aria-current'),'page');assert.equal(document.querySelectorAll('.pm-nav-active').length,1);
 vm.runInContext("openRoomPage('create');openSettings();closeSettings();",context);assert.equal(document.querySelectorAll('.pm-nav-active').length,0);
+// Minimize/restore retains the existing page and unsaved form DOM.
+context.hudMode='paths';context.hudExpanded=true;context.resizeNativeInset=()=>{};
+vm.runInContext(source.slice(source.indexOf('  function closePickerMenu() {'),source.indexOf('  function switchToMizuhana(){')),context);
+for(const view of ['registry','roomlogs','settings','create','chat']){
+ vm.runInContext("root.classList.remove('pm-registry-open','pm-roomlogs-open','pm-creating');$('settings').classList.add('pm-hide');$('rooms-page').classList.add('pm-hide');showSidebar=false;",context);
+ if(view==='registry')root.classList.add('pm-registry-open');if(view==='roomlogs')root.classList.add('pm-roomlogs-open');
+ if(view==='settings')document.getElementById('pm-settings').classList.remove('pm-hide');
+ if(view==='create'){root.classList.add('pm-creating');document.getElementById('pm-rooms-page').classList.remove('pm-hide');}
+ document.getElementById('pm-registry-name').value='Unsaved draft';document.getElementById('pm-registry').scrollTop=125;
+ const before=vm.runInContext('JSON.stringify(captureHudPage())',context);
+ vm.runInContext("setHudMode('paths',false);setHudMode('paths',true);",context);
+ assert.equal(vm.runInContext('JSON.stringify(captureHudPage())',context),before,view+' lost on restore');
+ assert.equal(document.getElementById('pm-registry-name').value,'Unsaved draft');assert.equal(document.getElementById('pm-registry').scrollTop,125);
+}
+// Import is an editable draft; Check Page never registers a character.
+const importerHost=document.createElement('div');document.body.append(importerHost);context.importerHost=importerHost;context.paired=true;context.account={};
+context.authed=async(method,path)=>{assert.equal(path,'/functions/v1/notion-character-preview');return {name:'Xu Yi',description:'From the editable Notion quote',goal:'',source_url:'https://www.notion.so/3fbb0ac52efe806e9fbeee8ce2b760a9',warnings:[]};};
+vm.runInContext("renderRegistryCharacters({id:'player'},importerHost,[]);",context);
+const importForm=importerHost.querySelector('.pm-character-card'),link=importForm.querySelector('input[type=url]');link.value='https://notion.so/3fbb0ac52efe806e9fbeee8ce2b760a9';
+const check=[...importForm.querySelectorAll('button')].find(b=>b.textContent==='Check Page');await check.onclick();
+assert.equal(importForm.querySelector('textarea').value,'From the editable Notion quote');assert.ok(importForm.textContent.includes('Draft ready'));
+importForm.querySelector('textarea').value='My edited description';let saved;
+context.authed=async(method,path,options)=>{saved={path,body:options.body};return [];};
+await [...importForm.querySelectorAll('button')].find(b=>b.textContent==='Register Character').onclick();
+assert.equal(saved.path,'/rest/v1/rpc/hud_save_character_source');assert.equal(saved.body.p_description,'My edited description');assert.ok(saved.body.p_source_url.endsWith('3fbb0ac52efe806e9fbeee8ce2b760a9'));
 console.log('PASS: exclusive page routing, active navigation indicator, Create/Settings separation, native session selection, desktop/sidebar/mobile behavior and Registry controls');
 })().catch(error=>{console.error(error);process.exitCode=1;});

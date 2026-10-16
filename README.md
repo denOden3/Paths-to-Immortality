@@ -1,3 +1,7 @@
+## HUD v0.8.2
+
+The HUD now keeps its current page and draft forms while minimized. Players Registry adds read-only Notion character previews with editable fields and saved source links. The server importer is deployed; its Notion connection token must be configured as `NOTION_TOKEN` in Supabase Edge Function Secrets before live imports work. See `userscripts/README.md` for setup and supported summary placement.
+
 # Paths HUD v0.8.0 / Web v0.7.7 — Prepared rooms and Codex location picker
 
 Create Room now collects title, owner character, in-world date, optional time of day, beginning location, optional starting spot, opening situation, optional session goals and registered players. The location dropdown groups 21 established places by region and parent, with Notion source links and a Custom location option. Custom entries are session-specific and never added to the catalog. The checked 16 October 2026 catalog snapshot is documented in db/location-catalog.json; it is not a live Notion integration. Future Codex changes require a catalog update. The HUD refresh button reloads the saved lists, not Notion itself.

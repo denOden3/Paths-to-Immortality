@@ -1,3 +1,17 @@
+## HUD v0.8.2 — retained pages and editable Notion imports
+
+Minimize and switching HUDs preserve the current Paths page, unsaved form fields, expanded panels and scroll positions within the loaded tab. Reloading ChatGPT still starts a fresh HUD UI.
+
+Players Registry → Characters → Add Character now offers a Notion link and **Check Page**. It fills a draft name, brief description and optional explicitly labeled objective; nothing is registered until **Register Character**. Existing character forms can check another page too; review and Save applies the edited result. Notion source links are saved alongside the character. Removing a saved character still preserves past appearances and current participation.
+
+The importer prefers an explicit HUD description/summary on the character page, otherwise the HUD-description quote immediately following that character’s child-page link in its Player Characters parent. A dedicated HUD Summary heading also works. It reads through the official Notion API, copies only selected fields into the HUD, does not summarize private dossiers with AI, and does not download illustrations. A missing summary is left blank with an explanation. Description is capped at 350 characters with a review notice.
+
+### One-time Notion setup
+
+Create a read-only Notion connection and grant it the character pages **and their Player Characters parent**, where the HUD quotes live. In the project’s Supabase Dashboard → Edge Functions → Secrets, save its private API token under **NOTION_TOKEN**. Do not put the token in chat, this repository, the userscript, or frontend storage. This repository contains no Notion secret. Changing Notion does not automatically overwrite a registered character: Check Page and Save are explicit actions.
+
+The deployed `notion-character-preview` Edge Function requires a user JWT and calls the existing owner-scoped character RPC with the caller’s token before reading Notion. Only an actual owner or currently paired HUD can request a preview for their registered player. It uses no service-role key. `db/notion-character-import.sql` adds source links and a validated owner-scoped save RPC. Missing NOTION_TOKEN produces a setup message instead of clearing the draft.
+
 HUD v0.8.1 adds a room shortcut directly below the active-session picker and removes its redundant visible label.
 
 # Paths Monkey — GM HUD
