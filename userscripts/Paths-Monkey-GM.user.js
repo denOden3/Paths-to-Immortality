@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.9
+// @version      0.8.10
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.9';
+  const VERSION = '0.8.10';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -645,7 +645,10 @@
   }
   function populateLocationPicker(prefix){
     const select=$(prefix+'-place'),previous=select.value;select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Choose an established location';select.append(empty);
-    let group=null,key='';for(const location of roomSetup.locations){const next=location.region+' → '+location.parent;if(next!==key){key=next;group=document.createElement('optgroup');group.label=key;select.append(group);}const option=document.createElement('option');option.value=location.id;option.textContent=location.name;group.append(option);}
+    const tree={children:new Map()};
+    for(const location of roomSetup.locations){const ancestry=location.ancestry?.length?location.ancestry:[location.region,...location.parent.split(' → ')];let node=tree;for(const name of [...ancestry,location.name]){if(!node.children.has(name))node.children.set(name,{name,children:new Map()});node=node.children.get(name);}node.location=location;}
+    function appendNodes(node,depth,path){for(const child of [...node.children.values()].sort((a,b)=>a.name.localeCompare(b.name))){const option=document.createElement('option');option.value=child.location?.id||'__branch__'+[...path,child.name].join('/');option.disabled=!child.location;option.textContent='　'.repeat(depth)+(depth?'› ':'')+child.name;option.setAttribute('aria-label',[...path,child.name].join(' → '));select.append(option);appendNodes(child,depth+1,[...path,child.name]);}}
+    appendNodes(tree,0,[]);
     if(prefix==='scene'&&currentIntro.location&&!currentIntro.location_slug){const option=document.createElement('option');option.value='__legacy__';option.textContent='Keep existing: '+currentIntro.location;select.append(option);}
     const custom=document.createElement('option');custom.value='__custom__';custom.textContent='Custom location — this session only';select.append(custom);
     select.value=[...select.options].some(x=>x.value===previous)?previous:'';updateLocationChoice(prefix);

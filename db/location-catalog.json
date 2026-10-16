@@ -7,147 +7,288 @@
       "name": "Cloudveil Sect",
       "region": "Yunzhou",
       "parent": "Qingluan Mountains",
-      "source_url": "https://www.notion.so/3fab0ac52efe81dbbcebff0ce90ed500"
+      "source_url": "https://www.notion.so/3fab0ac52efe81dbbcebff0ce90ed500",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "mountain-gate",
       "name": "Mountain Gate",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect",
-      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25"
+      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "mountain-path",
       "name": "Mountain Path",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect",
-      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25"
+      "parent": "Cloudveil Sect → Mountain Gate",
+      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Mountain Gate"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "central-assembly",
       "name": "Central Assembly Hall",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect",
-      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25"
+      "source_url": "https://www.notion.so/3f7b0ac52efe81f6bd6efed19f06fc25",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "outer-courtyard",
       "name": "Outer Disciples’ Courtyard",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "registration-hall",
       "name": "Registration Hall",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe81ff838cdb788c2bc62f"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe81ff838cdb788c2bc62f",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "dining-hall",
       "name": "Dining Hall",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe818fa4f2e3a926dbea9b"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe818fa4f2e3a926dbea9b",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "bathhouse",
       "name": "Bathhouse",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8180b64eca7b12161bf5"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8180b64eca7b12161bf5",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "east-dormitories",
       "name": "East Dormitories",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "west-dormitories",
       "name": "West Dormitories",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "practice-square",
       "name": "Practice Square",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "ginkgo-notice-board",
       "name": "Ginkgo Notice Board",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "lower-trail-junction",
       "name": "Lower Trail Junction",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "communal-kitchens",
       "name": "Communal Kitchens",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "practice-garden",
       "name": "Practice Garden",
       "region": "Yunzhou",
-      "parent": "Cloudveil Sect → Outer Courtyard",
-      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1"
+      "parent": "Cloudveil Sect → Outer Disciples’ Courtyard",
+      "source_url": "https://www.notion.so/3fab0ac52efe8124b86af975b66003d1",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Outer Disciples’ Courtyard"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "sword-peak",
       "name": "Sword Peak",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect → Five Peaks",
-      "source_url": "https://www.notion.so/3f8b0ac52efe81538f9af31ad48125b9"
+      "source_url": "https://www.notion.so/3f8b0ac52efe81538f9af31ad48125b9",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Five Peaks"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "verdant-pill",
       "name": "Verdant Pill Hall",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect → Five Peaks",
-      "source_url": "https://www.notion.so/3f8b0ac52efe8170a0a3c7b335e86330"
+      "source_url": "https://www.notion.so/3f8b0ac52efe8170a0a3c7b335e86330",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Five Peaks"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "talisman-formation",
       "name": "Talisman & Formation Hall",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect → Five Peaks",
-      "source_url": "https://www.notion.so/3f8b0ac52efe81bcbb40e8d0b9dc0014"
+      "source_url": "https://www.notion.so/3f8b0ac52efe81bcbb40e8d0b9dc0014",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Five Peaks"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "spirit-beast",
       "name": "Spirit Beast Vale",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect → Five Peaks",
-      "source_url": "https://www.notion.so/3f8b0ac52efe81b8a8a2e3ef5d4d2f97"
+      "source_url": "https://www.notion.so/3f8b0ac52efe81b8a8a2e3ef5d4d2f97",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Five Peaks"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "wuxing-peak",
       "name": "Wuxing Peak",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect → Five Peaks",
-      "source_url": "https://www.notion.so/3f8b0ac52efe810aa1d1ff3618da0323"
+      "source_url": "https://www.notion.so/3f8b0ac52efe810aa1d1ff3618da0323",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect",
+        "Five Peaks"
+      ],
+      "access_context": "sect"
     },
     {
       "id": "disciplinary-hall",
       "name": "Disciplinary Hall",
       "region": "Yunzhou",
       "parent": "Cloudveil Sect",
-      "source_url": "https://www.notion.so/3f7b0ac52efe81b6bd0cf18b20da655c"
+      "source_url": "https://www.notion.so/3f7b0ac52efe81b6bd0cf18b20da655c",
+      "ancestry": [
+        "Yunzhou",
+        "Qingluan Mountains",
+        "Cloudveil Sect"
+      ],
+      "access_context": "sect"
     }
   ]
 }
