@@ -1,3 +1,7 @@
+## Web v0.7.9 / HUD v0.8.9 — established and temporary characters
+
+Established choices scroll horizontally with touch, keyboard focus and arrow controls. A separate Suggest Temporary Characters action offers three named, minor supporting roles from location-specific templates; custom locations use neutral helper/courier/visitor roles. The same invitation/location gives stable suggestions. Players can select established characters plus at most one temporary role. Players with no saved characters see the Jade Emperor greeting and can join with a suggested role. The HUD now allows inviting those registered players. The server validates offered choices, invitation ownership, expiry and active room membership; temporary appearances remain history without automatically becoming established characters. Suggestions are lightweight templates, not AI calls or automatic Notion NPC creation.
+
 ## HUD v0.8.8 — visible typing cursor
 
 All HUD inputs, textareas and editable text areas use an explicit bright gold caret, overriding inherited host-page caret colors. The browser retains its native cursor placement and blinking behavior.

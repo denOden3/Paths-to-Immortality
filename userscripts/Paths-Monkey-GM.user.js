@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.8
+// @version      0.8.9
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.8';
+  const VERSION = '0.8.9';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -446,7 +446,7 @@
  <div id="pm-new-custom-row" class="pm-hide"><label class="pm-label" for="pm-new-custom">Custom location (this session only)</label><input id="pm-new-custom" class="pm-text" maxlength="100" placeholder="Name a place for this scene"></div>
  <label class="pm-label" for="pm-new-spot">Starting spot (optional)</label><input id="pm-new-spot" class="pm-text" maxlength="90" placeholder="Beneath the old pine tree">
  <label class="pm-label" for="pm-new-intro">Opening situation</label><textarea id="pm-new-intro" class="pm-text" maxlength="2500" rows="3" placeholder="What is happening when the scene begins?"></textarea>
- <label class="pm-label" for="pm-new-goals">Session goals (optional)</label><textarea id="pm-new-goals" class="pm-text" maxlength="1200" rows="2" placeholder="What would you like to explore or attempt? Outcomes remain open."></textarea><p class="pm-mute">Established Notion locations · checked 16 October 2026. Custom places are saved only with this session.</p><div class="pm-h">Invited players (optional)</div><p class="pm-mute">Choose players; they choose their saved characters on their invitation page.</p><div id="pm-new-players" class="pm-player-options">Loading registered players…</div><button id="pm-setup-refresh" class="pm-btn pm-mini" type="button">↻ Refresh saved lists</button><p id="pm-new-status" class="pm-mute" role="status"></p>
+ <label class="pm-label" for="pm-new-goals">Session goals (optional)</label><textarea id="pm-new-goals" class="pm-text" maxlength="1200" rows="2" placeholder="What would you like to explore or attempt? Outcomes remain open."></textarea><p class="pm-mute">Established Notion locations · checked 16 October 2026. Custom places are saved only with this session.</p><div class="pm-h">Invited players (optional)</div><p class="pm-mute">Choose players; they choose established or temporary characters on their invitation page.</p><div id="pm-new-players" class="pm-player-options">Loading registered players…</div><button id="pm-setup-refresh" class="pm-btn pm-mini" type="button">↻ Refresh saved lists</button><p id="pm-new-status" class="pm-mute" role="status"></p>
             <button id="pm-pair-create-room" class="pm-btn pm-primary" type="button">Create Room</button>
           </div>
         </div>
@@ -483,7 +483,7 @@
             <button id="pm-save-scene" class="pm-btn" type="button">Save session details</button>
             </details>
             <div class="pm-divider"></div>
-            <div class="pm-h">Invite a registered player</div><p class="pm-mute">The player chooses from their saved characters. Each code is private, single-use and valid for 48 hours.</p><label class="pm-label" for="pm-invite-player">Player</label><select id="pm-invite-player" class="pm-text"><option value="">Choose a player</option></select>
+            <div class="pm-h">Invite a registered player</div><p class="pm-mute">The player chooses established or temporary characters. Each code is private, single-use and valid for 48 hours.</p><label class="pm-label" for="pm-invite-player">Player</label><select id="pm-invite-player" class="pm-text"><option value="">Choose a player</option></select>
             <button id="pm-make-invite" class="pm-btn pm-primary" type="button">Generate private invitation</button>
             <div id="pm-invite-output" class="pm-hide">
               <label class="pm-label" for="pm-invite-code">Private one-use invitation code</label><input id="pm-invite-code" class="pm-text" readonly><button id="pm-copy-invite-code" class="pm-btn" type="button">Copy invitation code</button>
@@ -655,8 +655,8 @@
     if(!paired||!account)return;const data=await authed('POST','/rest/v1/rpc/hud_room_setup',{body:{}});roomSetup={locations:data.locations||[],players:data.players||[]};
     populateLocationPicker('new');populateLocationPicker('scene');
     const checked=new Set([...$('new-players').querySelectorAll('input:checked')].map(x=>x.value));const host=$('new-players');host.replaceChildren();
-    for(const player of roomSetup.players){const label=document.createElement('label');label.className='pm-player-option';const box=document.createElement('input');box.type='checkbox';box.value=player.id;box.checked=checked.has(player.id)&&player.character_count>0;box.disabled=!player.character_count;const text=document.createElement('span');text.textContent=player.alias+(!player.character_count?' · Add characters in Registry first':'');label.append(box,text);host.append(label);}if(!roomSetup.players.length)host.textContent='No registered players yet. You can create a solo room or add players in Players Registry.';
-    const select=$('invite-player'),previous=select.value;select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Choose a player';select.append(empty);for(const player of roomSetup.players){const option=document.createElement('option');option.value=player.id;option.textContent=player.alias+(!player.character_count?' · No saved characters':'');option.disabled=!player.character_count;select.append(option);}select.value=previous;
+    for(const player of roomSetup.players){const label=document.createElement('label');label.className='pm-player-option';const box=document.createElement('input');box.type='checkbox';box.value=player.id;box.checked=checked.has(player.id);const text=document.createElement('span');text.textContent=player.alias+(!player.character_count?' · Temporary characters available':'');label.append(box,text);host.append(label);}if(!roomSetup.players.length)host.textContent='No registered players yet. You can create a solo room or add players in Players Registry.';
+    const select=$('invite-player'),previous=select.value;select.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Choose a player';select.append(empty);for(const player of roomSetup.players){const option=document.createElement('option');option.value=player.id;option.textContent=player.alias+(!player.character_count?' · Temporary characters available':'');select.append(option);}select.value=previous;
   }
   function readSetupDate(prefix){
     const parts=['year','stage','season','day'].map(key=>$(prefix+'-'+key).value.trim());
@@ -697,11 +697,11 @@
   }
   function renderPreparedInvites(){
     const host=$('prepared-invites');host.replaceChildren();const items=selectedRoom?.session_state==='active'?get('preparedInvites.'+selectedRoom.id,[]):[];host.classList.toggle('pm-hide',!items.length);if(!items.length)return;const title=document.createElement('h3');title.textContent='Prepared invitations';host.append(title);
-    const note=document.createElement('p');note.className='pm-mute';note.textContent='Send each code privately. Players choose their own saved characters. Codes stop working after use, expiry, End or Reset.';host.append(note);
+    const note=document.createElement('p');note.className='pm-mute';note.textContent='Send each code privately. Players choose established or temporary characters. Codes stop working after use, expiry, End or Reset.';host.append(note);
     for(const item of items){const card=document.createElement('div');card.className='pm-pair-block';const name=document.createElement('strong');name.textContent=item.alias;const code=registryField('Invitation code for '+item.alias,item.code,48);code.readOnly=true;const buttons=document.createElement('div');buttons.className='pm-row';buttons.append(registryButton('Copy code',()=>copyText(item.code)),registryButton('Copy link',()=>copyText(GAME_URL+'?invite='+encodeURIComponent(item.code))));card.append(name,code,buttons);host.append(card);}
   }
   async function createSessionInvitation(){
-    if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');const player=$('invite-player').value;if(!player)throw new Error('Choose a registered player with saved characters.');
+    if(!paired||!selectedRoom)throw new Error('Choose an owner room first.');const player=$('invite-player').value;if(!player)throw new Error('Choose a registered player.');
     const saved=await authed('POST','/rest/v1/rpc/get_scene_introduction_as_owner',{body:{p_room_id:selectedRoom.id}});if(!saved?.scene_date||!saved.location||!saved.opening)throw new Error('Save the scene introduction first.');
     const token=await authed('POST','/rest/v1/rpc/invite_registered_player',{body:{p_room:selectedRoom.id,p_player:player}});if(typeof token!=='string'||!/^[0-9a-f]{48}$/.test(token))throw new Error('No valid invitation received.');
     $('invite-code').value=token;$('invite-link').value=GAME_URL+'?invite='+encodeURIComponent(token);$('invite-output').classList.remove('pm-hide');feedback('Private invitation ready. The player chooses their characters.');

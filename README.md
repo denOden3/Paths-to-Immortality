@@ -1,3 +1,7 @@
+## Web v0.7.9 / HUD v0.8.9 — established and temporary characters
+
+Established choices scroll horizontally with touch, keyboard focus and arrow controls. A separate Suggest Temporary Characters action offers three named, minor supporting roles from location-specific templates; custom locations use neutral helper/courier/visitor roles. The same invitation/location gives stable suggestions. Players can select established characters plus at most one temporary role. Players with no saved characters see the Jade Emperor greeting and can join with a suggested role. The HUD now allows inviting those registered players. The server validates offered choices, invitation ownership, expiry and active room membership; temporary appearances remain history without automatically becoming established characters. Suggestions are lightweight templates, not AI calls or automatic Notion NPC creation.
+
 ## Web v0.7.8 — recover joined sessions
 
 The player entrance lists ongoing rooms from the signed-in browser user's actual membership, alongside Check invitation. Returning to the start preserves the last-room shortcut; recovery no longer depends on it. Each room is revalidated when opened, and sign-out clears the shortcut. No invitation is needed to return to an accessible ongoing room in the same browser.

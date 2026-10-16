@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.8</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.9</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.8</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.9</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -102,7 +102,8 @@ body.authOpen{overflow:hidden}
 <section id="intro" class="scroll hidden" aria-label="Session introduction">
 <div class="portalHero"><h2 id="playerWelcome"></h2><p id="playerGreeting"></p></div>
 <div id="sceneResult"><article class="card sceneBox"><h2 id="introTitle"></h2><div class="sceneMeta"><span id="introDate"></span><span id="introPlace"></span></div><div id="introText" class="sceneCopy"></div><p id="introGoals" class="sceneCopy hidden"></p></article>
-<h3 id="characterHeading">Choose your characters</h3><div id="characterChoices" class="choices"></div>
+<section id="establishedCharacters"><div class="characterRailHeading"><h3 id="characterHeading">Choose your established characters</h3><div class="buttons"><button id="charactersLeft" class="btn sm" type="button" aria-label="Scroll established characters left">←</button><button id="charactersRight" class="btn sm" type="button" aria-label="Scroll established characters right">→</button></div></div><div id="characterChoices" class="choices characterRail" tabindex="0" aria-label="Established character choices"></div></section>
+<section id="temporaryCharacters" class="temporaryCharacters"><div class="temporaryHeading"><h3 id="temporaryPrompt">Or are you interested in MORE acting?</h3><button id="suggestTemporary" class="btn" type="button">Suggest Temporary Characters</button></div><p id="temporaryStatus" class="muted" role="status"></p><div id="temporaryChoices" class="choices"></div></section>
 <div id="characterReminders" class="characterReminders" aria-label="Character reminders"></div><div id="characterReminderInfo" class="card hidden" role="status"></div>
 <div class="beginRow"><button id="introEnter" class="btn primary" type="button">Begin your journey!</button></div></div>
 </section>
@@ -634,7 +635,7 @@ const DEFAULT_PRESENTATION=Object.freeze({
  codeLabel:'Insert invitation code for a session',generateButton:'Check invitation',beginButton:'Begin your journey!',density:'comfortable',alignment:'alternating',width:'standard'
 });
 let presentation={...DEFAULT_PRESENTATION},portalIdentity={is_admin:false},registry=[];
-let loadedInvitationCode='',sessionChoices=[];
+let loadedInvitationCode='',sessionChoices=[],temporaryChoices=[],temporaryRequest=0;
 const presentationKeys=Object.keys(DEFAULT_PRESENTATION);
 function cleanPresentation(raw){const result={...DEFAULT_PRESENTATION};for(const k of presentationKeys){if(typeof raw?.[k]==='string'&&raw[k].trim()&&raw[k].length<=600)result[k]=raw[k];}for(const [k,valid] of Object.entries({density:['compact','comfortable','spacious'],alignment:['alternating','left'],width:['standard','wide']})){if(!valid.includes(result[k]))result[k]=DEFAULT_PRESENTATION[k];}return result;}
 function el(tag,cls,text){const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;}
@@ -663,7 +664,7 @@ async function finishAdministratorSignIn(){
  if(user)await db.auth.signOut({scope:'local'});user=null;portalIdentity={is_admin:false};returnToStart();
 }
 function parseInvitation(value){const s=value.trim();if(/^[0-9a-f]{48}$/i.test(s))return s.toLowerCase();try{const u=new URL(s);const v=u.searchParams.get('invite');if(u.origin==='https://denoden3.github.io'&&/^[0-9a-f]{48}$/i.test(v||''))return v.toLowerCase();}catch{}throw Error('Paste the complete invitation code or the private invitation link from your host.');}
-function invalidateScene(){loadedInvitationCode='';invitePreview=null;sessionChoices=[];$('characterChoices').replaceChildren();$('characterReminders').replaceChildren();$('characterReminderInfo').classList.add('hidden');updateGreeting();}
+function invalidateScene(){++temporaryRequest;temporaryChoices=[];$('temporaryChoices').replaceChildren();$('temporaryStatus').textContent='';$('suggestTemporary').disabled=false;loadedInvitationCode='';invitePreview=null;sessionChoices=[];$('characterChoices').replaceChildren();$('characterReminders').replaceChildren();$('characterReminderInfo').classList.add('hidden');updateGreeting();}
 function characterOption(container,choice,type,index,checked=false){
  const label=el('label','characterChoice'),input=el('input');input.type=type;input.name='sessionCharacter';input.value=choice.name;input.checked=checked;
  const span=el('span');span.append(el('strong','',choice.name));if(choice.description)span.append(el('small','',choice.description));if(choice.goal)span.append(el('small','','Objective: '+choice.goal));if(choice.previous)span.append(el('small','','Previously played'));
@@ -671,7 +672,7 @@ function characterOption(container,choice,type,index,checked=false){
 }
 function renderCharacterReminders(){
  const target=$('characterReminders');target.replaceChildren();$('characterReminderInfo').classList.add('hidden');
- for(const input of $('characterChoices').querySelectorAll('input'))if(input.checked){const c=sessionChoices.find(x=>x.name===input.value);const button=el('button','btn sm',c.name);button.type='button';button.onclick=()=>{const info=$('characterReminderInfo');info.replaceChildren(el('h3','',c.name),el('p','',c.description||'No character description has been recorded yet.'));if(c.goal)info.append(el('p','','Objective: '+c.goal));if(c.scene_title)info.append(el('p','muted','Previously played in '+c.scene_title+(c.scene_date?' · '+c.scene_date:'')));info.classList.remove('hidden');};target.append(button);}
+ for(const input of [...$('characterChoices').querySelectorAll('input'),...$('temporaryChoices').querySelectorAll('input')])if(input.checked){const c=[...sessionChoices,...temporaryChoices].find(x=>x.name===input.value);const button=el('button','btn sm',c.name);button.type='button';button.onclick=()=>{const info=$('characterReminderInfo');info.replaceChildren(el('h3','',c.name),el('p','',c.description||'No character description has been recorded yet.'));if(c.goal)info.append(el('p','','Objective: '+c.goal));if(c.scene_title)info.append(el('p','muted','Previously played in '+c.scene_title+(c.scene_date?' · '+c.scene_date:'')));info.classList.remove('hidden');};target.append(button);}
 }
 async function generateSession(){
  let code,data;try{code=parseInvitation($('sessionCode').value);const r=await db.rpc('preview_scene_invitation',{p_code:code});if(r.error||!r.data){returnToStart();return;}data=r.data;}catch{returnToStart();return;}
@@ -680,12 +681,25 @@ async function generateSession(){
  const seen=new Set();sessionChoices=[];for(const name of data.characters||[]){if(seen.has(name))continue;seen.add(name);const detail=(data.character_details||[]).find(x=>x.name===name)||{},prior=(data.previous_characters||[]).find(x=>x.name===name)||{};sessionChoices.push({...prior,...detail,name});}
  for(const c of data.previous_characters||[]){if(!seen.has(c.name)){sessionChoices.push({...c,previous:true});seen.add(c.name);}}
  const box=$('characterChoices');box.replaceChildren();sessionChoices.forEach((c,i)=>{const input=characterOption(box,c,'checkbox',i,sessionChoices.length===1);input.addEventListener('change',renderCharacterReminders);});
- if(!sessionChoices.length){returnToStart();return;}
+ $('establishedCharacters').classList.toggle('hidden',!sessionChoices.length);$('temporaryCharacters').classList.toggle('noEstablished',!sessionChoices.length);$('temporaryPrompt').textContent=sessionChoices.length?'Or are you interested in MORE acting?':'Seems like you have no established character yet. But the Jade Emperor is benevolent!';renderTemporaryChoices(data.temporary_characters||[]);
  $('introEnter').disabled=false;renderCharacterReminders();closeCodeDialog();show('intro');
 }
+function renderTemporaryChoices(items){
+ temporaryChoices=items;const host=$('temporaryChoices');host.replaceChildren();
+ items.forEach((choice,index)=>{const input=characterOption(host,choice,'radio',index);input.name='temporaryCharacter';input.addEventListener('change',renderCharacterReminders);});
+}
+async function suggestTemporaryCharacters(){
+ if(!loadedInvitationCode)return;const code=loadedInvitationCode,request=++temporaryRequest;$('suggestTemporary').disabled=true;$('temporaryStatus').textContent='Finding supporting roles for this location…';
+ try{const {data,error}=await db.rpc('suggest_temporary_characters',{p_code:code});if(code!==loadedInvitationCode||request!==temporaryRequest)return;if(error)throw error;if(!data){returnToStart();return;}renderTemporaryChoices(data);renderCharacterReminders();$('temporaryStatus').textContent='Choose up to one temporary supporting character. These roles have no special rank, powers or authority.';}
+ catch{if(code===loadedInvitationCode&&request===temporaryRequest)$('temporaryStatus').textContent='Could not load suggestions. Please try again.';}
+ finally{if(request===temporaryRequest)$('suggestTemporary').disabled=false;}
+}
+$('suggestTemporary').onclick=()=>safe(suggestTemporaryCharacters);
+$('charactersLeft').onclick=()=>$('characterChoices').scrollBy({left:-320,behavior:'smooth'});
+$('charactersRight').onclick=()=>$('characterChoices').scrollBy({left:320,behavior:'smooth'});
 async function beginJourney(){
  if(!invitePreview||!loadedInvitationCode){returnToStart();return;}
- const chars=[...$('characterChoices').querySelectorAll('input')].filter(x=>x.checked).map(x=>x.value);if(!chars.length)throw Error('Choose a character before beginning.');
+ const chars=[...$('characterChoices').querySelectorAll('input'),...$('temporaryChoices').querySelectorAll('input')].filter(x=>x.checked).map(x=>x.value);if(!chars.length)throw Error('Choose a character before beginning.');
  if(portalIdentity.is_admin){throw Error('Use a separate browser or private tab to join as a player.');}
  const validation=await db.rpc('preview_scene_invitation',{p_code:loadedInvitationCode});if(validation.error||!validation.data){returnToStart();return;}
  if(!user){const {data,error}=await db.auth.signInAnonymously();if(error)throw error;user=data.user;}

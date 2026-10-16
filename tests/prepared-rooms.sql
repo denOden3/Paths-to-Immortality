@@ -21,7 +21,7 @@ do $$declare s record;data jsonb;again jsonb;before_count int;denied boolean:=fa
  data:=public.get_scene_introduction_as_owner((data->>'id')::uuid);assert data->>'location'='Dining Hall · By the doorway';assert data->>'time_of_day'='Morning';assert data->>'session_goals'='Investigate the letter.';
  select count(*) into before_count from public.rooms;
  begin perform public.create_prepared_room(gen_random_uuid(),'__QA Invalid room','Owner','Day','Morning','missing-place','','','Start','',array[s.player_id]);exception when others then denied:=true;end;assert denied;assert (select count(*)=before_count from public.rooms),'invalid location left a room';
- denied:=false;begin perform public.create_prepared_room(gen_random_uuid(),'__QA Partial room','Owner','Day','','mountain-gate','','','Start','',array[s.player_id,s.empty_id]);exception when others then denied:=true;end;assert denied;assert (select count(*)=before_count from public.rooms),'failed invitation left a partial room';
+ data:=public.create_prepared_room(gen_random_uuid(),'__QA Trial players','Owner','Day','','mountain-gate','','','Start','',array[s.player_id,s.empty_id]);assert jsonb_array_length(data->'invitations')=2,'players without characters could not be invited';
  data:=public.create_prepared_room(gen_random_uuid(),'__QA Custom room','Owner','Day','Night','__custom__','Roadside tea stall','Corner table','Rain begins.','Seek shelter',array[]::uuid[]);rid:=(data->>'id')::uuid;
  data:=public.get_scene_introduction_as_owner(rid);assert data->>'location'='Roadside tea stall · Corner table';assert data->>'location_slug'='__custom__';assert not (public.hud_room_setup()->'locations') @> '[{"name":"Roadside tea stall"}]','custom location promoted to Codex';
 end;$$;

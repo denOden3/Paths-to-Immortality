@@ -19,3 +19,5 @@
 .playerSessionLinks{display:grid;gap:10px;margin-bottom:24px;}.playerSessionLink{width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere;min-height:48px;}
 #codeOverlay .inviteRow input{min-width:0;}
 @media(max-width:600px){#codeOverlay .inviteRow{flex-wrap:wrap;}#codeOverlay .inviteRow input{flex-basis:100%;}}
+
+.characterRailHeading,.temporaryHeading{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;}.characterRailHeading h3,.temporaryHeading h3{margin:0;}.characterRail.choices{display:flex;overflow-x:auto;scroll-snap-type:x proximity;gap:16px;padding:4px 4px 16px;}.characterRail>.characterChoice{flex:0 0 min(360px,85%);scroll-snap-align:start;}.temporaryCharacters{border-top:1px solid var(--border);margin-top:24px;padding-top:24px;}.temporaryCharacters.noEstablished .temporaryHeading{display:block;}.temporaryCharacters.noEstablished .temporaryHeading button{margin-top:16px;}.characterRail:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
