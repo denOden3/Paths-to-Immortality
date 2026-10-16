@@ -14,3 +14,8 @@
 .rosterHeader{margin-bottom:10px}.rosterHeader h2{margin:0;font-size:21px;color:var(--gold)}.playerRoster{display:grid;gap:12px;margin-top:14px}.playerRosterCard{margin:0}.playerRosterCard .row{align-items:flex-start;flex-wrap:wrap}.playerRosterCard h3{font-size:19px;margin:0;color:var(--gold);overflow-wrap:anywhere}.playerStatus{display:inline-block;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:750;white-space:nowrap;border:1px solid #897080}.isInSession{background:#193d34;color:#b0f1d5;border-color:#609c85}.isNotInSession{background:#3a2e3b;color:#eadbe8}.playerSession{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}.playerSession h4{font-size:14px;margin:0 0 4px;overflow-wrap:anywhere}.playerSession p{margin:0;color:var(--muted);font-size:13px}
 
 .roomLogGroup{margin:10px 0 20px}.roomLogGroup h4{font-size:13px;color:var(--gold);text-transform:uppercase;letter-spacing:.04em;margin:0 0 8px}.roomLogButton{display:block;width:100%;text-align:left;margin:0 0 9px;padding:13px}.roomLogButton .row{flex-wrap:wrap;align-items:flex-start}.roomLogButton strong{overflow-wrap:anywhere;flex:1;min-width:130px}.roomArchiveNote{display:block;margin-top:8px;font-size:12px;color:var(--muted);font-weight:400}.archiveState{color:var(--gold)}#concludedOpening{margin-top:10px}#archiveLink{display:inline-block;text-decoration:none}
+
+#codeOverlay .authSheet{max-height:calc(100dvh - 40px);overflow-y:auto;}
+.playerSessionLinks{display:grid;gap:10px;margin-bottom:24px;}.playerSessionLink{width:100%;text-align:left;white-space:normal;overflow-wrap:anywhere;min-height:48px;}
+#codeOverlay .inviteRow input{min-width:0;}
+@media(max-width:600px){#codeOverlay .inviteRow{flex-wrap:wrap;}#codeOverlay .inviteRow input{flex-basis:100%;}}

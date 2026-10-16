@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.7.7</title>
+<title>Paths to Immortality · Cloudveil Session v0.7.8</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.7</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.7.8</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -165,7 +165,7 @@ body.authOpen{overflow:hidden}
 </div><div class="send"><textarea id="msg" maxlength="8000" placeholder="What does Xu Yi do?" aria-label="Xu Yi character action or Puuchan chat"></textarea><button id="send" class="btn primary">Send</button></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
 </div>
 <div id="headerMenuOverlay" class="headerMenuOverlay hidden" role="presentation"><section id="headerMenu" class="headerMenu" role="dialog" aria-modal="true" aria-label="Navigation"><button id="menuBack" class="btn" type="button" aria-label="Go back" title="Go back">←</button><button id="menuSignout" class="btn" type="button">Sign out</button></section></div>
-<div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Generate scene</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
+<div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><section aria-labelledby="ongoingSessionsTitle"><h2 id="ongoingSessionsTitle">Your ongoing sessions</h2><p id="playerSessionsStatus" class="muted" role="status"></p><div id="playerSessions" class="playerSessionLinks"></div></section><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Check invitation</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
 <div id="authOverlay" class="authOverlay hidden" role="presentation">
 <section id="authSheet" class="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle" aria-describedby="authDescription" tabindex="-1">
 <div class="authMark" aria-hidden="true">☯</div>
@@ -422,9 +422,32 @@ async function checkOngoingSession(){
  guardPromise=(async()=>{const {data,error}=await db.from('rooms').select('id,session_state,session_generation').eq('id',id).maybeSingle();if(error)throw error;
  if(room!==id)return false;if(!data||data.session_state!=='active'||data.session_generation!==generation){returnToStart();return false;}return true;})().finally(()=>{guardPromise=null;});return guardPromise;
 }
+let playerSessionsRequest=0;
+function renderPlayerSessions(items){
+ const host=$('playerSessions');host.replaceChildren();
+ for(const item of items){const button=el('button','btn playerSessionLink',item.title);button.type='button';button.onclick=()=>safe(async()=>{button.disabled=true;try{if(await openRoom(item.id,item.session_generation))closeCodeDialog();}finally{button.disabled=false;}});host.append(button);}
+ $('playerSessionsStatus').textContent=items.length?'Choose a room to return to its chatroom.':'No ongoing sessions joined in this browser. Use an invitation to join one.';
+}
+async function loadPlayerSessions(){
+ const request=++playerSessionsRequest,identity=user?.id;renderPlayerSessions([]);
+ if(!identity||portalIdentity.is_admin)return [];
+ $('playerSessionsStatus').textContent='Finding your ongoing sessions…';
+ const membership=await db.from('room_members').select('room_id').eq('user_id',identity);if(membership.error)throw membership.error;
+ if(user?.id!==identity||request!==playerSessionsRequest)return [];
+ const ids=[...new Set((membership.data||[]).map(item=>item.room_id))];let items=[];
+ if(ids.length){const result=await db.from('rooms').select('id,title,session_generation').in('id',ids).eq('session_state','active').order('created_at',{ascending:false});if(result.error)throw result.error;items=result.data||[];}
+ if(user?.id!==identity||request!==playerSessionsRequest)return [];
+ renderPlayerSessions(items);return items;
+}
+async function openPlayerEntrance(){
+ openCodeDialog();try{await loadPlayerSessions();}catch{$('playerSessionsStatus').textContent='Could not load your rooms. Check your connection, then reopen this panel to try again.';}
+}
 async function resumeOngoingSession(){
- if(!user||portalIdentity.is_admin)return false;let saved;try{saved=JSON.parse(localStorage.getItem('paths.activeSession')||'null');}catch{}
- if(!saved?.id||!saved.generation)return false;return openRoom(saved.id,saved.generation);
+ if(!user||portalIdentity.is_admin)return false;
+ const items=await loadPlayerSessions();let saved;try{saved=JSON.parse(localStorage.getItem('paths.activeSession')||'null');}catch{}
+ const target=items.find(item=>item.id===saved?.id&&item.session_generation===saved.generation);
+ if(target)return openRoom(target.id,target.session_generation);
+ if(items.length){openCodeDialog();renderPlayerSessions(items);return true;}return false;
 }
 window.addEventListener('focus',()=>{if(room)checkOngoingSession().catch(console.warn);});
 window.addEventListener('pageshow',()=>{if(room)checkOngoingSession().catch(console.warn);});
@@ -608,7 +631,7 @@ window.addEventListener('beforeunload',saveDraft);window.addEventListener('onlin
 const DEFAULT_PRESENTATION=Object.freeze({
  startTitle:'Welcome, wandering cultivator!',startCopy:'Step into the Jianghu and forge your own path toward immortality.',startButton:'Step forth to the Jianghu!',
  playerTitle:'Welcome, {player}!',playerCopy:'Are you ready to continue your journey to the Jianghu?',
- codeLabel:'Insert invitation code for a session',generateButton:'Generate scene',beginButton:'Begin your journey!',density:'comfortable',alignment:'alternating',width:'standard'
+ codeLabel:'Insert invitation code for a session',generateButton:'Check invitation',beginButton:'Begin your journey!',density:'comfortable',alignment:'alternating',width:'standard'
 });
 let presentation={...DEFAULT_PRESENTATION},portalIdentity={is_admin:false},registry=[];
 let loadedInvitationCode='',sessionChoices=[];
@@ -618,18 +641,18 @@ function el(tag,cls,text){const x=document.createElement(tag);if(cls)x.className
 function greeting(p,name){return {title:p.playerTitle.replaceAll('{player}',name||'wanderer'),copy:p.playerCopy};}
 function applyPresentation(){
  $('welcome').querySelector('h2').textContent=presentation.startTitle;$('welcome').querySelector('p').textContent=presentation.startCopy;$('guest').textContent=presentation.startButton;
- $('sessionCodeLabel').textContent=presentation.codeLabel;$('generateScene').textContent=presentation.generateButton;$('introEnter').textContent=presentation.beginButton;
+ $('sessionCodeLabel').textContent=presentation.codeLabel;$('generateScene').textContent='Check invitation';$('introEnter').textContent=presentation.beginButton;
  const app=document.querySelector('.app');app.dataset.density=presentation.density;app.dataset.align=presentation.alignment;app.dataset.width=presentation.width;updateGreeting();
 }
 function updateGreeting(data){const g=greeting(presentation,data?.player_alias||portalIdentity.alias);$('playerWelcome').textContent=g.title;$('playerGreeting').textContent=g.copy;}
 async function loadPresentation(){const {data,error}=await db.from('portal_presentation').select('settings').eq('id',true).single();if(error)throw error;presentation=cleanPresentation(data.settings);applyPresentation();}
 async function refreshPortalIdentity(){portalIdentity={is_admin:false};if(user){const {data,error}=await db.rpc('portal_context');if(error)throw error;portalIdentity=data||portalIdentity;}$('toolsOpen').classList.remove('hidden');$('toolsOpen').title='Open navigation';$('toolsOpen').setAttribute('aria-label',$('toolsOpen').title);updateGreeting();}
 async function enterPortal(){if(!db)throw Error('The entrance is still loading.');clear();show('identityGate');}
-function openCodeDialog(){invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
+function openCodeDialog(){renderPlayerSessions([]);invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
 function closeCodeDialog(){$('codeOverlay').classList.add('hidden');document.body.classList.remove('authOpen');}
 function returnToStart(options={}){
  endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
- try{if(options.preserveResume!==true)localStorage.removeItem('paths.activeSession');}catch{}closeHeaderMenu(false);closeCodeDialog();closeAuthDialog();clearInviteAddress();$('sessionCode').value='';invalidateScene();clear();show('welcome');
+ try{if(options.clearResume===true)localStorage.removeItem('paths.activeSession');}catch{}closeHeaderMenu(false);closeCodeDialog();closeAuthDialog();clearInviteAddress();$('sessionCode').value='';invalidateScene();clear();show('welcome');
 }
 async function chooseAdministrator(){
  if(portalIdentity.is_admin){await openAdministration();return;}
@@ -693,13 +716,13 @@ $('menuBack').onclick=()=>safe(returnFromPage);
 $('menuSignout').onclick=()=>safe(async()=>{closeHeaderMenu(false);await portalSignout();});
 $('headerMenuOverlay').addEventListener('click',e=>{if(e.target===$('headerMenuOverlay'))closeHeaderMenu();});
 $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...$('headerMenu').querySelectorAll('button')].filter(x=>!x.disabled&&!x.classList.contains('hidden'));if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
-async function portalSignout(){endLive();if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+async function portalSignout(){endLive();++playerSessionsRequest;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
 $('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);$('navPlayers').onclick=()=>safe(async()=>{if(!portalIdentity.is_admin)returnToStart();else{await refreshRegistry();show('adminPlayers');}});
 $('portalNav').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const tabs=[...$('portalNav').querySelectorAll('[role=tab]')],index=tabs.indexOf(document.activeElement);const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].focus();tabs[next].click();tabs[next].scrollIntoView?.({block:'nearest',inline:'nearest'});});
 $('chooseAdministrator').onclick=()=>safe(chooseAdministrator);
-$('choosePlayer').onclick=()=>safe(async()=>{if(await resumeOngoingSession())return;openCodeDialog();});
+$('choosePlayer').onclick=()=>safe(openPlayerEntrance);
 $('closeCode').onclick=returnToStart;$('codeOverlay').addEventListener('click',e=>{if(e.target===$('codeOverlay'))returnToStart();});
 function renderPlayerRoster(players){
  const host=$('registeredPlayers');host.replaceChildren();const active=players.filter(p=>p.in_session).length;

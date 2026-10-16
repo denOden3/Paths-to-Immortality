@@ -1,3 +1,7 @@
+## Web v0.7.8 — recover joined sessions
+
+The player entrance lists ongoing rooms from the signed-in browser user's actual membership, alongside Check invitation. Returning to the start preserves the last-room shortcut; recovery no longer depends on it. Each room is revalidated when opened, and sign-out clears the shortcut. No invitation is needed to return to an accessible ongoing room in the same browser.
+
 ## HUD v0.8.8 — visible typing cursor
 
 All HUD inputs, textareas and editable text areas use an explicit bright gold caret, overriding inherited host-page caret colors. The browser retains its native cursor placement and blinking behavior.
