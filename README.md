@@ -1,3 +1,7 @@
+## HUD v0.8.5 — character card columns
+
+An expanded saved-character card has a full-width bordered name header, a description column and a separated right-hand Notion/Edit action column. The editor spans both columns; narrow screens stack the action area below the description.
+
 ## HUD v0.8.4 — readability and visual comfort
 
 A shared 16px body/control size, 14px helper text, 18px section labels and 24px page headings replace the previous scattered 10–16px sizes. Cards and actions use consistent spacing, 44px minimum button targets, scoped text styling, narrower reading widths, visible form labels, and keyboard focus outlines. The burgundy/gold palette remains; primary red and narration blue are darkened for text contrast. Desktop forms are width-limited, and mobile input rows wrap. Page routing, Notion imports and minimize retention are unchanged.

@@ -69,7 +69,7 @@ context.characterHost.innerHTML='';
 vm.runInContext(`renderRegistryCharacters({id:'player'},characterHost,[{id:'char',name:'Xu Yi',description:'A disciple',goal:'Keep old objective',source_url:'https://www.notion.so/3fbb0ac52efe806e9fbeee8ce2b760a9'}]);`,context);
 const savedCard=context.characterHost.querySelector('details.pm-saved-character');assert.ok(savedCard);assert.equal(savedCard.open,false);assert.equal(savedCard.querySelector('summary').textContent,'Xu Yi');
 assert.equal(savedCard.querySelector('.pm-character-description').textContent,'A disciple');
-const publicButtons=savedCard.querySelector('.pm-character-body>.pm-row');assert.equal(publicButtons.children.length,2);assert.equal(publicButtons.children[0].textContent,'Notion');assert.ok(publicButtons.children[0].href.endsWith('3fbb0ac52efe806e9fbeee8ce2b760a9'));
+const publicButtons=savedCard.querySelector('.pm-character-body>.pm-row');assert.ok(publicButtons.classList.contains('pm-character-actions'));assert.equal(publicButtons.children.length,2);assert.equal(publicButtons.children[0].textContent,'Notion');assert.ok(publicButtons.children[0].href.endsWith('3fbb0ac52efe806e9fbeee8ce2b760a9'));
 const editCharacter=publicButtons.children[1],characterEditor=savedCard.querySelector('.pm-character-editor');assert.ok(characterEditor.classList.contains('pm-hide'));editCharacter.onclick();assert.ok(!characterEditor.classList.contains('pm-hide'));assert.equal(editCharacter.getAttribute('aria-expanded'),'true');
 assert.equal(context.characterHost.querySelector('[aria-label=Objective]'),null);
 const originalAuthed=context.authed;let characterSave;

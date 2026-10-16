@@ -13,6 +13,8 @@ assert.equal(style(document.querySelector('#pm-registry-toggle')).marginTop,'16p
 assert.ok(!/font-size:1[0-3]px/.test(css),'tiny labels remain');
 for(const id of ['pm-settings-toggle','pm-settings-close','pm-rooms-page-close','pm-feed-refresh'])assert.ok(document.getElementById(id).getAttribute('aria-label'));
 assert.ok(css.includes('select:focus-visible'));assert.ok(css.includes('summary:focus-visible'));
+const sample=document.createElement('details');sample.className='pm-character-card pm-saved-character';sample.open=true;sample.innerHTML='<summary>Xu Yi</summary><div class="pm-character-body"><p class="pm-character-description">Description</p><div class="pm-row pm-character-actions"><button class="pm-btn">Notion</button><button class="pm-btn">Edit</button></div><div class="pm-character-editor">Editor</div></div>';document.getElementById('paths-monkey-root').append(sample);
+assert.equal(style(sample).padding,'0px');assert.equal(style(sample.querySelector('.pm-character-body')).display,'grid');assert.equal(style(sample.querySelector('.pm-character-actions')).flexDirection,'column');assert.equal(style(sample.querySelector('.pm-character-editor')).gridColumn,'1/-1');
 // Check actual opaque palette pairs against the 4.5:1 normal-text threshold.
 const luminance=hex=>{const c=hex.match(/[a-f0-9]{2}/gi).map(x=>parseInt(x,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
 const contrast=(a,b)=>{let x=luminance(a),y=luminance(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.4
+// @version      0.8.5
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.4';
+  const VERSION = '0.8.5';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -229,7 +229,19 @@
     #paths-monkey-root .pm-character-card{background:#19151d}
     #paths-monkey-root .pm-character-note{margin-bottom:12px}
     #paths-monkey-root .pm-character-card p[role=status]:not(:empty){margin:12px 0}
-    #paths-monkey-root .pm-character-body{padding:0 8px 8px}
+    #paths-monkey-root .pm-character-card.pm-saved-character{padding:0}
+    #paths-monkey-root .pm-saved-character>summary{padding:16px 20px;background:#302631;border-radius:11px}
+    #paths-monkey-root .pm-saved-character[open]>summary{border-bottom:1px solid var(--pm-stroke);border-radius:11px 11px 0 0}
+    #paths-monkey-root .pm-character-body{display:grid;grid-template-columns:minmax(0,1fr) 144px;padding:0}
+    #paths-monkey-root .pm-character-body>.pm-character-description{min-width:0;margin:0;padding:20px}
+    #paths-monkey-root .pm-character-actions{flex-direction:column;align-items:stretch;justify-content:flex-start;border-left:1px solid var(--pm-stroke);padding:20px 16px;gap:12px}
+    #paths-monkey-root .pm-character-actions>.pm-btn{width:100%}
+    #paths-monkey-root .pm-character-body>.pm-character-editor{grid-column:1/-1;margin:0;padding:20px;border-top:1px solid var(--pm-stroke)}
+    @media(max-width:600px){
+      #paths-monkey-root .pm-character-body{grid-template-columns:minmax(0,1fr)}
+      #paths-monkey-root .pm-character-actions{border-left:0;border-top:1px solid var(--pm-stroke);flex-direction:row;flex-wrap:wrap;padding:16px 20px}
+      #paths-monkey-root .pm-character-actions>.pm-btn{width:auto;min-width:96px}
+    }
     #paths-monkey-root .pm-character-editor>.pm-text,#paths-monkey-root .pm-character-card>.pm-text{margin:12px 0}
     #paths-monkey-root .pm-character-editor>.pm-row{margin-top:16px}
     #paths-monkey-root .pm-character-card p[role=status]:empty{display:none}
@@ -1062,7 +1074,7 @@
       if(/^https:\/\/www\.notion\.so\/[a-f0-9]{32}$/.test(character.source_url||''))notion.href=character.source_url;
       else{notion.setAttribute('aria-disabled','true');notion.title='Add a Notion link through Edit → Check Page.';}
       const edit=registryButton('Edit',()=>{const open=editor.classList.contains('pm-hide');editor.classList.toggle('pm-hide',!open);edit.setAttribute('aria-expanded',String(open));edit.classList.toggle('pm-registry-active',open);if(open)name.focus();});edit.setAttribute('aria-expanded','false');
-      const actions=document.createElement('div');actions.className='pm-row';actions.append(notion,edit);
+      const actions=document.createElement('div');actions.className='pm-row pm-character-actions';actions.append(notion,edit);
       const save=registryButton('Save',()=>runTask(()=>changeRegistryCharacter(player,host,'save',character.id,name.value,description.value,character.goal||'',source())),true);
       const cancel=registryButton('Cancel',()=>{name.value=character.name;description.value=character.description||'';source.reset();editor.classList.add('pm-hide');edit.setAttribute('aria-expanded','false');edit.classList.remove('pm-registry-active');});
       const remove=registryButton('Remove',()=>runTask(()=>changeRegistryCharacter(player,host,'remove',character.id)));
