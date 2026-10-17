@@ -1,3 +1,7 @@
+## HUD v0.8.17 — tighter Admin and Current Session layout
+
+Administration uses compact, indented gold links with the active-page highlight retained. Selected Session now has its own heading with a small manual refresh control beside it. Section dividers, character headings and participant rows use tighter spacing on mobile and desktop. Room selection and navigation behavior are unchanged.
+
 ## HUD v0.8.16 / Web v0.8.8 — shared typing and compact HUD controls
 
 The HUD header keeps its title on one line with smaller logo/version/settings/minimize controls. The room heading scrolls horizontally, with Live, typing and narration status alongside it. The old room Refresh/Back controls are hidden; use the yin-yang navigation. The shorter action rail hides its scrollbar, adds a divider above the composer, and includes a leaf-green owner-only End session shortcut using the existing confirmation and server controls.

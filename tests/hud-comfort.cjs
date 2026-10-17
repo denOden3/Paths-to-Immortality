@@ -5,7 +5,7 @@ const html=source.split('root.innerHTML = `')[1].split('`;')[0];
 const dom=new JSDOM('<style>'+css+'</style><div id="paths-monkey-root">'+html+'</div>');
 const {document}=dom.window,style=x=>dom.window.getComputedStyle(x);
 assert.equal(style(document.getElementById('paths-monkey-root')).fontSize,'16px');
-for(const button of document.querySelectorAll('.pm-btn')){assert.ok(parseFloat(style(button).minHeight)>=(['pm-settings-toggle','pm-minimize'].includes(button.id)?32:button.closest('.pm-actions')?34:44),button.id+' undersized');assert.equal(style(button).fontSize,['pm-settings-toggle','pm-minimize'].includes(button.id)?'18px':'14px');}
+for(const button of document.querySelectorAll('.pm-btn')){assert.ok(parseFloat(style(button).minHeight)>=(['pm-settings-toggle','pm-minimize'].includes(button.id)?32:button.id==='pm-current-session-refresh'?28:button.closest('.pm-actions')?34:44),button.id+' undersized');assert.equal(style(button).fontSize,['pm-settings-toggle','pm-minimize'].includes(button.id)?'18px':'14px');}
 assert.equal(style(document.querySelector('#pm-registry>p.pm-mute')).fontSize,'14px');
 assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'20px');
 assert.equal(style(document.querySelector('.pm-admin-group>summary')).fontSize,'16px');
@@ -23,3 +23,5 @@ const pairs=[[tokens.ink,tokens.bg],[tokens.muted,tokens.bg],[tokens.ink,'#211b2
 for(const [fg,bg] of pairs)assert.ok(contrast(fg,bg)>=4.5,fg+' on '+bg+' insufficient contrast');
 assert.ok(contrast(tokens.stroke,tokens.bg)>=3,'control boundary contrast');
 console.log('PASS: consistent type hierarchy, 44px controls, named icon controls, focus selectors and text/control contrast');
+
+assert.equal(style(document.getElementById('pm-manage-rooms')).marginLeft,'12px');assert.equal(style(document.getElementById('pm-manage-rooms')).marginTop,'0px');assert.equal(style(document.getElementById('pm-manage-rooms')).borderBottomWidth,'0px');assert.equal(style(document.querySelector('#pm-administration-group>summary')).marginBottom,'0px');assert.equal(style(document.querySelector('#pm-sidebar .pm-h')).marginTop,'0px');assert.equal(style(document.getElementById('pm-current-session-refresh')).float,'none');

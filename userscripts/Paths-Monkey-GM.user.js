@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.16
+// @version      0.8.17
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.16';
+  const VERSION = '0.8.17';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -438,6 +438,22 @@
     #paths-monkey-root .pm-speaker-menu{position:absolute;right:12px;bottom:calc(100% + 8px);width:min(300px,calc(100vw - 24px));max-height:45dvh;overflow:auto;padding:12px;background:#29212b;border:1px solid var(--pm-stroke);border-radius:8px;box-shadow:0 6px 20px #0008}
     #paths-monkey-root #pm-speaker-choices{display:grid;gap:6px;margin-top:8px}
     #paths-monkey-root #pm-speaker-choices>.pm-btn{width:100%;text-align:left;white-space:normal}
+
+    /* v0.8.17: compact, aligned Admin navigation and session details. */
+    #paths-monkey-root #pm-sidebar .pm-admin-group{margin:0;padding:0}
+    #paths-monkey-root #pm-sidebar .pm-admin-group>summary{box-sizing:border-box;min-height:44px;line-height:24px;margin:0;padding:10px 0}
+    #paths-monkey-root #pm-administration-group>.pm-sidebar-action{display:block;box-sizing:border-box;width:calc(100% - 12px);margin:0 0 0 12px;padding:8px 8px;min-height:44px;border:0;border-radius:4px;color:var(--pm-gold);font-size:14px;font-weight:700;line-height:20px;letter-spacing:.015em}
+    #paths-monkey-root #pm-administration-group>.pm-sidebar-action.pm-nav-active{background:#39212b;box-shadow:inset 3px 0 var(--pm-gold)}
+    #paths-monkey-root #pm-admin-feedback:empty{display:none}
+    #paths-monkey-root #pm-current-session-group{border-top:1px solid var(--pm-stroke);margin-top:6px;padding-top:4px}
+    #paths-monkey-root #pm-sidebar .pm-session-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px;min-height:28px}
+    #paths-monkey-root #pm-sidebar .pm-h{margin:0 0 4px;line-height:20px}
+    #paths-monkey-root #pm-sidebar .pm-session-heading>.pm-h{margin:0}
+    #paths-monkey-root #pm-current-session-refresh{float:none;box-sizing:border-box;margin:0;width:28px;height:28px;min-width:28px;min-height:28px;padding:2px;font-size:14px;line-height:20px}
+    #paths-monkey-root #pm-character-session{margin:0 0 6px}
+    #paths-monkey-root #pm-sidebar .pm-divider{margin:8px 0}
+    #paths-monkey-root #pm-people{font-size:16px;line-height:24px}
+    #paths-monkey-root #pm-people>div{margin:0;padding:6px 0;line-height:24px}
 `);
 
   const root = document.createElement('div');
@@ -463,7 +479,8 @@
       <button id="pm-open-roomlogs" class="pm-btn pm-sidebar-action" type="button">Room Logs</button>
 <button id="pm-open-registry" class="pm-btn pm-sidebar-action" type="button">Players Registry</button></details>
       <div id="pm-admin-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
-      <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session <button id="pm-current-session-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh current sessions" title="Refresh current sessions">↻</button></summary>
+      <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session</summary>
+      <div class="pm-session-heading"><div class="pm-h">Selected Session</div><button id="pm-current-session-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh current sessions" title="Refresh current sessions">↻</button></div>
       <select id="pm-character-session" class="pm-text" aria-label="Active session"><option value="">Choose a session</option></select>
       <button id="pm-open-picked-room" class="pm-btn pm-hide" type="button"></button>
       <div class="pm-divider"></div><div class="pm-h">Characters</div>

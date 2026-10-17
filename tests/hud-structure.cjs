@@ -43,7 +43,7 @@ vm.runInContext(`renderCharacterParticipants([{player_alias:'Puuchan',character_
 assert.ok(document.getElementById('pm-people').textContent.includes('Puuchan'));assert.ok(document.getElementById('pm-people').textContent.includes('Second PC'));
 await vm.runInContext("root.classList.add('pm-roomlogs-open');toggleSidebar();",context);assert.ok(!root.classList.contains('pm-roomlogs-open'));
 for(const id of ['pm-room-title','pm-ongoing-list','pm-refresh-ongoing'])assert.equal(document.getElementById(id),null);
-assert.equal(document.getElementById('pm-character-session').previousElementSibling.tagName,'SUMMARY');assert.equal(document.getElementById('pm-character-session').getAttribute('aria-label'),'Active session');
+const selectedHeading=document.getElementById('pm-character-session').previousElementSibling;assert.equal(selectedHeading.querySelector('.pm-h').textContent,'Selected Session');assert.ok(selectedHeading.contains(document.getElementById('pm-current-session-refresh')));assert.equal(current.querySelector('summary button'),null);assert.equal(document.getElementById('pm-character-session').getAttribute('aria-label'),'Active session');
 // Back from a chat opened via Room Logs returns to Room Logs, then Admin.
 await vm.runInContext(`hudHistory=[];selectedRoom={id:'a',session_state:'active'};setInfoVisible(true);rememberHudPage();root.classList.add('pm-roomlogs-open');rememberHudPage();setInfoVisible(false);toggleSidebar();`,context);
 assert.ok(root.classList.contains('pm-roomlogs-open'),'back from chat lost Room Logs');
