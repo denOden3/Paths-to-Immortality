@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.3</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.4</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.3</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.4</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -130,7 +130,7 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
+<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
 <div class="roomMeta"><div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
 <div id="narrationProgress" class="narrationProgress hidden" role="status" aria-live="polite">The Jade Emperor is preparing narration…</div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
@@ -162,7 +162,7 @@ body.authOpen{overflow:hidden}
 </div>
 <div id="composer" class="compose hidden">
 <div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button></div>
-<div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div><small>Player messages only · Ctrl+Enter to send · drafts kept on this browser</small></div>
+<div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="voiceToggle" class="btn micToggle" type="button" aria-label="Microphone off. Click to join room voice." aria-pressed="false" title="Join room voice (trial)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/><path class="micSlash" d="M3 3l18 18"/></svg></button><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div><button id="voiceStatus" class="voiceStatus hidden" type="button" aria-live="polite"></button><div id="voiceAudio" hidden></div></div>
 </div>
 <div id="headerMenuOverlay" class="headerMenuOverlay hidden" role="presentation"><section id="headerMenu" class="headerMenu" role="dialog" aria-modal="true" aria-label="Navigation"><button id="menuBack" class="btn" type="button" aria-label="Go back" title="Go back">←</button><button id="menuSignout" class="btn" type="button">Sign out</button></section></div>
 <div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><section aria-labelledby="ongoingSessionsTitle"><h2 id="ongoingSessionsTitle">Your ongoing sessions</h2><p id="playerSessionsStatus" class="muted" role="status"></p><div id="playerSessions" class="playerSessionLinks"></div></section><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Check invitation</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
@@ -202,6 +202,7 @@ body.authOpen{overflow:hidden}
 <div class="buttons"><button id="editCancel" class="btn" type="button">Cancel</button>
 <button id="editSave" class="btn primary" type="button">Save changes</button></div>
 </section></div>
+<script src="voice.js?v=0.8.4"></script>
 <script type="module">
 const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
 const $=id=>document.getElementById(id);
@@ -318,7 +319,8 @@ $('toolsOpen').onclick=()=>{if($('headerMenuOverlay').classList.contains('hidden
 $('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
-function endLive(){if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
+let voiceController=null;
+function endLive(){voiceController?.leave();if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 function renderRoomLog(items){
  const host=$('roomList');host.replaceChildren();if(!items.length){host.append(el('p','muted','No rooms yet. Create a room from your HUD to begin.'));return;}
  for(const [state,label]of [['active','Ongoing'],['ended','Concluded']]){const group=items.filter(x=>x.session_state===state);if(!group.length)continue;const section=el('section','roomLogGroup');section.append(el('h4','',label));for(const item of group){const button=el('button','btn roomLogButton'),head=el('span','row');button.type='button';head.append(el('strong','',item.title),el('span','playerStatus '+(state==='active'?'isInSession':'isNotInSession'),label));button.append(head);if(state==='ended')button.append(el('span','roomArchiveNote',item.notion_url?'Notion link saved':'No Notion link recorded'));button.onclick=()=>safe(()=>selectLoggedRoom(item));section.append(button);}host.append(section);}
@@ -650,7 +652,8 @@ async function send(){await safe(async()=>{
  $('msg').value='';resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
 });}
 $('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
-window.addEventListener('beforeunload',saveDraft);window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
+window.addEventListener('beforeunload',()=>{voiceController?.leave();saveDraft();});
+window.addEventListener('pagehide',()=>voiceController?.leave());window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
 
 const DEFAULT_PRESENTATION=Object.freeze({
  startTitle:'Welcome, wandering cultivator!',startCopy:'Step into the Jianghu and forge your own path toward immortality.',startButton:'Step forth to the Jianghu!',
@@ -785,6 +788,7 @@ $('refreshPlayers').onclick=()=>safe(refreshRegistry);
 async function boot(){try{
  const mod=await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
  db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ voiceController=new window.PathsVoice({rpc:(...args)=>db.rpc(...args),getRoom:()=>room,button:$('voiceToggle'),status:$('voiceStatus'),host:$('voiceAudio')});
  $('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();
  if(error&&error.name!=='AuthSessionMissingError')console.warn(error);user=data?.user||null;
  await loadPresentation();await refreshPortalIdentity();show('welcome');

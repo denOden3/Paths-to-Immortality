@@ -7,6 +7,7 @@ const memory={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),re
 const sandbox={document,location,history:{replaceState(){}},window:{addEventListener(){}},localStorage:memory,sessionStorage:memory,navigator:{onLine:true},URL,URLSearchParams,console,crypto:require('crypto').webcrypto,confirm:()=>false,setInterval:()=>1,clearInterval(){},setTimeout,clearTimeout,assert};
 const context=vm.createContext(sandbox);vm.runInContext(code,context);
 vm.runInContext(`(async()=>{
+ assert.ok($('back').classList.contains('hidden'));assert.equal($('composer').querySelector('small'),null);assert.equal($('voiceToggle').nextElementSibling.id,'modeSpeaker');
  const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(new Set(ids).size,ids.length,'duplicate IDs');
  for(const m of ${JSON.stringify(code)}.matchAll(/\$\('([^']+)'\)/g))assert.ok($(m[1]),'missing element '+m[1]);
  applyPresentation();show('welcome');assert.equal($('guest').parentElement.lastElementChild.id,'guest');assert.equal($('welcome').children.length,1);assert.equal($('accountAccess'),null);assert.ok(!$('toolsOpen').classList.contains('hidden'));

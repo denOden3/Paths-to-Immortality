@@ -1,3 +1,11 @@
+## Web v0.8.4 — tighter chat controls and room voice trial
+
+The chat header and yin-yang mark are smaller, the room title uses a quiet weight, information tabs are thinner, and the Sessions shortcut and composer help line are hidden from the chatroom. Send has a larger, heavier label. A microphone toggle occupies the left of the character switcher on mobile.
+
+Room voice is opt-in: first click asks for microphone permission and joins an authorized active room. Tracks stay disabled until a recipient connects. Click again to mute outgoing audio while retaining incoming audio. Leaving, signing out, changing rooms or losing membership closes connections and stops microphone tracks. The microphone is dim/slashed when off or muted, dashed while waiting/connecting, and lit only with a connected recipient. This is a small-room WebRTC mesh trial (eight devices), using Google STUN; no TURN relay is configured, so restrictive/mobile networks may fail. Errors are shown honestly. Audio is never recorded or stored by this implementation. Private database rows contain ephemeral connection setup messages only; departed/expired rows are cleaned on the next room voice request. Voice signaling polls only after opting in.
+
+Tests cover membership restrictions, sender spoofing, signal delivery/consumption, expiry and leave in a rolled-back database transaction; frontend tests cover mute/unmute, listening retention, room changes, microphone denial and late permission cleanup. Real two-device audio and live visual layout have not been verified in this environment. HUD unchanged.
+
 ## HUD v0.8.15 / Web v0.8.3 — compact tools and shared narration preparation
 
 Tools, settings, player registry and character workspaces use a consistent compact heading/spacing scale. Session Info is room-wide, hides the HUD character selector and refresh control, and no longer reloads on chat polling or character switching; reopening it loads current details saved through Session Tools. Scene and inventory retain their existing update behavior.
