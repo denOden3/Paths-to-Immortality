@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.14
+// @version      0.8.15
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.14';
+  const VERSION = '0.8.15';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -348,7 +348,7 @@
     #paths-monkey-root .pm-workspace-copy{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}
 
 
-    /* v0.8.14: compact chrome, grouped navigation and a single-line tool rail. */
+    /* v0.8.15: compact chrome, grouped navigation and a single-line tool rail. */
     #paths-monkey-root .pm-hbar{min-height:56px;padding:4px 10px;gap:6px;box-shadow:0 1px 4px #07040855}
     #paths-monkey-root .pm-hbar .pm-title{font-size:16px;line-height:1.2;letter-spacing:0}
     #paths-monkey-root .pm-title-collapse{min-height:44px;justify-content:center}
@@ -390,6 +390,33 @@
     #paths-monkey-root .pm-feedback{margin-top:4px}
     @media(min-width:791px){#paths-monkey-root .pm-hbar .pm-title{font-size:18px}#paths-monkey-root .pm-compose{padding:6px 12px 8px}}
     @media(max-width:360px){#paths-monkey-root .pm-hbar{padding-inline:6px;gap:2px}#paths-monkey-root .pm-hbar .pm-title{font-size:14px}#paths-monkey-root #pm-identity-toggle{max-width:80px}}
+
+    /* Compact tools and workspace hierarchy. */
+    #paths-monkey-root .pm-panel{padding:16px;border-radius:10px}
+    #paths-monkey-root .pm-panel h2,#paths-monkey-root .pm-registry>.pm-row .pm-name,#paths-monkey-root .pm-roomlogs>.pm-row .pm-name{font-size:20px;line-height:1.3}
+    #paths-monkey-root .pm-panel>.pm-row:first-child{gap:8px;margin-bottom:12px}
+    #paths-monkey-root .pm-pair-block{padding:12px;margin:10px 0;border-radius:6px;background:#241e27}
+    #paths-monkey-root .pm-panel h3{font-size:16px;line-height:1.5}
+    #paths-monkey-root .pm-panel p{margin:8px 0;font-size:14px}
+    #paths-monkey-root .pm-session-facts{grid-template-columns:minmax(90px,30%) minmax(0,1fr);gap:8px 12px;margin:12px 0 0;font-size:16px;line-height:1.5}
+    #paths-monkey-root .pm-session-facts dt{font-size:14px}
+    #paths-monkey-root .pm-session-facts dd{margin:0}
+    #paths-monkey-root .pm-field{margin:12px 0}
+    #paths-monkey-root .pm-field>span,#paths-monkey-root .pm-label{margin-bottom:4px}
+    #paths-monkey-root #pm-workspace-content h2{font-size:20px;line-height:1.3;margin:12px 0}
+    #paths-monkey-root #pm-workspace-content h3{font-size:14px;line-height:1.5;color:var(--pm-muted);margin:12px 0 4px}
+    #paths-monkey-root #pm-workspace-content p{font-size:16px;line-height:1.55;margin:0 0 10px}
+    #paths-monkey-root #pm-workspace>.pm-label{margin:0 0 4px}
+    #paths-monkey-root #pm-registry-toggle{margin:8px 0}
+    #paths-monkey-root .pm-registry>p{margin:6px 0 10px}
+    #paths-monkey-root #pm-registry-list{gap:10px}
+    #paths-monkey-root .pm-character-description{margin:10px 0;line-height:1.55}
+    #paths-monkey-root .pm-saved-character>summary{font-size:16px;padding:10px 12px}
+    #paths-monkey-root .pm-character-body>.pm-character-description{padding:12px}
+    #paths-monkey-root .pm-character-actions{padding:12px;gap:8px}
+    #paths-monkey-root .pm-progress{font-size:14px;color:var(--pm-gold);border-left:3px solid var(--pm-gold);padding:8px 10px;margin:0 0 10px;background:#29212b}
+    #paths-monkey-root .pm-backdrop{padding:10px}
+    @media(max-width:790px){#paths-monkey-root .pm-panel{padding:14px;max-height:calc(100dvh - 32px)}#paths-monkey-root .pm-session-facts{grid-template-columns:minmax(85px,30%) minmax(0,1fr);gap:8px 12px}}
 `);
 
   const root = document.createElement('div');
@@ -438,7 +465,7 @@
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
-      <div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
+      <div id="pm-narration-progress" class="pm-progress pm-hide" role="status" aria-live="polite">The Jade Emperor is preparing narration… <button id="pm-narration-cancel" class="pm-btn pm-mini" type="button">Cancel indicator</button></div><div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
@@ -847,7 +874,7 @@
     saveDraft();
     selectedRoom={...info};currentIntro={};
     put('room',selectedRoom);
-    members=[]; messages=[];
+    members=[]; messages=[];$('narration-progress').classList.add('pm-hide');
     restoreDraft();
     setConnectedState();
     $('session-tools').classList.toggle('pm-hide',!paired);
@@ -875,7 +902,7 @@
     renderKickPlayers();renderSessionInformation();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
-    renderFeed();const latestNarration=[...messages].reverse().find(message=>message.kind==='narrator')?.id||'',newNarration=latestNarration!==hudWorkspaceNarration;hudWorkspaceNarration=latestNarration;if(hudWorkspaceView&&(hudWorkspaceView!=='inventory'||newNarration))refreshHudWorkspace().catch(e=>feedback(e.message));
+    await refreshNarrationActivity(id);renderFeed();const latestNarration=[...messages].reverse().find(message=>message.kind==='narrator')?.id||'',newNarration=latestNarration!==hudWorkspaceNarration;hudWorkspaceNarration=latestNarration;if(hudWorkspaceView&&(hudWorkspaceView==='scene'||(hudWorkspaceView==='inventory'&&newNarration)))refreshHudWorkspace().catch(e=>feedback(e.message));
   }
   function renderOngoingSessions(){updateCharacterSessionPicker(rooms.filter(x=>x.session_state==='active'));}
   let participantRequest=0;
@@ -931,16 +958,19 @@
     const host=$('roomlogs-detail');host.replaceChildren();const heading=document.createElement('h3');heading.textContent='Scene ended';const name=document.createElement('p');name.textContent=item.title;host.append(heading,name);
     if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}host.scrollIntoView?.({block:'nearest'});
   }
+  async function refreshNarrationActivity(id){try{const active=await authed('POST','/rest/v1/rpc/narration_activity_status',{body:{p_room:id}});if(selectedRoom?.id===id){$('narration-progress').classList.toggle('pm-hide',active!==true);$('narration-cancel').classList.toggle('pm-hide',!paired);}}catch{$('narration-progress').classList.add('pm-hide');}}
+  async function setNarrationActivity(active){if(!selectedRoom||!paired)throw new Error('A paired owner HUD is required.');const id=selectedRoom.id;const saved=await authed('POST','/rest/v1/rpc/set_narration_activity',{body:{p_room:id,p_active:active}});if(saved!==true)throw new Error('Could not confirm narration indicator.');await refreshNarrationActivity(id);}
   let hudWorkspaceView='',hudWorkspaceRequest=0,hudWorkspaceNarration='';
   function visibleNarration(body){return body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim();}
-  function closeHudWorkspace(){hudWorkspaceView='';++hudWorkspaceRequest;$('workspace').classList.add('pm-hide');$('feed-messages').classList.remove('pm-hide');for(const id of ['session-info','scene-view','inventory-view'])$(id).setAttribute('aria-pressed','false');}
+  function closeHudWorkspace(){$('feed-refresh').classList.remove('pm-hide');hudWorkspaceView='';++hudWorkspaceRequest;$('workspace').classList.add('pm-hide');$('feed-messages').classList.remove('pm-hide');for(const id of ['session-info','scene-view','inventory-view'])$(id).setAttribute('aria-pressed','false');}
   async function toggleHudWorkspace(view){if(!selectedRoom)return;if(hudWorkspaceView===view){closeHudWorkspace();return;}hudWorkspaceView=view;const select=$('workspace-character'),prior=select.value;select.replaceChildren();const seen=new Set();for(const member of members)for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name]){if(!name||seen.has(name))continue;seen.add(name);const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}select.value=seen.has(prior)?prior:members.find(member=>member.role==='owner')?.character_name||select.options[0]?.value||'';
+    $('workspace-character').classList.toggle('pm-hide',view==='session');$('workspace-character').previousElementSibling.classList.toggle('pm-hide',view==='session');$('feed-refresh').classList.toggle('pm-hide',view==='session');
     $('workspace').classList.remove('pm-hide');$('feed-messages').classList.add('pm-hide');for(const [key,id] of [['session','session-info'],['scene','scene-view'],['inventory','inventory-view']])$(id).setAttribute('aria-pressed',String(key===view));await refreshHudWorkspace();resizeHudBody();}
   async function refreshHudWorkspace(){
     if(!hudWorkspaceView||!selectedRoom)return;const id=selectedRoom.id,character=$('workspace-character').value,view=hudWorkspaceView,request=++hudWorkspaceRequest,host=$('workspace-content');host.textContent='Loading…';
     const data=await authed('POST','/rest/v1/rpc/room_player_panel',{body:{p_room:id,p_character:character}});if(request!==hudWorkspaceRequest||selectedRoom?.id!==id||$('workspace-character').value!==character)return;
-    let stateStatus=null;if(paired){const statuses=await authed('POST','/rest/v1/rpc/narration_state_status',{body:{p_room:id}});stateStatus=statuses?.[0];}if(request!==hudWorkspaceRequest||selectedRoom?.id!==id)return;
-    host.replaceChildren();if(stateStatus){const status=document.createElement('p');status.className='pm-mute';status.textContent=stateStatus.status==='applied'?'Latest narrator state update applied.':'Latest narrator state update rejected: '+stateStatus.error;host.append(status);}const title=document.createElement('h2');title.textContent=view==='session'?'Session Info':view==='scene'?'Scene · '+character:'Inventory · '+character;host.append(title);
+    let stateStatus=null;if(paired&&view==='inventory'){const statuses=await authed('POST','/rest/v1/rpc/narration_state_status',{body:{p_room:id}});stateStatus=statuses?.[0];}if(request!==hudWorkspaceRequest||selectedRoom?.id!==id)return;
+    host.replaceChildren();if(stateStatus&&stateStatus.status==='rejected'){const status=document.createElement('p');status.className='pm-mute';status.textContent=stateStatus.status==='applied'?'Latest narrator state update applied.':'Latest narrator state update rejected: '+stateStatus.error;host.append(status);}const title=document.createElement('h2');title.textContent=view==='session'?'Session Info':view==='scene'?'Scene · '+character:'Inventory · '+character;host.append(title);
     function text(label,value){const heading=document.createElement('h3'),copy=document.createElement('p');heading.textContent=label;copy.textContent=value||'Not recorded';copy.className='pm-workspace-copy';host.append(heading,copy);}
     if(view==='session'){for(const [label,value] of [['Room',data.session.title],['Status',data.session.status],['In-world date',[data.session.date,data.session.time].filter(Boolean).join(' · ')],['Starting location',data.session.starting_location],['Opening situation',data.session.opening],['Session goals',data.session.goals]])text(label,value);return;}
     if(view==='scene'){if(data.scene)text(data.scene.location,data.scene.description);else text('Current scene','No confirmed current location has been recorded yet.');return;}
@@ -1036,8 +1066,9 @@
     }
     return (el.innerText||el.value||'').includes(text.slice(0,28));
   }
-  function prepareNarrate() {
+  async function prepareNarrate() {
     if(!selectedRoom) { feedback('Connect Monkey to a room first.',true);return; }
+    await setNarrationActivity(true);
     const instruction=makeNarrateInstruction();
     copyText(instruction);
     const filled=fillNativeComposer(instruction);
@@ -1385,7 +1416,8 @@
   $('join').onclick=()=>runTask(join);
   $('forget').onclick=resetIdentity;
   $('send').onclick=()=>runTask(postAction);
-  $('narrate').onclick=prepareNarrate;
+  $('narrate').onclick=()=>runTask(prepareNarrate);
+  $('narration-cancel').onclick=()=>runTask(()=>setNarrationActivity(false));
   $('feed-toggle').onclick=()=>openRoomPage('manage');
   $('feed-close').textContent='← Back';$('feed-close').onclick=()=>runTask(toggleSidebar);
   $('feed-refresh').onclick=()=>runTask(refreshScene);
@@ -1393,7 +1425,7 @@
   $('session-info').onclick=()=>runTask(()=>toggleHudWorkspace('session'));
   $('scene-view').onclick=()=>runTask(()=>toggleHudWorkspace('scene'));
   $('inventory-view').onclick=()=>runTask(()=>toggleHudWorkspace('inventory'));
-  $('workspace-character').onchange=()=>runTask(refreshHudWorkspace);
+  $('workspace-character').onchange=()=>{if(hudWorkspaceView!=='session')runTask(refreshHudWorkspace);};
   $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
   $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});

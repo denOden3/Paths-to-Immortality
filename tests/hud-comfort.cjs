@@ -7,9 +7,9 @@ const {document}=dom.window,style=x=>dom.window.getComputedStyle(x);
 assert.equal(style(document.getElementById('paths-monkey-root')).fontSize,'16px');
 for(const button of document.querySelectorAll('.pm-btn')){assert.ok(parseFloat(style(button).minHeight)>=44,button.id+' undersized');assert.equal(style(button).fontSize,['pm-settings-toggle','pm-minimize'].includes(button.id)?'20px':'14px');}
 assert.equal(style(document.querySelector('#pm-registry>p.pm-mute')).fontSize,'14px');
-assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'24px');
+assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'20px');
 assert.equal(style(document.querySelector('.pm-admin-group>summary')).fontSize,'16px');
-assert.equal(style(document.querySelector('#pm-registry-toggle')).marginTop,'16px');
+assert.equal(style(document.querySelector('#pm-registry-toggle')).marginTop,'8px');
 assert.ok(!/font-size:1[0-3]px/.test(css),'tiny labels remain');
 for(const id of ['pm-settings-toggle','pm-settings-close','pm-rooms-page-close','pm-feed-refresh'])assert.ok(document.getElementById(id).getAttribute('aria-label'));
 assert.ok(css.includes('select:focus-visible'));assert.ok(css.includes('summary:focus-visible'));

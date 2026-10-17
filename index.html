@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.2</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.3</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.2</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.3</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -132,6 +132,7 @@ body.authOpen{overflow:hidden}
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
 <div class="roomMeta"><div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
+<div id="narrationProgress" class="narrationProgress hidden" role="status" aria-live="polite">The Jade Emperor is preparing narration…</div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
@@ -247,7 +248,7 @@ $('modeSpeaker').onclick=()=>{
   else if(choices.length>1&&choices.indexOf(activeCharacter)<choices.length-1){
     activeCharacter=choices[choices.indexOf(activeCharacter)+1];pending=null;pendingCharacter=null;
   }else setChatMode('ooc');
-  updateSpeakerDisplay();if(chatPanelView)refreshChatPanel().catch(e=>notice(e.message,'error'));
+  updateSpeakerDisplay();if(chatPanelView&&chatPanelView!=='session')refreshChatPanel().catch(e=>notice(e.message,'error'));
 };
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
@@ -402,11 +403,13 @@ function installLongPress(box,m){
   box.addEventListener('click',e=>{if(held){held=false;e.preventDefault();return;}if(selectedIds.size)toggleSelected(m);});
   box.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelected(m);}});
 }
+async function refreshNarrationActivity(id){const {data,error}=await db.rpc('narration_activity_status',{p_room:id});if(room!==id)return;$('narrationProgress').classList.toggle('hidden',!!error||data!==true);}
 async function fetchMessages(){
   if(!room)return;
   const active=room;
   const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
   if(error)throw error;if(room!==active)return;
+  refreshNarrationActivity(active).catch(console.warn);
   const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=data||[];if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
   const el=$('feed'),previousScroll=el.scrollTop,nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
@@ -425,13 +428,13 @@ async function fetchMessages(){
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
- closeChatPanel();endLive();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();$('narrationProgress').classList.add('hidden');room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  resizeComposer();await fetchMembers();if(room!==id)return false;await fetchMessages();
  subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;});
- poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView&&chatPanelView!=='inventory')refreshChatPanel().catch(console.warn);}},18000);
+ poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView==='scene')refreshChatPanel().catch(console.warn);}},18000);
  guardTimer=setInterval(()=>{if(document.visibilityState==='visible')checkOngoingSession().catch(console.warn);},4000);
  if(!portalIdentity.is_admin)try{localStorage.setItem('paths.activeSession',JSON.stringify({id,generation:activeGeneration}));}catch{}
  return true;

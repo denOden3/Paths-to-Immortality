@@ -1,3 +1,11 @@
+## HUD v0.8.15 / Web v0.8.3 — compact tools and shared narration preparation
+
+Tools, settings, player registry and character workspaces use a consistent compact heading/spacing scale. Session Info is room-wide, hides the HUD character selector and refresh control, and no longer reloads on chat polling or character switching; reopening it loads current details saved through Session Tools. Scene and inventory retain their existing update behavior.
+
+Pressing HUD Narrate first saves a verified owner-only preparation indicator, then prepares the ChatGPT request. Room participants see “The Jade Emperor is preparing narration…” on the next chat poll (up to 18 seconds on Web). This reports GM preparation, not observed model generation. It clears automatically with a published narrator message, expires after 10 minutes if abandoned, and can be canceled from the HUD. Room membership, active status and generation restrict access; ordinary players cannot change it. Backend checks run in a rollback transaction, including player denial, publication clearing and timeout. No test narration is retained.
+
+Voice chat is not part of this release.
+
 ## HUD v0.8.14 — compact navigation and reading layout
 
 All header controls and the version remain visible in a shorter header. The session toolbar is one horizontally scrollable row above a one-row expanding composer, neutral character switch and red Send button. Secondary controls use compact 14px labels with 44px touch targets; messages keep 16px text and a subtle narrator accent. Admin navigation becomes aligned rows with tighter section spacing. Current Session retains manual refresh. HUD page behavior, drafts, pairing and stored game data are unchanged. Update each device's installed userscript and reload ChatGPT.

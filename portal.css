@@ -96,3 +96,16 @@
  .inChat .compose textarea{min-height:48px;max-height:80px;}
  .inChat .compose{max-height:45dvh;overflow:auto;}
 }
+
+/* Shared comfort scale across the portal, tools and character panels. */
+.app{font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.head{min-height:56px;padding:6px 12px;gap:8px}.head h1{font-size:18px}.state{font-size:12px}
+.btn,.btn.sm{min-height:44px;font-size:14px;padding:8px 12px;border-radius:6px}.sig{width:44px;height:44px}
+.content{padding:12px}.card,.toolCard{padding:14px;border-radius:8px;margin-bottom:10px}
+.card h2,.toolPageHeader h2,.rosterHeader h2{font-size:20px}.card h3,.toolCard h3{font-size:16px}
+.card p,.toolCard p,.muted{font-size:14px;line-height:1.55}.card p{margin:6px 0 10px}
+label{font-size:14px;margin:10px 0 4px}input,textarea{font-size:16px;border-radius:6px;min-height:44px}
+.toolCard p{margin:6px 0 10px}.workspaceFact{padding:8px 0}.workspaceFact strong{font-size:14px;color:var(--muted)}
+.workspaceFact p{font-size:16px;margin:4px 0;line-height:1.55}.chatPanel h2{font-size:20px}.chatPanel h3{font-size:16px}
+.inChat .chatPanel p{font-size:16px}.playerRoster{gap:10px;margin-top:10px}.playerRosterCard h3{font-size:16px}
+.adminGreeting{margin:6px auto 14px}.adminNav .btn{min-height:44px}.narrationProgress{padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--gold);background:#29212b;color:var(--gold);font-size:14px;flex-shrink:0}
