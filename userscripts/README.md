@@ -1,3 +1,11 @@
+## HUD v0.8.16 / Web v0.8.8 — shared typing and compact HUD controls
+
+The HUD header keeps its title on one line with smaller logo/version/settings/minimize controls. The room heading scrolls horizontally, with Live, typing and narration status alongside it. The old room Refresh/Back controls are hidden; use the yin-yang navigation. The shorter action rail hides its scrollbar, adds a divider above the composer, and includes a leaf-green owner-only End session shortcut using the existing confirmation and server controls.
+
+The speaker switch displays a person icon. Tap changes character/player-chat mode; hold, right-click or press Arrow Down opens a picker restricted to the player's participating characters. A validated owner-posting RPC preserves the selected character in the actual message; normal participants use the existing character-aware posting RPC. Draft text remains on-device. Typing pulses carry only server-validated names, are throttled to at most one every two seconds while typing, clear on send/blur/mode change/idle, and expire after seven seconds. Active chat views poll the combined narration/typing status every three seconds without refreshing Session Info or the sidebar. Narration takes priority over typing; Web connection errors take priority over both.
+
+Verified with DOM/contrast checks, notifier/picker tests, rollback-only database tests for expiry, spoofing, access, character-aware posts and idempotent retries, plus a delegated HUD-to-owner-Web typing check. No test story or typing data was retained. Live mobile visual verification was not available. Update the installed HUD on each device and refresh the Web.
+
 ## HUD v0.8.15 / Web v0.8.3 — compact tools and shared narration preparation
 
 Tools, settings, player registry and character workspaces use a consistent compact heading/spacing scale. Session Info is room-wide, hides the HUD character selector and refresh control, and no longer reloads on chat polling or character switching; reopening it loads current details saved through Session Tools. Scene and inventory retain their existing update behavior.

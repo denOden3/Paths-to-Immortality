@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.15
+// @version      0.8.16
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.15';
+  const VERSION = '0.8.16';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -348,7 +348,7 @@
     #paths-monkey-root .pm-workspace-copy{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}
 
 
-    /* v0.8.15: compact chrome, grouped navigation and a single-line tool rail. */
+    /* v0.8.16: compact chrome, grouped navigation and a single-line tool rail. */
     #paths-monkey-root .pm-hbar{min-height:56px;padding:4px 10px;gap:6px;box-shadow:0 1px 4px #07040855}
     #paths-monkey-root .pm-hbar .pm-title{font-size:16px;line-height:1.2;letter-spacing:0}
     #paths-monkey-root .pm-title-collapse{min-height:44px;justify-content:center}
@@ -417,6 +417,27 @@
     #paths-monkey-root .pm-progress{font-size:14px;color:var(--pm-gold);border-left:3px solid var(--pm-gold);padding:8px 10px;margin:0 0 10px;background:#29212b}
     #paths-monkey-root .pm-backdrop{padding:10px}
     @media(max-width:790px){#paths-monkey-root .pm-panel{padding:14px;max-height:calc(100dvh - 32px)}#paths-monkey-root .pm-session-facts{grid-template-columns:minmax(85px,30%) minmax(0,1fr);gap:8px 12px}}
+
+    /* v0.8.16: single-line mobile chrome and compact session controls. */
+    #paths-monkey-root .pm-hbar{min-height:40px;padding:4px 8px;gap:4px}
+    #paths-monkey-root .pm-logo{height:30px;width:30px;font-size:21px;border-radius:5px}
+    #paths-monkey-root .pm-title-collapse{min-height:32px;padding:0;min-width:0}
+    #paths-monkey-root .pm-hbar .pm-title{font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    #paths-monkey-root .pm-compact-version{font-size:12px}
+    #paths-monkey-root #pm-settings-toggle,#paths-monkey-root #pm-minimize{width:30px;height:32px;min-width:30px;min-height:32px;padding:2px;font-size:18px}
+    #paths-monkey-root #pm-feed>.pm-row{flex-wrap:nowrap;gap:10px;min-width:0;margin-bottom:10px}
+    #paths-monkey-root #pm-chat-title{font-size:14px;font-weight:500;white-space:nowrap;overflow-x:auto;overflow-y:hidden;text-overflow:clip;min-width:0;flex:1;touch-action:pan-x;scrollbar-width:none}
+    #paths-monkey-root #pm-room-status{font-size:12px;line-height:1.4;max-width:55%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--pm-gold);flex-shrink:0}
+    #paths-monkey-root #pm-feed-refresh,#paths-monkey-root #pm-feed-close{display:none!important}
+    #paths-monkey-root .pm-actions{scrollbar-width:none;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--pm-stroke);gap:4px}
+    #paths-monkey-root .pm-actions::-webkit-scrollbar,#paths-monkey-root #pm-chat-title::-webkit-scrollbar{display:none}
+    #paths-monkey-root .pm-actions>.pm-btn{min-height:34px;padding:5px 8px;font-size:14px}
+    #paths-monkey-root .pm-actions>.pm-end{background:#31522d;border:1px solid #91b47b;color:#f0ffe8}
+    #paths-monkey-root #pm-identity-toggle{width:38px;max-width:38px;min-width:38px;min-height:44px;padding:4px;font-size:20px}
+    #paths-monkey-root .pm-compose .pm-editor::placeholder{font-size:14px}
+    #paths-monkey-root .pm-speaker-menu{position:absolute;right:12px;bottom:calc(100% + 8px);width:min(300px,calc(100vw - 24px));max-height:45dvh;overflow:auto;padding:12px;background:#29212b;border:1px solid var(--pm-stroke);border-radius:8px;box-shadow:0 6px 20px #0008}
+    #paths-monkey-root #pm-speaker-choices{display:grid;gap:6px;margin-top:8px}
+    #paths-monkey-root #pm-speaker-choices>.pm-btn{width:100%;text-align:left;white-space:normal}
 `);
 
   const root = document.createElement('div');
@@ -464,21 +485,22 @@
     <div id="pm-registry-create" class="pm-hide"><label for="pm-registry-name" class="pm-label">New player name</label><div class="pm-input-row"><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register</button></div></div>
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
-      <div class="pm-row"><strong id="pm-chat-title">☁ Chatroom</strong><button id="pm-feed-refresh" aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" class="pm-btn pm-mini" type="button">← Admin</button></div>
+      <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-narration-progress" class="pm-progress pm-hide" role="status" aria-live="polite">The Jade Emperor is preparing narration… <button id="pm-narration-cancel" class="pm-btn pm-mini" type="button">Cancel indicator</button></div><div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
     </section>
-    <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
+    <section id="pm-compose" class="pm-compose" aria-label="Character or player message composer">
       <div id="pm-compose-inner">
         <div class="pm-actions" role="group" aria-label="Session actions; scroll sideways for more">
           <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
-          <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button>
+          <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button><button id="pm-toolbar-end" class="pm-btn pm-mini pm-end" type="button">End session</button>
         </div>
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
-          <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">Xiao Lan</button>
+          <button id="pm-identity-toggle" aria-label="Switch character and player chat; hold to choose a character" aria-haspopup="dialog" aria-expanded="false" aria-controls="pm-speaker-menu" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">👤</button>
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
+        <div id="pm-speaker-menu" class="pm-speaker-menu pm-hide" role="dialog" aria-label="Choose your participating character"><div class="pm-row"><strong>Speak as</strong><button id="pm-speaker-close" class="pm-btn pm-mini" type="button" aria-label="Close character picker">✕</button></div><div id="pm-speaker-choices"></div></div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
@@ -590,7 +612,7 @@
   }
   function setBusy(value) {
     busy = value;
-    for (const name of ['send', 'connect', 'join', 'narrate', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite','registry-add','registry-refresh','pair-create-room','save-scene','setup-refresh']) {
+    for (const name of ['send', 'connect', 'join', 'narrate', 'toolbar-end', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite','registry-add','registry-refresh','pair-create-room','save-scene','setup-refresh']) {
       const el = $(name);
       if (el) el.disabled = value;
     }
@@ -606,7 +628,7 @@
     const isInRoom = !!(account && selectedRoom&&selectedRoom.session_state!=='ended');
     if(!isInRoom&&!showSidebar)setInfoVisible(true);
     $('send').disabled = busy || !isInRoom;
-    $('narrate').disabled = busy || !isInRoom;
+    $('narrate').disabled = busy || !isInRoom;$('toolbar-end').classList.toggle('pm-hide',!paired);$('toolbar-end').disabled=busy||!isInRoom||!paired;
     $('signin-section').classList.toggle('pm-hide', !!account);
     $('room-section').classList.toggle('pm-hide', !account);
     $('pair-section').classList.toggle('pm-hide',!account&&!paired);
@@ -618,15 +640,14 @@
     $('session-status').textContent=selectedRoom?.session_state==='ended'?'Session ended · reset it to start afresh.':'Ongoing session · no story time limit';
     for(const id of ['make-invite','save-scene','end-session'])$(id).disabled=busy||!selectedRoom||selectedRoom.session_state==='ended';
   }
-  function updateSpeakerToggle(){
-    const element=$('identity-toggle');
-    element.classList.toggle('pm-dim',!speakAsCharacter);
-    element.setAttribute('aria-pressed',String(speakAsCharacter));
-    element.title=speakAsCharacter?'Xiao Lan is acting. Tap for OOC player chat.':'OOC player is speaking. Tap for Xiao Lan actions.';
-    $('action').placeholder=speakAsCharacter?'What does Xiao Lan do?':'The Jade Emperor has spoken!';
-  }
+  let hudCharacter='';
+  function hudCharacterChoices(){const member=paired?members.find(m=>m.role==='owner'):members.find(m=>m.user_id===account?.user_id);return (member?.allowed_characters?.length?member.allowed_characters:[member?.character_name]).filter(Boolean);}
+  function selectedHudCharacter(){const choices=hudCharacterChoices();if(!choices.includes(hudCharacter))hudCharacter=choices[0]||'';return hudCharacter;}
+  function updateSpeakerToggle(){const name=selectedHudCharacter()||'your character',element=$('identity-toggle');element.textContent='👤';element.classList.toggle('pm-dim',!speakAsCharacter);element.setAttribute('aria-pressed',String(speakAsCharacter));element.setAttribute('aria-label',(speakAsCharacter?name:'Jade Emperor')+'. Tap to switch character/player chat; hold or press Arrow Down to choose.');element.title=speakAsCharacter?name+' is acting. Tap for player chat; hold to pick a character.':'Jade Emperor is speaking. Tap for character action; hold to choose.';$('action').placeholder=speakAsCharacter?'What does '+name+' do?':'The Jade Emperor has spoken!';}
+  function closeSpeakerPicker(){ $('speaker-menu').classList.add('pm-hide');$('identity-toggle').setAttribute('aria-expanded','false');}
+  function openSpeakerPicker(){const host=$('speaker-choices');host.replaceChildren();for(const name of hudCharacterChoices()){const button=document.createElement('button');button.className='pm-btn';button.type='button';button.textContent=name;button.onclick=()=>{hudTyping.stop();hudCharacter=name;setSpeaker(true);closeSpeakerPicker();$('action').focus();};host.append(button);}const ooc=document.createElement('button');ooc.className='pm-btn';ooc.textContent='Jade Emperor · player chat';ooc.type='button';ooc.onclick=()=>{setSpeaker(false);closeSpeakerPicker();$('action').focus();};host.append(ooc);$('speaker-menu').classList.remove('pm-hide');$('identity-toggle').setAttribute('aria-expanded','true');host.querySelector('button')?.focus();}
   function setSpeaker(value){
-    speakAsCharacter=Boolean(value);
+    hudTyping.stop();speakAsCharacter=Boolean(value);
     put('speakAsCharacter',speakAsCharacter);
     pendingRequestId=null;pendingRequestBody=null;pendingRequestKind=null;
     updateSpeakerToggle();
@@ -897,7 +918,7 @@
     if(!r?.[0]){saveDraft();selectedRoom=null;members=[];messages=[];put('room',null);setInfoVisible(true);setConnectedState();renderFeed();return;}
     if(selectedRoom.session_generation&&selectedRoom.session_generation!==r[0].session_generation)put('preparedInvites.'+id,[]);
     selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);rooms=rooms.map(x=>x.id===id?{...x,...r[0]}:x);if(refreshSidebar){renderOngoingSessions();renderRoomLogs();}
-    members=Array.isArray(p)?p:[];
+    members=Array.isArray(p)?p:[];updateSpeakerToggle();
     if(refreshSidebar&&$('character-session').value===id)renderCharacterParticipants(members);
     renderKickPlayers();renderSessionInformation();
     messages=Array.isArray(m)?m.reverse():[];
@@ -958,7 +979,15 @@
     const host=$('roomlogs-detail');host.replaceChildren();const heading=document.createElement('h3');heading.textContent='Scene ended';const name=document.createElement('p');name.textContent=item.title;host.append(heading,name);
     if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}host.scrollIntoView?.({block:'nearest'});
   }
-  async function refreshNarrationActivity(id){try{const active=await authed('POST','/rest/v1/rpc/narration_activity_status',{body:{p_room:id}});if(selectedRoom?.id===id){$('narration-progress').classList.toggle('pm-hide',active!==true);$('narration-cancel').classList.toggle('pm-hide',!paired);}}catch{$('narration-progress').classList.add('pm-hide');}}
+function createTypingNotifier(send,context){
+ let timer=null,last=0,activeRoom=null,queue=Promise.resolve();
+ const emit=(id,on,character)=>{queue=queue.then(()=>send({p_room:id,p_active:on,p_character:character})).catch(()=>{});};
+ function stop(){clearTimeout(timer);timer=null;if(activeRoom)emit(activeRoom,false,null);activeRoom=null;last=0;}
+ function input(){const c=context();if(!c.room||!c.enabled||!c.text.trim()){stop();return;}if(activeRoom&&activeRoom!==c.room)stop();clearTimeout(timer);if(!activeRoom||Date.now()-last>=2000){activeRoom=c.room;last=Date.now();emit(c.room,true,c.character||null);}timer=setTimeout(stop,3000);}
+ return {input,stop};
+}
+  const hudTyping=createTypingNotifier(body=>authed('POST','/rest/v1/rpc/set_room_typing',{body}),()=>({room:selectedRoom?.id,enabled:!!account&&!showSidebar&&hudExpanded&&hudMode==='paths',text:$('action').value,character:speakAsCharacter?selectedHudCharacter():null}));
+  async function refreshNarrationActivity(id){try{const data=await authed('POST','/rest/v1/rpc/room_activity_status',{body:{p_room:id}});if(selectedRoom?.id!==id)return;const names=data?.typing||[];$('room-status').textContent=data?.narrating?'Narrator is writing...':names.length===1?names[0]+' is typing...':names.length>1?'Several players are typing...':'● Live';$('narration-progress').classList.toggle('pm-hide',!data?.narrating);$('narration-cancel').classList.toggle('pm-hide',!paired);}catch{if(selectedRoom?.id===id)$('room-status').textContent='Reconnecting…';}}
   async function setNarrationActivity(active){if(!selectedRoom||!paired)throw new Error('A paired owner HUD is required.');const id=selectedRoom.id;const saved=await authed('POST','/rest/v1/rpc/set_narration_activity',{body:{p_room:id,p_active:active}});if(saved!==true)throw new Error('Could not confirm narration indicator.');await refreshNarrationActivity(id);}
   let hudWorkspaceView='',hudWorkspaceRequest=0,hudWorkspaceNarration='';
   function visibleNarration(body){return body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim();}
@@ -1000,9 +1029,9 @@
   async function postAction() {
     if (!selectedRoom || !account) throw new Error('Join your existing Cloudveil room first.');
     const text=$('action').value.trim();
-    if (!text) throw new Error('Write Xiao Lan\'s action first.');
+    if (!text) throw new Error('Write a message first.');
     if (text.length>8000) throw new Error('Action is too long.');
-    const kind=speakAsCharacter?'player':'ooc';
+    const kind=speakAsCharacter?'player':'ooc',character=selectedHudCharacter();if(kind==='player'&&!character)throw new Error('Choose a participating character first.');
     if (!pendingRequestId || pendingRequestBody!==text || pendingRequestKind!==kind) {
       pendingRequestId=(crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+'-'+Math.random());
       pendingRequestBody=text;
@@ -1010,12 +1039,12 @@
     }
     try {
       if(paired){
-        await authed('POST','/rest/v1/rpc/post_as_owner',{
-          body:{p_room_id:selectedRoom.id,p_body:text,p_kind:kind,p_client_message_id:pendingRequestId}
+        await authed('POST','/rest/v1/rpc/post_character_as_owner',{
+          body:{p_room:selectedRoom.id,p_body:text,p_kind:kind,p_client_message_id:pendingRequestId,p_character:kind==='player'?character:null}
         });
       }else{
-        await authed('POST','/rest/v1/messages',{
-          body:{room_id:selectedRoom.id,sender_id:account.user_id,body:text,kind,client_message_id:pendingRequestId},
+        await authed('POST','/rest/v1/rpc/post_scene_message',{
+          body:{p_room_id:selectedRoom.id,p_body:text,p_kind:kind,p_character:kind==='player'?character:null,p_client_message_id:pendingRequestId},
           prefer:'return=minimal'
         });
       }
@@ -1023,8 +1052,8 @@
       if (e.code!=='23505') throw e;
       // The same message ID was already accepted. Do not post a second copy.
     }
-    $('action').value='';autoGrowAction();saveDraft();pendingRequestId=null;pendingRequestBody=null;pendingRequestKind=null;
-    feedback(kind==='player'?'✓ Xiao Lan\'s action posted to Paths Web.':'✓ OOC chat posted to Paths Web.');
+    hudTyping.stop();$('action').value='';autoGrowAction();saveDraft();pendingRequestId=null;pendingRequestBody=null;pendingRequestKind=null;
+    feedback(kind==='player'?'✓ '+character+' action posted to Paths Web.':'✓ OOC chat posted to Paths Web.');
     await refreshScene();
   }
   function makeNarrateInstruction() {
@@ -1421,17 +1450,27 @@
   $('feed-toggle').onclick=()=>openRoomPage('manage');
   $('feed-close').textContent='← Back';$('feed-close').onclick=()=>runTask(toggleSidebar);
   $('feed-refresh').onclick=()=>runTask(refreshScene);
-  $('minimize').onclick=()=>setHudMode('paths',false);
+  $('minimize').onclick=()=>{hudTyping.stop();setHudMode('paths',false);};
   $('session-info').onclick=()=>runTask(()=>toggleHudWorkspace('session'));
   $('scene-view').onclick=()=>runTask(()=>toggleHudWorkspace('scene'));
   $('inventory-view').onclick=()=>runTask(()=>toggleHudWorkspace('inventory'));
   $('workspace-character').onchange=()=>{if(hudWorkspaceView!=='session')runTask(refreshHudWorkspace);};
-  $('identity-toggle').onclick=()=>setSpeaker(!speakAsCharacter);
-  $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
+  let speakerHold=null,speakerHeld=false,speakerStart=null;
+  $('identity-toggle').onclick=()=>{if(speakerHeld){speakerHeld=false;return;}setSpeaker(!speakAsCharacter);};
+  $('identity-toggle').addEventListener('pointerdown',event=>{if(event.button!==0)return;speakerHeld=false;speakerStart={x:event.clientX,y:event.clientY};speakerHold=setTimeout(()=>{speakerHold=null;speakerHeld=true;openSpeakerPicker();},480);});
+  $('identity-toggle').addEventListener('pointermove',event=>{if(speakerStart&&(Math.abs(event.clientX-speakerStart.x)>15||Math.abs(event.clientY-speakerStart.y)>15)){clearTimeout(speakerHold);speakerHold=null;}});
+  for(const event of ['pointerup','pointercancel','pointerleave'])$('identity-toggle').addEventListener(event,()=>{clearTimeout(speakerHold);speakerHold=null;});
+  $('identity-toggle').addEventListener('contextmenu',event=>{event.preventDefault();clearTimeout(speakerHold);speakerHeld=true;openSpeakerPicker();});
+  $('identity-toggle').addEventListener('keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();openSpeakerPicker();}});
+  $('speaker-close').onclick=closeSpeakerPicker;
+  $('toolbar-end').onclick=()=>runTask(()=>controlSession('end'));
+
+  $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();hudTyping.input();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
+  $('action').addEventListener('blur',()=>hudTyping.stop());
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
   document.addEventListener('keydown',e=>{
-    if(e.key!=='Escape')return;
+    if(e.key!=='Escape')return;if(!$('speaker-menu').classList.contains('pm-hide')){closeSpeakerPicker();$('identity-toggle').focus();return;}
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
     else if(!$('settings').classList.contains('pm-hide'))closeSettings();
     else if(root.classList.contains('pm-roomlogs-open'))closeRoomLogs();
@@ -1443,13 +1482,15 @@
   const bodyLayoutObserver=new ResizeObserver(resizeHudBody);
   bodyLayoutObserver.observe(root.querySelector('.pm-hbar'));
   bodyLayoutObserver.observe($('compose'));
-  window.addEventListener('beforeunload',saveDraft);
+  window.addEventListener('beforeunload',()=>{hudTyping.stop();saveDraft();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')hudTyping.stop();});
   if(typeof GM_registerMenuCommand==='function') {
     GM_registerMenuCommand('Open Paths of Immortality HUD',showPaths);
     GM_registerMenuCommand('Collapse Paths HUD',()=>setHudMode('paths',false));
     GM_registerMenuCommand('Paths HUD: Connections',()=>{showPaths();openSettings();});
     GM_registerMenuCommand('Paths HUD: Rooms & sessions',()=>{showPaths();openRoomPage();});
   }
+  $('session-tools').append($('narration-progress'));
   setInfoVisible(true);renderOngoingSessions();setConnectedState();restoreDraft();renderFeed();updateSpeakerToggle();
   setHudMode(hudMode,hudExpanded);syncDesktopLayout();
   // If Mizuhana is the selected script, allow a dropdown option to return here.
@@ -1458,13 +1499,14 @@
   setTimeout(resizeNativeInset,350);
   setTimeout(resizeNativeInset,1250);
   const layoutChecker=setInterval(()=>{if(hudMode==='paths'&&hudExpanded)resizeNativeInset();},1800);
+  const statusChecker=setInterval(()=>{if(account&&selectedRoom&&!showSidebar&&hudMode==='paths'&&hudExpanded&&document.visibilityState==='visible')refreshNarrationActivity(selectedRoom.id);},3000);
   const checker=setInterval(()=>{
     // Sidebar data refreshes on demand; only an open chatroom polls for messages.
     if(account && selectedRoom && !showSidebar && hudMode==='paths' && hudExpanded && document.visibilityState==='visible' && !busy) {
       refreshScene({refreshSidebar:false}).catch((e)=>feedback(e.message,true));
     }
   },12000);
-  window.addEventListener('pagehide',()=>{clearInterval(checker);clearInterval(layoutChecker);hudSwitcherObserver.disconnect();},{once:true});
+  window.addEventListener('pagehide',()=>{hudTyping.stop();clearInterval(statusChecker);clearInterval(checker);clearInterval(layoutChecker);hudSwitcherObserver.disconnect();},{once:true});
   if(account) runTask(async()=>{
     try{await loadRooms();if(selectedRoom)await refreshScene();}
     catch(err){feedback('Saved guest session needs attention: '+err.message,true);}

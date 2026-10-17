@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.7</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.8</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.7</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.8</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -240,7 +240,7 @@ function setChatMode(mode){
   if(pendingMode!==chatMode||pendingCharacter!==activeCharacter){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}
   try{if(room)localStorage.setItem(modeKey(),mode);}catch{}
 }
-$('modeSpeaker').onclick=()=>{
+$('modeSpeaker').onclick=()=>{webTyping.stop();
   const choices=ownCharacters();
   if(chatMode==='ooc'){setChatMode('player');activeCharacter=choices[0]||activeCharacter;}
   else if(choices.length>1&&choices.indexOf(activeCharacter)<choices.length-1){
@@ -253,7 +253,7 @@ const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveArchiveLink'])$(id).disabled=v;};
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
-  if(where!=='chat')closeChatPanel();
+  if(where!=='chat'){webTyping.stop();closeChatPanel();}
   for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
@@ -316,7 +316,7 @@ $('toolsOpen').onclick=()=>{if($('headerMenuOverlay').classList.contains('hidden
 $('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
-function endLive(){if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
+function endLive(){webTyping.stop();if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
 function renderRoomLog(items){
  const host=$('roomList');host.replaceChildren();if(!items.length){host.append(el('p','muted','No rooms yet. Create a room from your HUD to begin.'));return;}
  for(const [state,label]of [['active','Ongoing'],['ended','Concluded']]){const group=items.filter(x=>x.session_state===state);if(!group.length)continue;const section=el('section','roomLogGroup');section.append(el('h4','',label));for(const item of group){const button=el('button','btn roomLogButton'),head=el('span','row');button.type='button';head.append(el('strong','',item.title),el('span','playerStatus '+(state==='active'?'isInSession':'isNotInSession'),label));button.append(head);if(state==='ended')button.append(el('span','roomArchiveNote',item.notion_url?'Notion link saved':'No Notion link recorded'));button.onclick=()=>safe(()=>selectLoggedRoom(item));section.append(button);}host.append(section);}
@@ -401,9 +401,17 @@ function installLongPress(box,m){
   box.addEventListener('click',e=>{if(held){held=false;e.preventDefault();return;}if(selectedIds.size)toggleSelected(m);});
   box.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelected(m);}});
 }
-let roomConnection='CONNECTING',narratorPreparing=false;
-function renderRoomStatus(){const connected=roomConnection==='SUBSCRIBED',writing=connected&&narratorPreparing,host=$('networkStatus');host.textContent=writing?'Narrator is writing...':connected?'● Live':roomConnection==='CHANNEL_ERROR'||roomConnection==='TIMED_OUT'?'⚠ Reconnecting':'○ Connecting';host.classList.toggle('isWriting',writing);host.title=writing?'The GM has requested narration; waiting for publication.':'Chat connection status';}
-async function refreshNarrationActivity(id){const {data,error}=await db.rpc('narration_activity_status',{p_room:id});if(room!==id)return;narratorPreparing=!error&&data===true;renderRoomStatus();}
+function createTypingNotifier(send,context){
+ let timer=null,last=0,activeRoom=null,queue=Promise.resolve();
+ const emit=(id,on,character)=>{queue=queue.then(()=>send({p_room:id,p_active:on,p_character:character})).catch(()=>{});};
+ function stop(){clearTimeout(timer);timer=null;if(activeRoom)emit(activeRoom,false,null);activeRoom=null;last=0;}
+ function input(){const c=context();if(!c.room||!c.enabled||!c.text.trim()){stop();return;}if(activeRoom&&activeRoom!==c.room)stop();clearTimeout(timer);if(!activeRoom||Date.now()-last>=2000){activeRoom=c.room;last=Date.now();emit(c.room,true,c.character||null);}timer=setTimeout(stop,3000);}
+ return {input,stop};
+}
+let roomConnection='CONNECTING',narratorPreparing=false,roomTyping=[];
+const webTyping=createTypingNotifier(body=>db.rpc('set_room_typing',body),()=>({room,enabled:currentView==='chat',text:$('msg').value,character:chatMode==='player'?activeCharacter:null}));
+function renderRoomStatus(){const connected=roomConnection==='SUBSCRIBED',writing=connected&&narratorPreparing,host=$('networkStatus');host.textContent=writing?'Narrator is writing...':connected&&roomTyping.length===1?roomTyping[0]+' is typing...':connected&&roomTyping.length>1?'Several players are typing...':connected?'● Live':roomConnection==='CHANNEL_ERROR'||roomConnection==='TIMED_OUT'?'⚠ Reconnecting':'○ Connecting';host.classList.toggle('isWriting',writing);host.title=writing?'The GM has requested narration; waiting for publication.':'Chat connection status';}
+async function refreshNarrationActivity(id){const {data,error}=await db.rpc('room_activity_status',{p_room:id});if(room!==id)return;narratorPreparing=!error&&data?.narrating===true;roomTyping=!error&&Array.isArray(data?.typing)?data.typing:[];renderRoomStatus();}
 async function fetchMessages(){
   if(!room)return;
   const active=room;
@@ -428,14 +436,14 @@ async function fetchMessages(){
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
- closeChatPanel();endLive();narratorPreparing=false;roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();narratorPreparing=false;roomTyping=[];roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  resizeComposer();await fetchMembers();if(room!==id)return false;await fetchMessages();
  subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;roomConnection=status;renderRoomStatus();});
  poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView==='scene')refreshChatPanel().catch(console.warn);}},18000);
- guardTimer=setInterval(()=>{if(document.visibilityState==='visible')checkOngoingSession().catch(console.warn);},4000);
+ guardTimer=setInterval(()=>{if(document.visibilityState==='visible'){checkOngoingSession().catch(console.warn);refreshNarrationActivity(id).catch(console.warn);}},3000);
  if(!portalIdentity.is_admin)try{localStorage.setItem('paths.activeSession',JSON.stringify({id,generation:activeGeneration}));}catch{}
  return true;
 }
@@ -631,7 +639,8 @@ $('invite').onclick=()=>safe(async()=>{const {data,error}=await db.rpc('create_r
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('inviteText').textContent);notice('Invite copied!','good');}catch{notice('Select the code and copy it manually.','error');}};
 $('closeInvite').onclick=()=>{$('inviteBox').classList.add('hidden');$('inviteText').textContent='';};
 function resizeComposer(){const field=$('msg');field.style.height='auto';field.style.height=Math.max(64,Math.min(field.scrollHeight,160))+'px';}
-$('msg').addEventListener('input',()=>{saveDraft();resizeComposer();});
+$('msg').addEventListener('input',()=>{saveDraft();resizeComposer();webTyping.input();});
+$('msg').addEventListener('blur',()=>webTyping.stop());
 async function send(){await safe(async()=>{
  if(!room||!user)throw Error('Enter a room first.');
  if(!await checkOngoingSession())return;
@@ -647,10 +656,11 @@ async function send(){await safe(async()=>{
   p_room_id:room,p_body:body,p_kind:kind,p_character:selectedCharacter,p_client_message_id:id
  });
  if(error)throw error;
- $('msg').value='';resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
+ $('msg').value='';webTyping.stop();resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;saveDraft();await fetchMessages();
 });}
 $('send').onclick=send;$('msg').addEventListener('input',()=>{if(pendingText!==$('msg').value.trim()){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}});$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();send();}});
-window.addEventListener('beforeunload',()=>{saveDraft();});
+window.addEventListener('beforeunload',()=>{webTyping.stop();saveDraft();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')webTyping.stop();});
 window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
 
 const DEFAULT_PRESENTATION=Object.freeze({
@@ -676,7 +686,7 @@ async function enterPortal(){if(!db)throw Error('The entrance is still loading.'
 function openCodeDialog(){renderPlayerSessions([]);invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
 function closeCodeDialog(){$('codeOverlay').classList.add('hidden');document.body.classList.remove('authOpen');}
 function returnToStart(options={}){
- endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
+ endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';webTyping.stop();resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
  try{if(options.clearResume===true)localStorage.removeItem('paths.activeSession');}catch{}closeHeaderMenu(false);closeCodeDialog();closeAuthDialog();clearInviteAddress();$('sessionCode').value='';invalidateScene();clear();show('welcome');
 }
 async function chooseAdministrator(){
