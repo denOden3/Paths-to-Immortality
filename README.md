@@ -1,3 +1,7 @@
+## Web v0.8.5 — remove voice and simplify character panels
+
+Voice chat, microphone controls and voice signaling are removed; use an external voice app. Scene and Inventory show the character's name on a separate line beneath the page title. Inventory's explanatory copy is removed, and the add-item form starts collapsed under Manual Add Item. Session Info has tighter room-title spacing with a divider before Status. HUD unchanged.
+
 ## Web v0.8.4 — tighter chat controls and room voice trial
 
 The chat header and yin-yang mark are smaller, the room title uses a quiet weight, information tabs are thinner, and the Sessions shortcut and composer help line are hidden from the chatroom. Send has a larger, heavier label. A microphone toggle occupies the left of the character switcher on mobile.

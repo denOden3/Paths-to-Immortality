@@ -110,12 +110,17 @@ label{font-size:14px;margin:10px 0 4px}input,textarea{font-size:16px;border-radi
 .inChat .chatPanel p{font-size:16px}.playerRoster{gap:10px;margin-top:10px}.playerRosterCard h3{font-size:16px}
 .adminGreeting{margin:6px auto 14px}.adminNav .btn{min-height:44px}.narrationProgress{padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--gold);background:#29212b;color:var(--gold);font-size:14px;flex-shrink:0}
 
-/* Web v0.8.4: compact chat chrome, strong Send and one opt-in microphone. */
+/* Web v0.8.4: compact chat chrome, strong Send and focused item panels. */
 .inChat .head{min-height:48px;padding:3px 10px;gap:8px}.inChat .head h1{font-size:16px;font-weight:600;line-height:1.2}.inChat .sig{width:36px;height:36px;font-size:21px;border-radius:7px}.inChat .state{font-size:12px}
 .inChat .content{padding:8px 12px 0}.inChat .roombar{padding-bottom:3px}.inChat .roomTitle{font-size:14px;font-weight:400;line-height:1.5}.inChat .members{font-size:13px}.inChat .roomMeta{padding-bottom:5px}
 .inChat .chatPanelButtons{margin-bottom:5px;padding:2px;gap:6px}.inChat .chatPanelButtons .btn{min-height:36px;padding:5px 10px;font-size:14px;font-weight:500;border-radius:6px}
 .inChat .compose{padding:7px 12px calc(8px + env(safe-area-inset-bottom))}.inChat .sendControls{display:flex;align-items:stretch;min-width:0;gap:8px}.inChat .sendControls .speakerToggle{min-height:44px;font-size:14px;font-weight:500;padding:8px 10px;max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.inChat #send{min-height:44px;font-size:18px;font-weight:800;line-height:1;padding:10px 18px;flex-shrink:0}.inChat .micToggle{display:grid;place-items:center;min-width:44px;min-height:44px;padding:8px;color:var(--muted);background:transparent;border:1px solid #a58b92;flex-shrink:0}
-.inChat .micToggle[data-state=live]{color:#d8ffee;background:#18503d;border-color:#8fe3c6}.micToggle[data-state=live] .micSlash{display:none}.inChat .micToggle[data-state=connecting],.inChat .micToggle[data-state=waiting]{border-style:dashed;color:var(--gold)}.inChat .micToggle[data-state=error]{color:#ffc3bc;border-color:#ff817b}
-.voiceStatus{border:0;padding:4px 0 0;background:transparent;color:var(--muted);font:12px/1.5 system-ui;text-align:left;cursor:pointer}.voiceStatus:empty{display:none}
+.inChat #send{min-height:44px;font-size:18px;font-weight:800;line-height:1;padding:10px 18px;flex-shrink:0}.inChat .micToggle[data-state=live]{color:#d8ffee;background:#18503d;border-color:#8fe3c6}.micToggle[data-state=live] .micSlash{display:none}.inChat .micToggle[data-state=connecting],.inChat .micToggle[data-state=waiting]{border-style:dashed;color:var(--gold)}.inChat .micToggle[data-state=error]{color:#ffc3bc;border-color:#ff817b}
 @media(max-width:650px){.inChat .head{min-height:46px;padding:3px 10px}.inChat .head h1{font-size:16px}.inChat .state{font-size:11px}.inChat .sendControls{justify-content:flex-start;width:100%}.inChat .sendControls .speakerToggle{flex:1;min-width:0;max-width:none}.inChat .compose .send{gap:6px}}
+
+/* Web v0.8.5: quiet character subtitles and collapsed manual inventory entry. */
+.inChat .chatPanel .workspaceTitle{margin:0 0 4px;font-size:20px;line-height:1.35}
+.inChat .chatPanel .workspaceCharacter{margin:0 0 16px;font-size:16px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.inChat .chatPanel .workspaceRoomTitle{font-size:16px;line-height:1.4;margin:4px 0 0;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.manualAddItem,.inventoryLog{margin-top:16px}.manualAddItem>summary,.inventoryLog>summary{cursor:pointer;min-height:36px;padding:6px 0;font-size:14px;font-weight:600;color:var(--gold)}
+.manualAddItem>summary:focus-visible,.inventoryLog>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.manualAddItem .inventoryForm{margin-top:8px}

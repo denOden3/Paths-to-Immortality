@@ -7,7 +7,7 @@ const memory={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),re
 const sandbox={document,location,history:{replaceState(){}},window:{addEventListener(){}},localStorage:memory,sessionStorage:memory,navigator:{onLine:true},URL,URLSearchParams,console,crypto:require('crypto').webcrypto,confirm:()=>false,setInterval:()=>1,clearInterval(){},setTimeout,clearTimeout,assert};
 const context=vm.createContext(sandbox);vm.runInContext(code,context);
 vm.runInContext(`(async()=>{
- assert.ok($('back').classList.contains('hidden'));assert.equal($('composer').querySelector('small'),null);assert.equal($('voiceToggle').nextElementSibling.id,'modeSpeaker');
+ assert.ok($('back').classList.contains('hidden'));assert.equal($('composer').querySelector('small'),null);assert.equal($('voiceToggle'),null);assert.equal($('voiceStatus'),null);
  const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(new Set(ids).size,ids.length,'duplicate IDs');
  for(const m of ${JSON.stringify(code)}.matchAll(/\$\('([^']+)'\)/g))assert.ok($(m[1]),'missing element '+m[1]);
  applyPresentation();show('welcome');assert.equal($('guest').parentElement.lastElementChild.id,'guest');assert.equal($('welcome').children.length,1);assert.equal($('accountAccess'),null);assert.ok(!$('toolsOpen').classList.contains('hidden'));
@@ -64,7 +64,7 @@ vm.runInContext(`(async()=>{
  await toggleChatPanel('session');assert.ok(!$('feed').classList.contains('hidden'));assert.equal($('msg').value,'Unsent action');
  await toggleChatPanel('scene');assert.ok($('chatPanel').textContent.includes('has not been confirmed'));assert.ok(!$('chatPanel').textContent.includes('Opening Gate'));
  workspace.scene={location:'Garden',description:'Moss along a stone path.'};await refreshChatPanel();assert.ok($('chatPanel').textContent.includes('Moss along a stone path.'));assert.equal($('sessionInfo').getAttribute('aria-pressed'),'false');assert.equal($('currentScene').getAttribute('aria-pressed'),'true');
- await toggleChatPanel('inventory');assert.ok($('chatPanel').querySelector('form'));assert.ok($('chatPanel').textContent.includes('Narrator-confirmed'));await toggleChatPanel('inventory');assert.equal($('msg').value,'Unsent action');
+ await toggleChatPanel('inventory');assert.ok($('chatPanel').querySelector('form'));assert.ok(!$('chatPanel').textContent.includes('Narrator-confirmed'));assert.equal($('chatPanel').querySelector('h2').textContent,'Inventory');assert.equal($('chatPanel').querySelector('.workspaceCharacter').textContent,activeCharacter);assert.ok(!$('chatPanel').querySelector('details.manualAddItem').hasAttribute('open'));assert.equal($('chatPanel').querySelector('details.manualAddItem summary').textContent,'Manual Add Item');await toggleChatPanel('inventory');assert.equal($('msg').value,'Unsent action');
  let signedOut=false;portalIdentity={is_admin:false};user={id:'wrong-google-account'};db={auth:{signOut:async()=>{signedOut=true;}}};await finishAdministratorSignIn();assert.ok(signedOut);assert.equal(user,null);assert.equal(currentView,'welcome');
  // A kicked, ended, or reset participant must lose the visible chat and its composer.
  for(const record of [null,{id:'room',session_state:'ended',session_generation:'old'},{id:'room',session_state:'active',session_generation:'new'}]){
