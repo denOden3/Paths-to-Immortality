@@ -1,3 +1,7 @@
+## HUD v0.8.13 — manual Current Session refresh
+
+Current Session has a small refresh button beside its heading on mobile and desktop. Sidebar rooms, participant lists and Heavenly Calendar no longer reload every 12 seconds. They still load at startup, after relevant room actions, when changing the session picker, and when Refresh is pressed. Only a visible, expanded chatroom continues polling messages; minimized HUDs pause that polling. Update the installed userscript and reload ChatGPT to replace older mobile HUD versions.
+
 ## HUD v0.8.12 / Web v0.8.1 — automatic published state updates
 
 The HUD speaker switch occupies its own grid cell beside Send, with a separate row on narrow screens. Session Info, Scene and Inventory sit beside Session Tools and toggle within the chat body while preserving the composer. Paired owner HUDs may inspect participating characters' panels and inventories; ordinary players remain restricted to their own participating characters. Owner characters now have persistent inventory identities too.

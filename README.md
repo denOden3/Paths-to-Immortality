@@ -1,3 +1,7 @@
+## HUD v0.8.13 — manual Current Session refresh
+
+Current Session has a small refresh button beside its heading on mobile and desktop. Sidebar rooms, participant lists and Heavenly Calendar no longer reload every 12 seconds. They still load at startup, after relevant room actions, when changing the session picker, and when Refresh is pressed. Only a visible, expanded chatroom continues polling messages; minimized HUDs pause that polling. Update the installed userscript and reload ChatGPT to replace older mobile HUD versions.
+
 ## Web v0.8.2 — chatroom reading comfort
 
 Compact room and brand headers leave more height for the story. Narration uses a restrained gold accent, a readable line length and consistent typography. The two-line composer grows with typing; the neutral character switcher stays beside the red Send button and moves below the field on narrow screens. Session Info, Scene and Inventory open beside the conversation on wide desktops, or replace the message area on narrow screens, with exclusive active indicators and retained drafts. Message refreshes preserve the reading position when scrolled back. Keyboard focus, readable helper text and comfortable touch targets are retained. HUD unchanged.

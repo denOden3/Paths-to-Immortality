@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.12
+// @version      0.8.13
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.12';
+  const VERSION = '0.8.13';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -126,6 +126,7 @@
     #paths-monkey-root #pm-character-session{margin:8px 0 12px}
     #paths-monkey-root #pm-open-picked-room{width:100%;text-align:left}
     #paths-monkey-root .pm-admin-group > summary{font-size:18px;font-weight:700;cursor:pointer;min-height:44px;padding:8px 0;margin-bottom:12px}
+    #paths-monkey-root #pm-current-session-refresh{float:right;margin-top:-8px;margin-left:8px;min-width:44px;min-height:44px}
     #paths-monkey-root .pm-admin-group + .pm-admin-group{border-top:1px solid var(--pm-stroke);margin-top:16px;padding-top:12px}
     #paths-monkey-root .pm-roomlogs,
     #paths-monkey-root .pm-registry{display:none;position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);overflow-y:auto;background:var(--pm-bg);pointer-events:auto;padding:24px clamp(16px,3vw,40px) 32px}
@@ -371,7 +372,7 @@
       <button id="pm-open-roomlogs" class="pm-btn pm-sidebar-action" type="button">Room Logs</button>
 <button id="pm-open-registry" class="pm-btn pm-sidebar-action" type="button">Players Registry</button></details>
       <div id="pm-admin-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
-      <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session</summary>
+      <details id="pm-current-session-group" class="pm-admin-group" open><summary>Current Session <button id="pm-current-session-refresh" class="pm-btn pm-mini" type="button" aria-label="Refresh current sessions" title="Refresh current sessions">↻</button></summary>
       <select id="pm-character-session" class="pm-text" aria-label="Active session"><option value="">Choose a session</option></select>
       <button id="pm-open-picked-room" class="pm-btn pm-hide" type="button"></button>
       <div class="pm-divider"></div><div class="pm-h">Characters</div>
@@ -814,7 +815,7 @@
     rememberHudPage(previousPage);setInfoVisible(false);
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
   }
-  async function refreshScene() {
+  async function refreshScene({refreshSidebar=true}={}) {
     if (!selectedRoom || !account) return;
     const id=selectedRoom.id;
     const [p,m,r]=await Promise.all([
@@ -825,9 +826,9 @@
     if (!selectedRoom || selectedRoom.id!==id) return;
     if(!r?.[0]){saveDraft();selectedRoom=null;members=[];messages=[];put('room',null);setInfoVisible(true);setConnectedState();renderFeed();return;}
     if(selectedRoom.session_generation&&selectedRoom.session_generation!==r[0].session_generation)put('preparedInvites.'+id,[]);
-    selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);rooms=rooms.map(x=>x.id===id?{...x,...r[0]}:x);renderOngoingSessions();renderRoomLogs();
+    selectedRoom={...selectedRoom,...r[0]};put('room',selectedRoom);rooms=rooms.map(x=>x.id===id?{...x,...r[0]}:x);if(refreshSidebar){renderOngoingSessions();renderRoomLogs();}
     members=Array.isArray(p)?p:[];
-    if($('character-session').value===id)renderCharacterParticipants(members);
+    if(refreshSidebar&&$('character-session').value===id)renderCharacterParticipants(members);
     renderKickPlayers();renderSessionInformation();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
@@ -1302,6 +1303,7 @@
   $('open-roomlogs').onclick=()=>runTask(openRoomLogs);
   $('roomlogs-back').textContent='← Back';$('roomlogs-back').onclick=()=>runTask(toggleSidebar);
   $('roomlogs-refresh').onclick=()=>runTask(async()=>{$('roomlogs-detail').replaceChildren();await loadRooms();});
+  $('current-session-refresh').onclick=e=>{e.preventDefault();e.stopPropagation();runTask(loadRooms);};
   $('character-session').onchange=()=>{renderPickedRoomButton();loadCharacterParticipants().catch(e=>{$('people').textContent=e.message;});};
   $('open-picked-room').onclick=()=>runTask(openPickedRoom);
   $('open-registry').onclick=()=>runTask(openRegistry);
@@ -1382,9 +1384,9 @@
   setTimeout(resizeNativeInset,1250);
   const layoutChecker=setInterval(()=>{if(hudMode==='paths'&&hudExpanded)resizeNativeInset();},1800);
   const checker=setInterval(()=>{
-    if(account&&showSidebar&&document.visibilityState==='visible'&&!busy){runTask(loadRooms);return;}
-    if(account && selectedRoom && document.visibilityState==='visible' && !busy) {
-      refreshScene().catch((e)=>feedback(e.message,true));
+    // Sidebar data refreshes on demand; only an open chatroom polls for messages.
+    if(account && selectedRoom && !showSidebar && hudMode==='paths' && hudExpanded && document.visibilityState==='visible' && !busy) {
+      refreshScene({refreshSidebar:false}).catch((e)=>feedback(e.message,true));
     }
   },12000);
   window.addEventListener('pagehide',()=>{clearInterval(checker);clearInterval(layoutChecker);hudSwitcherObserver.disconnect();},{once:true});
