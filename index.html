@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.8</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.9</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.8</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.9</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -364,9 +364,9 @@ async function refreshChatPanel(){
 }
 async function changeInventory(id,character,body){if(room!==id||activeCharacter!==character)return;const {data,error}=await db.rpc('change_character_inventory',{p_room:id,p_character:character,...body});if(error)throw error;if(data!==true)throw Error('Could not confirm inventory change.');if(room===id&&activeCharacter===character&&chatPanelView==='inventory')await refreshChatPanel();}
 $('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));
-const isMine=m=>m&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
+const isMine=m=>m&&!m.deleted_at&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
 function updateSelection(){
-  const all=new Set(roomMessages.map(x=>x.id));
+  const all=new Set(roomMessages.filter(x=>!x.deleted_at).map(x=>x.id));
   for(const id of selectedIds)if(!all.has(id))selectedIds.delete(id);
   $('selectionBar').classList.toggle('hidden',selectedIds.size===0||!!chatPanelView);
   $('selectionCount').textContent=selectedIds.size+' selected';
@@ -415,16 +415,17 @@ async function refreshNarrationActivity(id){const {data,error}=await db.rpc('roo
 async function fetchMessages(){
   if(!room)return;
   const active=room;
-  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
+  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name,deleted_at').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
   if(error)throw error;if(room!==active)return;
   refreshNarrationActivity(active).catch(console.warn);
   const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=data||[];if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
   const el=$('feed'),previousScroll=el.scrollTop,nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
-  if(!roomMessages.length){
+  if(!roomMessages.some(m=>!m.deleted_at)){
     const p=document.createElement('p');p.className='muted';p.textContent='The hall is quiet. Who will speak first?';el.append(p);
   }
   for(const m of roomMessages){
+    if(m.deleted_at)continue;
     const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'')+(m.kind==='ooc'?' ooc':'');
     const by=document.createElement('div');by.className='by';
     const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):(m.character_name||characterNameFor(m.sender_id));
@@ -519,7 +520,7 @@ async function openNarrator(){
   const currentRoom=room;
   if(!members.some(m=>m.user_id===user.id&&m.role==='owner'))throw Error('Only the room owner can prepare and publish narration.');
   const {data,error}=await db.from('messages')
-    .select('id,room_id,sender_id,kind,body,created_at')
+    .select('id,room_id,sender_id,kind,body,created_at,deleted_at')
     .eq('room_id',room)
     .order('created_at',{ascending:false}).order('id',{ascending:false}).limit(81);
   if(error)throw error;
@@ -527,9 +528,9 @@ async function openNarrator(){
   const items=(data||[]).slice().reverse();
   const lastNarrIdx=items.findLastIndex(m=>m.kind==='narrator');
   if(items.length===81&&lastNarrIdx===-1)throw Error('Too many pending messages for this first prototype; narrate in shorter batches.');
-  const pendingActions=items.slice(lastNarrIdx+1).filter(m=>m.kind==='player');
+  const pendingActions=items.slice(lastNarrIdx+1).filter(m=>m.kind==='player'&&!m.deleted_at);
   if(!pendingActions.length)throw Error('No new player actions since the previous narration. Both players can post first.');
-  const last=items.filter(m=>m.kind==='player'||m.kind==='narrator').at(-1);
+  const last=items.filter(m=>(m.kind==='player'&&!m.deleted_at)||m.kind==='narrator').at(-1);
   if(!last||last.kind!=='player')throw Error('There are no new character actions to narrate.');
   const previous=lastNarrIdx>=0?items[lastNarrIdx].body:null;
   const {data:roomInfo,error:roomErr}=await db.from('rooms').select('title').eq('id',room).single();

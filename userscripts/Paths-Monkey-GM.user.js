@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.18
+// @version      0.8.19
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.18';
+  const VERSION = '0.8.19';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -41,6 +41,7 @@
   let paired=false;
   let narrationRequest=get('narrationRequest',null),bridgePublishing=false,bridgeCandidate='',bridgeStableAt=0;
   let editingMessage=null;
+  const selectedMessageIds=new Set();let messageSelectionRoom=null,lastDeletedMessages=null;
   let selectedRoom = get('room', null);
   let rooms = [];
   let roomsLoaded=false;
@@ -205,6 +206,10 @@
     #paths-monkey-root .pm-message-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
     #paths-monkey-root .pm-edit-bubble{padding:2px 8px;min-height:28px;min-width:28px;font-size:13px}
     #paths-monkey-root .pm-bubble-copy{white-space:pre-wrap;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-bubble.pm-selected{outline:2px solid var(--pm-gold);background:#493447}
+    #paths-monkey-root .pm-bubble.pm-selectable{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+    #paths-monkey-root .pm-message-selection{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--pm-stroke)}
+    #paths-monkey-root #pm-message-undo{font-size:14px;padding:4px 0}
     #paths-monkey-root #pm-edit-body{min-height:180px;max-height:55dvh}
     #paths-monkey-root .pm-bridge-status{font-size:13px;line-height:1.4;padding:4px 0}
 
@@ -447,7 +452,7 @@
     #paths-monkey-root #pm-speaker-choices{display:grid;gap:6px;margin-top:8px}
     #paths-monkey-root #pm-speaker-choices>.pm-btn{width:100%;text-align:left;white-space:normal}
 
-    /* v0.8.18: compact, aligned Admin navigation and session details. */
+    /* v0.8.19: compact, aligned Admin navigation and session details. */
     #paths-monkey-root #pm-sidebar .pm-admin-group{margin:0;padding:0}
     #paths-monkey-root #pm-sidebar .pm-admin-group>summary{box-sizing:border-box;min-height:44px;line-height:24px;margin:0;padding:10px 0}
     #paths-monkey-root #pm-administration-group>.pm-sidebar-action{display:block;box-sizing:border-box;width:calc(100% - 12px);margin:0 0 0 12px;padding:8px 8px;min-height:44px;border:0;border-radius:4px;color:var(--pm-gold);font-size:14px;font-weight:700;line-height:20px;letter-spacing:.015em}
@@ -520,6 +525,8 @@
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
           <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button><button id="pm-toolbar-end" class="pm-btn pm-mini pm-end" type="button">End session</button>
         </div>
+        <div id="pm-message-selection" class="pm-message-selection pm-hide" role="group" aria-label="Selected message actions"><span id="pm-message-count"></span><button id="pm-message-edit" class="pm-btn pm-mini" type="button">Edit</button><button id="pm-message-speaker" class="pm-btn pm-mini" type="button">Speaker</button><button id="pm-message-mode" class="pm-btn pm-mini" type="button">OOC</button><button id="pm-message-delete" class="pm-btn pm-mini" type="button">Delete</button><button id="pm-message-cancel" class="pm-btn pm-mini" type="button">Cancel</button></div>
+        <div id="pm-message-undo" class="pm-hide" role="status"><span>Message deleted. Saved state is unchanged.</span> <button id="pm-message-restore" class="pm-btn pm-edit-bubble" type="button">Undo</button></div>
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
           <button id="pm-identity-toggle" aria-label="Switch character and player chat; hold to choose a character" aria-haspopup="dialog" aria-expanded="false" aria-controls="pm-speaker-menu" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">👤</button>
@@ -530,6 +537,7 @@
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
+    <div id="pm-message-speaker-overlay" class="pm-backdrop pm-hide" role="presentation"><section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-message-speaker-title"><h2 id="pm-message-speaker-title">Change speaker</h2><p class="pm-mute">Choose a participating character. Earlier narration and saved state will not be rewritten.</p><select id="pm-message-speaker-choice" class="pm-text" aria-label="New message speaker"></select><div class="pm-row"><button id="pm-message-speaker-cancel" class="pm-btn" type="button">Cancel</button><button id="pm-message-speaker-save" class="pm-btn pm-primary" type="button">Save speaker</button></div></section></div>
     <div id="pm-edit-overlay" class="pm-backdrop pm-hide" role="presentation"><section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-edit-title"><h2 id="pm-edit-title">Edit message</h2><p id="pm-edit-note" class="pm-mute"></p><textarea id="pm-edit-body" class="pm-text" maxlength="8000" aria-label="Edit message text"></textarea><div class="pm-row"><button id="pm-edit-cancel" class="pm-btn" type="button">Cancel</button><button id="pm-edit-save" class="pm-btn pm-primary" type="button">Save changes</button></div><p id="pm-edit-error" role="status"></p></section></div>
     <div id="pm-rooms-page" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel pm-room-page" role="dialog" aria-modal="true" aria-labelledby="pm-rooms-page-title">
@@ -638,7 +646,7 @@
     $('admin-feedback').textContent=message;$('admin-feedback').style.color=bad?'#ffbbb2':'';
   }
   function setBusy(value) {
-    busy = value;
+    busy = value;updateMessageSelection();
     for (const name of ['send', 'connect', 'join', 'narrate', 'toolbar-end', 'feed-refresh','kick-player-button','end-session','reset-session','make-invite','registry-add','registry-refresh','pair-create-room','save-scene','setup-refresh']) {
       const el = $(name);
       if (el) el.disabled = value;
@@ -920,6 +928,7 @@
     const previousPage=captureHudPage();
     if(info.session_state==='ended'){feedback('This scene has ended.');setInfoVisible(true);return;}
     saveDraft();
+    clearMessageSelection();lastDeletedMessages=null;renderMessageUndo();
     selectedRoom={...info};currentIntro={};
     put('room',selectedRoom);
     members=[]; messages=[];$('narration-progress').classList.add('pm-hide');
@@ -938,7 +947,7 @@
     const id=selectedRoom.id;
     const [p,m,r]=await Promise.all([
       authed('GET','/rest/v1/room_members?select=user_id,character_name,player_alias,role,allowed_characters&room_id=eq.'+encodeURIComponent(id)),
-      authed('GET','/rest/v1/messages?select=id,sender_id,kind,body,created_at,edited_at,character_name&room_id=eq.'+encodeURIComponent(id)+'&order=created_at.desc&limit=24'),
+      authed('GET','/rest/v1/messages?select=id,sender_id,kind,body,created_at,edited_at,character_name,deleted_at&room_id=eq.'+encodeURIComponent(id)+'&deleted_at=is.null&order=created_at.desc&limit=24'),
       authed('GET','/rest/v1/rooms?select=id,session_state,session_generation&id=eq.'+encodeURIComponent(id))
     ]);
     if (!selectedRoom || selectedRoom.id!==id) return;
@@ -1041,8 +1050,9 @@ function createTypingNotifier(send,context){
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
     const el=$('feed-messages');el.replaceChildren();
     if (!selectedRoom) {el.textContent='Connect to a room to see its messages.';return;}
-    if (!messages.length) {el.textContent='The hall is quiet. Nothing posted yet.';return;}
+    if (!messages.some(msg=>!msg.deleted_at)) {el.textContent='The hall is quiet. Nothing posted yet.';updateMessageSelection();return;}
     for (const msg of messages) {
+      if(msg.deleted_at)continue;
       const bubble=document.createElement('div');
       bubble.className='pm-bubble'+(msg.kind==='narrator'?' pm-narrator':'')+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
@@ -1050,13 +1060,53 @@ function createTypingNotifier(send,context){
       by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
       if(msg.edited_at)by.append(document.createTextNode(' · edited'));
       const heading=document.createElement('div');heading.className='pm-message-head';heading.append(by);
-      if(paired||((msg.kind==='player'||msg.kind==='ooc')&&msg.sender_id===account?.user_id)){
-        const edit=document.createElement('button');edit.type='button';edit.className='pm-btn pm-edit-bubble';edit.textContent='Edit';edit.setAttribute('aria-label','Edit '+(msg.kind==='narrator'?'narration':character+' message'));edit.onclick=()=>openMessageEditor(msg);heading.append(edit);
-      }
       const content=document.createElement('div');content.className='pm-bubble-copy';content.textContent=msg.kind==='narrator'?visibleNarration(msg.body):msg.body;
-      bubble.append(heading,content);el.append(bubble);
+      bubble.append(heading,content);installMessageLongPress(bubble,msg);el.append(bubble);
     }
-    el.scrollTop=el.scrollHeight;
+    updateMessageSelection();el.scrollTop=el.scrollHeight;
+  }
+  function canManageMessage(message){return !!message&&!message.deleted_at&&!!account&&(paired||(['player','ooc'].includes(message.kind)&&message.sender_id===account.user_id));}
+  function selectedMessages(){return messages.filter(message=>selectedMessageIds.has(message.id)&&canManageMessage(message));}
+  function clearMessageSelection(){selectedMessageIds.clear();messageSelectionRoom=null;updateMessageSelection();}
+  function updateMessageSelection(){
+    if(messageSelectionRoom&&messageSelectionRoom!==selectedRoom?.id){selectedMessageIds.clear();messageSelectionRoom=null;}
+    for(const id of selectedMessageIds)if(!messages.some(message=>message.id===id&&canManageMessage(message)))selectedMessageIds.delete(id);
+    const selected=selectedMessages(),hasNarrator=selected.some(message=>message.kind==='narrator');
+    $('message-selection').classList.toggle('pm-hide',!selected.length);$('message-count').textContent=selected.length+' selected';
+    $('message-edit').disabled=selected.length!==1||busy;$('message-speaker').disabled=!selected.length||hasNarrator||busy;$('message-mode').disabled=!selected.length||hasNarrator||busy;
+    $('message-mode').textContent=selected.length&&selected.every(message=>message.kind==='ooc')?'Character':'OOC';$('message-delete').disabled=!selected.length||busy;
+    for(const bubble of $('feed-messages').querySelectorAll('[data-message-id]')){const on=selectedMessageIds.has(bubble.dataset.messageId);bubble.classList.toggle('pm-selected',on);bubble.setAttribute('aria-pressed',String(on));}
+  }
+  function toggleMessageSelection(message){if(!canManageMessage(message))return;messageSelectionRoom=selectedRoom.id;if(selectedMessageIds.has(message.id))selectedMessageIds.delete(message.id);else selectedMessageIds.add(message.id);updateMessageSelection();}
+  function installMessageLongPress(bubble,message){
+    if(!canManageMessage(message))return;bubble.classList.add('pm-selectable');bubble.dataset.messageId=message.id;bubble.tabIndex=0;bubble.setAttribute('role','button');bubble.setAttribute('aria-label',(message.kind==='narrator'?'Narration':'Message')+'; long-press to select, then tap other bubbles.');
+    let timer=null,held=false,x=0,y=0;const stop=()=>{clearTimeout(timer);timer=null;};
+    bubble.addEventListener('pointerdown',event=>{if(event.button!==0)return;held=false;x=event.clientX;y=event.clientY;stop();timer=setTimeout(()=>{timer=null;held=true;toggleMessageSelection(message);},480);});
+    bubble.addEventListener('pointermove',event=>{if(Math.abs(event.clientX-x)>16||Math.abs(event.clientY-y)>16)stop();});
+    for(const name of ['pointerup','pointercancel','pointerleave'])bubble.addEventListener(name,stop);
+    bubble.addEventListener('contextmenu',event=>{event.preventDefault();stop();if(!held){held=true;toggleMessageSelection(message);}});
+    bubble.addEventListener('click',event=>{if(held){held=false;event.preventDefault();return;}if(selectedMessageIds.size)toggleMessageSelection(message);});
+    bubble.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();toggleMessageSelection(message);}});
+  }
+  function openMessageSpeakerPicker(){
+    const selected=selectedMessages();if(!selected.length||selected.some(message=>message.kind==='narrator'))return;
+    const select=$('message-speaker-choice');select.replaceChildren();const names=new Set();
+    for(const member of members){if(!paired&&member.user_id!==account?.user_id)continue;for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name])if(name)names.add(name);}
+    for(const name of names){const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}
+    const ooc=document.createElement('option');ooc.value='__paths_ooc__';ooc.textContent='Player chat (OOC)';select.append(ooc);
+    const first=selected[0];select.value=first.kind==='ooc'?'__paths_ooc__':first.character_name||select.options[0]?.value||'__paths_ooc__';
+    $('message-speaker-overlay').classList.remove('pm-hide');select.focus();
+  }
+  function closeMessageSpeakerPicker(){$('message-speaker-overlay').classList.add('pm-hide');}
+  function renderMessageUndo(){$('message-undo').classList.toggle('pm-hide',!lastDeletedMessages||lastDeletedMessages.room!==selectedRoom?.id);}
+  async function manageSelectedMessages(action,kind=null,character=null){
+    const room=selectedRoom?.id,ids=action==='restore'?lastDeletedMessages?.ids:[...selectedMessageIds];if(!room||!ids?.length)return;
+    const changed=await authed('POST','/rest/v1/rpc/manage_hud_messages',{body:{p_room:room,p_ids:ids,p_action:action,p_kind:kind,p_character:character}});
+    if(changed!==ids.length)throw new Error('Message change could not be confirmed. Refresh the room.');
+    const rows=await authed('GET','/rest/v1/messages?select=id,kind,character_name,deleted_at&room_id=eq.'+encodeURIComponent(room)+'&id=in.('+ids.map(encodeURIComponent).join(',')+')');
+    if(rows?.length!==ids.length||rows.some(row=>action==='delete'?!row.deleted_at:action==='restore'?!!row.deleted_at:row.kind!==kind||(kind==='player'&&character&&row.character_name!==character)))throw new Error('Message verification failed. Refresh before retrying.');
+    if(action==='delete')lastDeletedMessages={room,ids};else if(action==='restore')lastDeletedMessages=null;
+    closeMessageSpeakerPicker();clearMessageSelection();renderMessageUndo();if(selectedRoom?.id===room)await refreshScene();feedback(action==='delete'?'✓ Selected messages deleted. Saved state is unchanged.':action==='restore'?'✓ Messages restored.':'✓ Message speaker updated. Earlier outcomes are unchanged.');
   }
   async function postAction() {
     if (!selectedRoom || !account) throw new Error('Join your existing Cloudveil room first.');
@@ -1108,7 +1158,7 @@ function createTypingNotifier(send,context){
     try{const saved=await authed('POST','/rest/v1/rpc/edit_hud_message',{body:{p_message_id:original.id,p_new_body:text,p_expected_body:original.body}});if(saved!==true)throw new Error('Could not confirm the edit.');
       const rows=await authed('GET','/rest/v1/messages?select=id,body,edited_at&id=eq.'+encodeURIComponent(original.id));const row=rows?.[0];
       if(!row||!row.edited_at||(original.kind==='narrator'?visibleNarration(row.body):row.body)!==text)throw new Error('Edit verification failed; refresh before retrying.');
-      closeMessageEditor();if(selectedRoom?.id===original.room_id)await refreshScene();feedback('✓ Message edit saved and verified.');
+      closeMessageEditor();clearMessageSelection();if(selectedRoom?.id===original.room_id)await refreshScene();feedback('✓ Message edit saved and verified.');
     }catch(error){$('edit-error').textContent=error.message;throw error;}finally{$('edit-save').disabled=false;}
   }
   function saveNarrationRequest(request){narrationRequest=request;put('narrationRequest',request);renderBridgeStatus();}
@@ -1539,6 +1589,15 @@ function createTypingNotifier(send,context){
   $('join').onclick=()=>runTask(join);
   $('forget').onclick=resetIdentity;
   $('send').onclick=()=>runTask(postAction);
+  $('message-edit').onclick=()=>{const selected=selectedMessages();if(selected.length===1)openMessageEditor(selected[0]);};
+  $('message-cancel').onclick=clearMessageSelection;
+  $('message-speaker').onclick=openMessageSpeakerPicker;
+  $('message-mode').onclick=()=>runTask(()=>manageSelectedMessages('speaker',selectedMessages().every(message=>message.kind==='ooc')?'player':'ooc'));
+  $('message-delete').onclick=()=>{if(confirm('Delete '+selectedMessageIds.size+' selected message(s)? You can Undo. Inventory and Scene history will stay unchanged.'))runTask(()=>manageSelectedMessages('delete'));};
+  $('message-restore').onclick=()=>runTask(()=>manageSelectedMessages('restore'));
+  $('message-speaker-cancel').onclick=closeMessageSpeakerPicker;
+  $('message-speaker-save').onclick=()=>runTask(()=>{const choice=$('message-speaker-choice').value;return manageSelectedMessages('speaker',choice==='__paths_ooc__'?'ooc':'player',choice==='__paths_ooc__'?null:choice);});
+  $('message-speaker-overlay').onclick=event=>{if(event.target===$('message-speaker-overlay'))closeMessageSpeakerPicker();};
   $('edit-save').onclick=()=>runTask(saveMessageEdit);$('edit-cancel').onclick=closeMessageEditor;
   $('edit-overlay').onclick=event=>{if(event.target===$('edit-overlay'))closeMessageEditor();};
   $('bridge-retry').onclick=()=>{if(narrationRequest?.body)runTask(publishNarrationReply);else{narrationRequest.phase='waiting';narrationRequest.error='';saveNarrationRequest(narrationRequest);bridgeCandidate='';}};
@@ -1568,7 +1627,7 @@ function createTypingNotifier(send,context){
   $('action').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();runTask(postAction);}});
   $('settings').addEventListener('click',e=>{if(e.target===$('settings'))closeSettings();});
   document.addEventListener('keydown',e=>{
-    if(e.key!=='Escape')return;if(editingMessage){closeMessageEditor();return;}if(!$('speaker-menu').classList.contains('pm-hide')){closeSpeakerPicker();$('identity-toggle').focus();return;}
+    if(e.key!=='Escape')return;if(!$('message-speaker-overlay').classList.contains('pm-hide')){closeMessageSpeakerPicker();return;}if(selectedMessageIds.size&&!editingMessage){clearMessageSelection();return;}if(editingMessage){closeMessageEditor();return;}if(!$('speaker-menu').classList.contains('pm-hide')){closeSpeakerPicker();$('identity-toggle').focus();return;}
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
     else if(!$('settings').classList.contains('pm-hide'))closeSettings();
     else if(root.classList.contains('pm-roomlogs-open'))closeRoomLogs();
