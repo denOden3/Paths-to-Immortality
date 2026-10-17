@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.13
+// @version      0.8.14
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.13';
+  const VERSION = '0.8.14';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -346,7 +346,50 @@
     #paths-monkey-root #pm-identity-toggle{position:static!important;inset:auto!important;transform:none!important;float:none!important;margin:0!important;align-self:stretch;max-width:220px;white-space:normal;overflow-wrap:anywhere;}
     #paths-monkey-root .pm-actions button[aria-pressed="true"]{border-color:var(--pm-gold);background:#642b36;}
     #paths-monkey-root .pm-workspace-copy{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;}
-    @media(max-width:600px){#paths-monkey-root .pm-composer-line #pm-action{grid-column:1/-1;}#paths-monkey-root #pm-identity-toggle{grid-column:2;}#paths-monkey-root #pm-send{grid-column:3;}}
+
+
+    /* v0.8.14: compact chrome, grouped navigation and a single-line tool rail. */
+    #paths-monkey-root .pm-hbar{min-height:56px;padding:4px 10px;gap:6px;box-shadow:0 1px 4px #07040855}
+    #paths-monkey-root .pm-hbar .pm-title{font-size:16px;line-height:1.2;letter-spacing:0}
+    #paths-monkey-root .pm-title-collapse{min-height:44px;justify-content:center}
+    #paths-monkey-root .pm-compact-version{font-size:14px;flex-shrink:0}
+    #paths-monkey-root .pm-logo{background:transparent;border-color:transparent;border-radius:6px;font-size:22px}
+    #paths-monkey-root #pm-settings-toggle,#paths-monkey-root #pm-minimize{font-size:20px;background:transparent;border-color:transparent;padding:4px;flex-shrink:0}
+    #paths-monkey-root .pm-btn,#paths-monkey-root .pm-btn.pm-mini{font-size:14px;font-weight:600;padding:8px 12px;border-radius:6px;min-height:44px}
+    #paths-monkey-root .pm-left{padding:12px 14px 20px}
+    #paths-monkey-root .pm-admin-group>summary{font-size:16px;margin-bottom:4px;padding:8px 0}
+    #paths-monkey-root .pm-sidebar-action{border:0;border-bottom:1px solid var(--pm-stroke);background:transparent;border-radius:0;margin:0;padding:10px 8px;min-height:44px}
+    #paths-monkey-root .pm-sidebar-action.pm-nav-active{background:#39212b;box-shadow:inset 3px 0 var(--pm-gold)}
+    #paths-monkey-root .pm-admin-group+.pm-admin-group{margin-top:12px;padding-top:8px}
+    #paths-monkey-root #pm-character-session{margin:4px 0 6px;min-height:44px;font-size:16px;padding:8px 10px;border-radius:6px}
+    #paths-monkey-root .pm-divider{margin:12px 0}
+    #paths-monkey-root .pm-h{margin-bottom:6px}
+    #paths-monkey-root #pm-people{font-size:16px;line-height:1.5}
+    #paths-monkey-root #pm-people>div{padding:10px 0}
+    #paths-monkey-root .pm-link{margin:4px 0;min-height:44px}
+    #paths-monkey-root .pm-feed{padding:12px 16px 20px}
+    #paths-monkey-root #pm-feed>.pm-row{margin-bottom:12px;gap:8px}
+    #paths-monkey-root #pm-chat-title{font-size:18px}
+    #paths-monkey-root .pm-bubble{margin:10px 0;padding:12px 14px;border-radius:6px;background:#241e27;border-color:#665158;font-size:16px;line-height:1.6;max-width:72ch}
+    #paths-monkey-root .pm-bubble.pm-narrator{background:#211e23;border:1px solid #786047;border-left:3px solid var(--pm-gold)}
+    #paths-monkey-root .pm-bubble.pm-oocBubble{background:#2b2632;border-style:dashed}
+    #paths-monkey-root .pm-by{font-size:14px;line-height:1.4;margin-bottom:6px}
+    #paths-monkey-root .pm-compose{padding:6px 10px 8px;background:#251d26;box-shadow:0 -1px 4px #0b080c55}
+    #paths-monkey-root .pm-actions{margin:0 0 6px;padding:2px 2px 4px;gap:4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#ab8e98 #251d26;}
+    #paths-monkey-root .pm-actions>.pm-btn{flex:0 0 auto;white-space:nowrap;background:transparent;border-color:transparent;padding:8px 10px}
+    #paths-monkey-root .pm-actions #pm-narrate{background:#173c65;border-color:#568bc1;box-shadow:none}
+    #paths-monkey-root .pm-actions button[aria-pressed="true"]{background:#4b2836;border-color:var(--pm-gold);box-shadow:inset 0 -2px var(--pm-gold)}
+    #paths-monkey-root .pm-composer-line{gap:6px;grid-template-columns:minmax(0,1fr) minmax(44px,auto) auto;align-items:end}
+    #paths-monkey-root .pm-compose .pm-editor{grid-column:auto;min-height:48px;padding:11px 10px;border-radius:6px;line-height:24px}
+    #paths-monkey-root #pm-identity-toggle{grid-column:auto;align-self:end;min-width:44px;min-height:48px;max-width:110px;font-size:14px;line-height:1.3;padding:6px 8px;background:#332a35;color:var(--pm-ink);border:1px solid #a28a91;box-shadow:none;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #paths-monkey-root #pm-identity-toggle.pm-dim{opacity:1;background:#2d2531;color:var(--pm-muted)}
+    #paths-monkey-root .pm-composer-line #pm-send{grid-column:auto;align-self:end;min-height:48px;font-size:14px;padding:10px 12px}
+    #paths-monkey-root .pm-player-card{padding:14px;border-radius:8px}
+    #paths-monkey-root .pm-registry,#paths-monkey-root .pm-roomlogs{padding:16px}
+    #paths-monkey-root .pm-player-heading{font-size:16px;margin-bottom:8px}
+    #paths-monkey-root .pm-feedback{margin-top:4px}
+    @media(min-width:791px){#paths-monkey-root .pm-hbar .pm-title{font-size:18px}#paths-monkey-root .pm-compose{padding:6px 12px 8px}}
+    @media(max-width:360px){#paths-monkey-root .pm-hbar{padding-inline:6px;gap:2px}#paths-monkey-root .pm-hbar .pm-title{font-size:14px}#paths-monkey-root #pm-identity-toggle{max-width:80px}}
 `);
 
   const root = document.createElement('div');
@@ -399,15 +442,15 @@
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Xiao Lan action composer">
       <div id="pm-compose-inner">
+        <div class="pm-actions" role="group" aria-label="Session actions; scroll sideways for more">
+          <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
+          <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
+          <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button>
+        </div>
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
           <button id="pm-identity-toggle" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">Xiao Lan</button>
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
-        </div>
-        <div class="pm-actions">
-          <button id="pm-narrate" type="button" class="pm-btn pm-mini" title="Prepare a GM instruction in ChatGPT">Narrate</button>
-          <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
-          <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button>
         </div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>

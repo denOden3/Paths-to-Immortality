@@ -1,3 +1,7 @@
+## HUD v0.8.14 — compact navigation and reading layout
+
+All header controls and the version remain visible in a shorter header. The session toolbar is one horizontally scrollable row above a one-row expanding composer, neutral character switch and red Send button. Secondary controls use compact 14px labels with 44px touch targets; messages keep 16px text and a subtle narrator accent. Admin navigation becomes aligned rows with tighter section spacing. Current Session retains manual refresh. HUD page behavior, drafts, pairing and stored game data are unchanged. Update each device's installed userscript and reload ChatGPT.
+
 ## HUD v0.8.13 — manual Current Session refresh
 
 Current Session has a small refresh button beside its heading on mobile and desktop. Sidebar rooms, participant lists and Heavenly Calendar no longer reload every 12 seconds. They still load at startup, after relevant room actions, when changing the session picker, and when Refresh is pressed. Only a visible, expanded chatroom continues polling messages; minimized HUDs pause that polling. Update the installed userscript and reload ChatGPT to replace older mobile HUD versions.
