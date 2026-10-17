@@ -1,0 +1,34 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const {JSDOM}=require('/tmp/paths-qa/node_modules/jsdom');
+const source=fs.readFileSync('userscripts/Paths-Monkey-GM.user.js','utf8');
+const template=source.split('root.innerHTML = `')[1].split('`;')[0];
+const dom=new JSDOM('<main></main><div id="paths-monkey-root">'+template+'</div>',{url:'https://chatgpt.com/c/test'}),document=dom.window.document,$=id=>document.getElementById('pm-'+id),root=$('feed').closest('#paths-monkey-root');
+let clock=1000,posts=0,refreshes=0,receipt='applied',failFetch=false,stored,calls=[];
+const state='[PATHS_STATE]{"version":1,"inventory":[],"scenes":[]}[/PATHS_STATE]';
+const request={request_id:'request-id',path:'/c/test',phase:'waiting',context:{room_id:'room',title:'Trials'}};
+const ctx=vm.createContext({document,root,$,location:{pathname:'/c/test'},Date:{now:()=>clock},selectedRoom:{id:'room',title:'Trials'},account:{user_id:'owner'},paired:true,members:[],messages:[],editingMessage:null,narrationRequest:structuredClone(request),bridgePublishing:false,bridgeCandidate:'',bridgeStableAt:0,hudWorkspaceView:'',GM_RULES_URL:'rules',put:(key,v)=>{stored=v;},setNarrationActivity:async()=>{},refreshScene:async()=>{refreshes++;},refreshHudWorkspace:async()=>{},feedback(){},authed:async(method,path,options)=>{
+ calls.push({method,path,options});if(path.endsWith('publish_hud_narration')){posts++;return 'narration-id';}
+ if(path.endsWith('edit_hud_message'))return true;
+ if(path.includes('/messages?')){if(failFetch){failFetch=false;throw Error('Network interrupted');}return [{id:'narration-id',kind:'narrator',body:vm.runInContext('narrationRequest.body',ctx),edited_at:'now'}];}
+ if(path.endsWith('narration_state_status'))return [{message_id:'different-message',status:'applied'},{message_id:'narration-id',status:receipt,error:receipt==='rejected'?'Too many apples':''}];
+ throw Error('Unexpected endpoint '+path);
+}});
+vm.runInContext(source.slice(source.indexOf('  function makeNarrateInstruction('),source.indexOf('  function copyText(value)')),ctx);
+vm.runInContext(source.slice(source.indexOf('  function renderFeed() {'),source.indexOf('  async function postAction()')),ctx);
+vm.runInContext("function visibleNarration(body){return body.replace(/\\[PATHS_STATE\\][\\s\\S]*?\\[\\/PATHS_STATE\\]\\s*$/,'').trim();}",ctx);
+function assistant(body,id='request-id') {const node=document.createElement('div');node.dataset.messageAuthorRole='assistant';node.textContent='[PATHS_NARRATION]'+JSON.stringify({version:1,request_id:id,body})+'[/PATHS_NARRATION]';document.querySelector('main').append(node);return node;}
+function reset(){document.querySelector('main').replaceChildren();ctx.narrationRequest=structuredClone(request);ctx.bridgeCandidate='';ctx.bridgeStableAt=0;calls=[];posts=0;receipt='applied';}
+function user(){const node=document.createElement('div');node.dataset.messageAuthorRole='user';node.textContent='Narrate request-id';document.querySelector('main').append(node);}
+(async()=>{
+ assistant('An unsolicited response. '+state);await vm.runInContext('scanNarrationReply()',ctx);clock+=2500;await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,0,'unsolicited response published');
+ reset();user();assistant('The hall awaits your answer. '+state);const stop=document.createElement('button');stop.dataset.testid='stop-button';document.querySelector('main').append(stop);await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,0);stop.remove();
+ await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,0,'unstable reply published');clock+=2500;await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,1);assert.equal(ctx.narrationRequest.phase,'published');assert.equal(refreshes,1);await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,1,'completed request republished');
+ reset();user();assistant('A visible scene. '+state);receipt='rejected';await vm.runInContext('scanNarrationReply()',ctx);clock+=2500;await vm.runInContext('scanNarrationReply()',ctx);assert.equal(ctx.narrationRequest.phase,'rejected');assert.match(ctx.narrationRequest.error,/NO state changes applied: Too many apples/);
+ reset();user();assistant('A visible scene. '+state);failFetch=true;await vm.runInContext('scanNarrationReply()',ctx);clock+=2500;await vm.runInContext('scanNarrationReply()',ctx);assert.equal(ctx.narrationRequest.phase,'failed');const prior=ctx.narrationRequest.request_id;await vm.runInContext('publishNarrationReply()',ctx);assert.equal(ctx.narrationRequest.phase,'published');assert.equal(ctx.narrationRequest.request_id,prior);assert.equal(calls.filter(c=>c.path.endsWith('publish_hud_narration')).length,2);
+ reset();user();assistant('A visible scene. '+state);ctx.location.pathname='/c/another';await vm.runInContext('scanNarrationReply()',ctx);clock+=2500;await vm.runInContext('scanNarrationReply()',ctx);assert.equal(posts,0,'other conversation published');ctx.location.pathname='/c/test';
+ assert.throws(()=>vm.runInContext('parseNarrationEnvelope('+JSON.stringify('[PATHS_NARRATION]'+JSON.stringify({version:1,request_id:'request-id',body:'Missing state'})+'[/PATHS_NARRATION]')+',"request-id")',ctx),/state block/);
+ ctx.messages=[{id:'n',kind:'narrator',body:'Original story. '+state,edited_at:'now'},{id:'p',kind:'player',sender_id:'owner',character_name:'PC',body:'Action'}];vm.runInContext('renderFeed()',ctx);assert.equal($('feed-messages').querySelectorAll('button').length,2);assert.ok(!$('feed-messages').textContent.includes('[PATHS_STATE]'));assert.ok($('feed-messages').textContent.includes('edited'));
+ $('feed-messages').querySelector('button').click();assert.equal($('edit-body').value,'Original story.');assert.match($('edit-note').textContent,/will not run again/);
+ ctx.paired=false;vm.runInContext('renderFeed()',ctx);assert.equal($('feed-messages').querySelectorAll('button').length,1,'player can edit narrator');
+ console.log('PASS: request-bound completed replies only, no streaming/unsolicited/cross-chat publication, exact receipts, rejected-state reporting, stable retry identity, owner narrator edit controls and player limits');
+})().catch(e=>{console.error(e);process.exitCode=1;});

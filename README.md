@@ -1,3 +1,11 @@
+## HUD v0.8.18 — automatic narrator publishing and message editing
+
+Narrate now obtains an authenticated, frozen scene snapshot, including pending character actions (OOC excluded), the saved introduction/goals and each acting character's inventory/Scene panel. After you send the prepared request in ChatGPT, the HUD watches only the matching completed assistant envelope in that conversation and publishes it through the existing delegated owner narrator RPC. It verifies the exact message and its state receipt before showing Published · State applied. Connection failures retain the request for an idempotent retry. Edited actions, changed character state, reset/ended rooms, expired requests and obsolete replies are rejected. This requires updating the installed userscript and starting a fresh Narrate request; older prepared prompts do not auto-publish.
+
+Each bubble has an Edit control for authorized users. The paired owner may edit character, OOC and narrator text in their active rooms; ordinary players retain their own-message restrictions. Narrator edits preserve the original state block and never replay or rewrite inventory/Scene history. Concurrent edits are detected, and saved text is read back before reporting success. Editing past prose does not undo its recorded consequences.
+
+Database permission/state tests run in a rollback transaction; DOM tests cover request matching, streaming, cross-conversation isolation, exact receipts, rejection reporting, retries and edit access. Existing HUD routing, workspaces, speaker and typing tests pass. An unrelated prepared-room CSS test also fails on the unchanged previous release in this JSDOM environment. Live Android/Tampermonkey verification remains to be done. No story test posts or Notion changes are retained.
+
 ## HUD v0.8.17 — tighter Admin and Current Session layout
 
 Administration uses compact, indented gold links with the active-page highlight retained. Selected Session now has its own heading with a small manual refresh control beside it. Section dividers, character headings and participant rows use tighter spacing on mobile and desktop. Room selection and navigation behavior are unchanged.
