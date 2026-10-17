@@ -124,3 +124,9 @@ label{font-size:14px;margin:10px 0 4px}input,textarea{font-size:16px;border-radi
 .inChat .chatPanel .workspaceRoomTitle{font-size:16px;line-height:1.4;margin:4px 0 0;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .manualAddItem,.inventoryLog{margin-top:16px}.manualAddItem>summary,.inventoryLog>summary{cursor:pointer;min-height:36px;padding:6px 0;font-size:14px;font-weight:600;color:var(--gold)}
 .manualAddItem>summary:focus-visible,.inventoryLog>summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.manualAddItem .inventoryForm{margin-top:8px}
+
+/* Web v0.8.6: one compact room/status row; participants live in Session Info. */
+.inChat .roombar{display:flex;align-items:center;flex-wrap:nowrap;gap:12px;min-width:0;padding-bottom:8px}
+.inChat .roombar .roomTitle{flex:1 1 0;min-width:0;white-space:nowrap;overflow-x:auto;overflow-y:hidden;text-overflow:clip;scrollbar-width:thin;touch-action:pan-x;overscroll-behavior-x:contain;padding:2px 0}
+.inChat .roombar #networkStatus{flex:0 0 auto;white-space:nowrap;font-size:13px}
+.inChat .roomTitle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}

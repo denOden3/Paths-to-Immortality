@@ -1,3 +1,7 @@
+## Web v0.8.6 — room status row and Session Info player list
+
+Participant player names appear in Session Info instead of taking up a separate chat header row. The Live connection indicator sits beside the room title; long titles scroll horizontally, including keyboard access. Session Info's participant text updates from existing membership refreshes without rebuilding the rest of the panel. Live remains a connection indicator; narration preparation retains its separate verified indicator, and typing presence is not implemented.
+
 ## Web v0.8.5 — remove voice and simplify character panels
 
 Voice chat, microphone controls and voice signaling are removed; use an external voice app. Scene and Inventory show the character's name on a separate line beneath the page title. Inventory's explanatory copy is removed, and the add-item form starts collapsed under Manual Add Item. Session Info has tighter room-title spacing with a divider before Status. HUD unchanged.

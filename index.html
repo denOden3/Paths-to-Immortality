@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.5</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.6</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.5</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.6</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -130,8 +130,7 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle">Shared room</strong></div>
-<div class="roomMeta"><div id="players" class="members">Loading members…</div><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
+<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
 <div id="narrationProgress" class="narrationProgress hidden" role="status" aria-live="polite">The Jade Emperor is preparing narration…</div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
@@ -342,7 +341,8 @@ async function openConcludedRoom(id){
 }
 $('concludedBack').onclick=()=>safe(lobby);
 $('saveArchiveLink').onclick=()=>safe(async()=>{if(!concludedScene||!portalIdentity.is_admin)throw Error('Open a concluded scene first.');const {data,error}=await db.rpc('portal_record_notion_archive',{p_room_id:concludedScene.id,p_generation:concludedScene.session_generation,p_url:$('archiveUrl').value.trim()});if(error)throw error;if(data!==true)throw Error('Could not confirm saving the Notion link.');await openConcludedRoom(concludedScene.id);notice('Notion link recorded.','good');});
-async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role,player_alias,allowed_characters,guest_role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];if(!members.some(x=>x.user_id===user?.id)&&!portalIdentity.is_admin){returnToStart();return;}$('players').textContent=members.map(x=>x.character_name).join(' · ')||'No members';const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
+function sessionPlayersText(){return members.map(member=>member.player_alias||(member.role==='owner'?'Jade Emperor':member.character_name||'Player')).join(' · ')||'No players recorded';}
+async function fetchMembers(){if(!room)return;const active=room;const {data,error}=await db.from('room_members').select('user_id,character_name,role,player_alias,allowed_characters,guest_role').eq('room_id',active);if(error)throw error;if(room!==active)return;members=data||[];if(!members.some(x=>x.user_id===user?.id)&&!portalIdentity.is_admin){returnToStart();return;}const shownPlayers=$('sessionPlayers');if(shownPlayers)shownPlayers.textContent=sessionPlayersText();const isOwner=members.some(x=>x.user_id===user.id&&x.role==='owner');
 $('ownerTools').classList.toggle('hidden',!isOwner);
 if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textContent='Status unavailable: '+e.message;});
 updateSpeakerDisplay();}
@@ -356,7 +356,7 @@ async function refreshChatPanel(){
  if(!chatPanelView||!room)return;const view=chatPanelView,id=room,character=activeCharacter,request=++chatPanelRequest,host=$('chatPanel');host.replaceChildren(el('p','muted','Loading…'));
  const {data,error}=await db.rpc('room_player_panel',{p_room:id,p_character:character});if(request!==chatPanelRequest||room!==id||activeCharacter!==character||chatPanelView!==view)return;if(error){host.replaceChildren(el('p','',error.message));return;}
  host.replaceChildren(el('h2','workspaceTitle',view==='session'?'Session Info':view==='scene'?'Scene':'Inventory'));if(view!=='session')host.append(el('p','workspaceCharacter',character));
- if(view==='session'){const facts=data.session||{};host.append(el('h3','workspaceRoomTitle',facts.title));for(const [label,value] of [['Status',facts.status],['In-world date',[facts.date,facts.time].filter(Boolean).join(' · ')],['Starting location',facts.starting_location],['Opening situation',facts.opening],['Session goals',facts.goals]]){const block=el('div','workspaceFact');block.append(el('strong','',label),el('p','sceneCopy',value||'Not recorded'));host.append(block);}return;}
+ if(view==='session'){const facts=data.session||{};host.append(el('h3','workspaceRoomTitle',facts.title));for(const [label,value] of [['Status',facts.status],['Players',sessionPlayersText()],['In-world date',[facts.date,facts.time].filter(Boolean).join(' · ')],['Starting location',facts.starting_location],['Opening situation',facts.opening],['Session goals',facts.goals]]){const block=el('div','workspaceFact');const copy=el('p','sceneCopy',value||'Not recorded');if(label==='Players')copy.id='sessionPlayers';block.append(el('strong','',label),copy);host.append(block);}return;}
  if(view==='scene'){if(!data.scene){host.append(el('p','muted','Your current location has not been confirmed by the Jade Emperor yet.'));return;}host.append(el('h3','',data.scene.location),el('p','sceneCopy',data.scene.description));return;}
  for(const item of data.inventory||[]){const card=el('article','card'),row=el('div','inventoryActions');card.append(el('h3','',item.name+' × '+item.quantity));if(item.note)card.append(el('p','sceneCopy',item.note));const qty=workspaceField('Quantity','number','1'),remove=el('button','btn','Remove');remove.type='button';remove.onclick=()=>safe(async()=>{await changeInventory(id,character,{p_action:'remove',p_item:item.id,p_quantity:Number(qty.input.value)});});row.append(qty.wrap,remove);card.append(row);host.append(card);}
  if(!(data.inventory||[]).length)host.append(el('p','muted','No items recorded.'));
