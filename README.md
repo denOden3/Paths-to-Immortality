@@ -1,3 +1,7 @@
+## Web v0.8.7 — narration preparation in the Live status
+
+The room's Live indicator changes to “Narrator is writing...” while the verified GM preparation flag is active, then returns to Live after publication, cancellation or expiry. The separate banner is removed. Reconnecting takes priority over the narration label. This remains a preparation signal from HUD Narrate, not direct observation of ChatGPT generation. HUD unchanged.
+
 ## Web v0.8.6 — room status row and Session Info player list
 
 Participant player names appear in Session Info instead of taking up a separate chat header row. The Live connection indicator sits beside the room title; long titles scroll horizontally, including keyboard access. Session Info's participant text updates from existing membership refreshes without rebuilding the rest of the panel. Live remains a connection indicator; narration preparation retains its separate verified indicator, and typing presence is not implemented.

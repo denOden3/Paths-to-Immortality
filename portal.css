@@ -108,7 +108,7 @@ label{font-size:14px;margin:10px 0 4px}input,textarea{font-size:16px;border-radi
 .toolCard p{margin:6px 0 10px}.workspaceFact{padding:8px 0}.workspaceFact strong{font-size:14px;color:var(--muted)}
 .workspaceFact p{font-size:16px;margin:4px 0;line-height:1.55}.chatPanel h2{font-size:20px}.chatPanel h3{font-size:16px}
 .inChat .chatPanel p{font-size:16px}.playerRoster{gap:10px;margin-top:10px}.playerRosterCard h3{font-size:16px}
-.adminGreeting{margin:6px auto 14px}.adminNav .btn{min-height:44px}.narrationProgress{padding:8px 12px;margin-bottom:8px;border-left:3px solid var(--gold);background:#29212b;color:var(--gold);font-size:14px;flex-shrink:0}
+.adminGreeting{margin:6px auto 14px}.adminNav .btn{min-height:44px}
 
 /* Web v0.8.4: compact chat chrome, strong Send and focused item panels. */
 .inChat .head{min-height:48px;padding:3px 10px;gap:8px}.inChat .head h1{font-size:16px;font-weight:600;line-height:1.2}.inChat .sig{width:36px;height:36px;font-size:21px;border-radius:7px}.inChat .state{font-size:12px}
@@ -130,3 +130,5 @@ label{font-size:14px;margin:10px 0 4px}input,textarea{font-size:16px;border-radi
 .inChat .roombar .roomTitle{flex:1 1 0;min-width:0;white-space:nowrap;overflow-x:auto;overflow-y:hidden;text-overflow:clip;scrollbar-width:thin;touch-action:pan-x;overscroll-behavior-x:contain;padding:2px 0}
 .inChat .roombar #networkStatus{flex:0 0 auto;white-space:nowrap;font-size:13px}
 .inChat .roomTitle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+.inChat .roombar #networkStatus.isWriting{color:var(--gold)}

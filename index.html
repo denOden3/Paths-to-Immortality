@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.6</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.7</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.6</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.7</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -131,7 +131,6 @@ body.authOpen{overflow:hidden}
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
 <div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
-<div id="narrationProgress" class="narrationProgress hidden" role="status" aria-live="polite">The Jade Emperor is preparing narration…</div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
@@ -402,7 +401,9 @@ function installLongPress(box,m){
   box.addEventListener('click',e=>{if(held){held=false;e.preventDefault();return;}if(selectedIds.size)toggleSelected(m);});
   box.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSelected(m);}});
 }
-async function refreshNarrationActivity(id){const {data,error}=await db.rpc('narration_activity_status',{p_room:id});if(room!==id)return;$('narrationProgress').classList.toggle('hidden',!!error||data!==true);}
+let roomConnection='CONNECTING',narratorPreparing=false;
+function renderRoomStatus(){const connected=roomConnection==='SUBSCRIBED',writing=connected&&narratorPreparing,host=$('networkStatus');host.textContent=writing?'Narrator is writing...':connected?'● Live':roomConnection==='CHANNEL_ERROR'||roomConnection==='TIMED_OUT'?'⚠ Reconnecting':'○ Connecting';host.classList.toggle('isWriting',writing);host.title=writing?'The GM has requested narration; waiting for publication.':'Chat connection status';}
+async function refreshNarrationActivity(id){const {data,error}=await db.rpc('narration_activity_status',{p_room:id});if(room!==id)return;narratorPreparing=!error&&data===true;renderRoomStatus();}
 async function fetchMessages(){
   if(!room)return;
   const active=room;
@@ -427,12 +428,12 @@ async function fetchMessages(){
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
- closeChatPanel();endLive();$('narrationProgress').classList.add('hidden');room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();narratorPreparing=false;roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  resizeComposer();await fetchMembers();if(room!==id)return false;await fetchMessages();
- subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;$('networkStatus').textContent=status==='SUBSCRIBED'?'● Live':status==='CHANNEL_ERROR'?'⚠ Reconnecting':'○ '+status;});
+ subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;roomConnection=status;renderRoomStatus();});
  poll=setInterval(()=>{if(document.visibilityState==='visible'&&room===id){fetchMembers().catch(console.warn);fetchMessages().catch(console.warn);if(chatPanelView==='scene')refreshChatPanel().catch(console.warn);}},18000);
  guardTimer=setInterval(()=>{if(document.visibilityState==='visible')checkOngoingSession().catch(console.warn);},4000);
  if(!portalIdentity.is_admin)try{localStorage.setItem('paths.activeSession',JSON.stringify({id,generation:activeGeneration}));}catch{}
