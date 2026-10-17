@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.9</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.10</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -85,7 +85,7 @@ body.authOpen{overflow:hidden}
 <link rel="stylesheet" href="portal.css">
 </head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.9</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.10</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -134,10 +134,12 @@ body.authOpen{overflow:hidden}
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
+<button id="selectionSpeaker" class="btn sm" type="button">Speaker</button>
 <button id="selectionEdit" class="btn sm" type="button">Edit</button>
 <button id="selectionDelete" class="btn sm" type="button">Delete</button>
 <button id="selectionCancel" class="btn sm" type="button">Cancel</button></div>
 
+<div id="messageUndo" class="hidden" role="status">Messages deleted. Saved state is unchanged. <button id="restoreMessages" class="btn sm" type="button">Undo</button></div>
 <div id="chatWorkspace" class="chatWorkspace"><div id="feed" class="feed" aria-live="polite" aria-label="Room messages" tabindex="0"></div><section id="chatPanel" class="chatPanel hidden" aria-live="polite" aria-label="Character workspace" tabindex="0"></section></div>
 </section>
 <section id="tools" class="scroll toolsPage hidden" aria-label="Paths Web tools">
@@ -192,11 +194,12 @@ body.authOpen{overflow:hidden}
 <button id="narratorClose" class="authExit narratorExit" type="button">Back to room</button>
 </section>
 </div>
+<div id="messageSpeakerOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="messageSpeakerTitle"><h2 id="messageSpeakerTitle">Change speaker</h2><p>Choose a participating character. Earlier narration and saved state will not be rewritten.</p><select id="messageSpeakerChoice" aria-label="New message speaker"></select><div class="buttons"><button id="messageSpeakerCancel" class="btn" type="button">Cancel</button><button id="messageSpeakerSave" class="btn primary" type="button">Save speaker</button></div></section></div>
 <div id="editOverlay" class="authOverlay hidden" role="presentation">
 <section id="editSheet" class="authSheet editSheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
 <h2 id="editTitle">Edit your action</h2>
-<p>Changes appear for both players. Actions already resolved by the narrator are locked.</p>
-<textarea id="editBody" maxlength="8000" aria-label="Edit selected player action"></textarea>
+<p id="editNote">Changes appear for all participants.</p>
+<textarea id="editBody" maxlength="8000" aria-label="Edit selected message text"></textarea>
 <div class="buttons"><button id="editCancel" class="btn" type="button">Cancel</button>
 <button id="editSave" class="btn primary" type="button">Save changes</button></div>
 </section></div>
@@ -205,6 +208,7 @@ const url='https://fhjsoldgtqfizkwpehud.supabase.co',key='sb_publishable_hWZGWQy
 const $=id=>document.getElementById(id);
 let activeGeneration=null,guardTimer=null,guardPromise=null,rosterTimer=null,rosterPromise=null,concludedScene=null;
 let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,pending=null,narratorSnapshot=null;
+let editOriginal=null,webDeletedMessages=null;
 let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
 let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,activeCharacter='';
 const ownMember=()=>members.find(m=>m.user_id===user?.id);
@@ -316,7 +320,7 @@ $('toolsOpen').onclick=()=>{if($('headerMenuOverlay').classList.contains('hidden
 $('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
-function endLive(){webTyping.stop();if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();}
+function endLive(){webTyping.stop();if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();closeWebMessageSpeaker();webDeletedMessages=null;$('messageUndo').classList.add('hidden');}
 function renderRoomLog(items){
  const host=$('roomList');host.replaceChildren();if(!items.length){host.append(el('p','muted','No rooms yet. Create a room from your HUD to begin.'));return;}
  for(const [state,label]of [['active','Ongoing'],['ended','Concluded']]){const group=items.filter(x=>x.session_state===state);if(!group.length)continue;const section=el('section','roomLogGroup');section.append(el('h4','',label));for(const item of group){const button=el('button','btn roomLogButton'),head=el('span','row');button.type='button';head.append(el('strong','',item.title),el('span','playerStatus '+(state==='active'?'isInSession':'isNotInSession'),label));button.append(head);if(state==='ended')button.append(el('span','roomArchiveNote',item.notion_url?'Notion link saved':'No Notion link recorded'));button.onclick=()=>safe(()=>selectLoggedRoom(item));section.append(button);}host.append(section);}
@@ -365,8 +369,10 @@ async function refreshChatPanel(){
 async function changeInventory(id,character,body){if(room!==id||activeCharacter!==character)return;const {data,error}=await db.rpc('change_character_inventory',{p_room:id,p_character:character,...body});if(error)throw error;if(data!==true)throw Error('Could not confirm inventory change.');if(room===id&&activeCharacter===character&&chatPanelView==='inventory')await refreshChatPanel();}
 $('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));
 const isMine=m=>m&&!m.deleted_at&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
+const canManageWebMessage=m=>!!m&&!m.deleted_at&&!!user&&(isMine(m)||members.some(member=>member.user_id===user.id&&member.role==='owner'));
+const webVisibleText=m=>m.kind==='narrator'?m.body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim():m.body;
 function updateSelection(){
-  const all=new Set(roomMessages.filter(x=>!x.deleted_at).map(x=>x.id));
+  const all=new Set(roomMessages.filter(canManageWebMessage).map(x=>x.id));
   for(const id of selectedIds)if(!all.has(id))selectedIds.delete(id);
   $('selectionBar').classList.toggle('hidden',selectedIds.size===0||!!chatPanelView);
   $('selectionCount').textContent=selectedIds.size+' selected';
@@ -374,7 +380,8 @@ function updateSelection(){
   const allOoc=selected.length>0&&selected.every(m=>m.kind==='ooc');
   $('selectionMode').textContent=allOoc?'Character':'OOC';
   $('selectionMode').title=allOoc?'Return selected chat to character actions':'Mark selected chat as out of character';
-  $('selectionMode').disabled=selectedIds.size===0||working;
+  const narratorSelected=selected.some(message=>message.kind==='narrator');
+  $('selectionMode').disabled=selectedIds.size===0||working||narratorSelected;$('selectionSpeaker').disabled=selectedIds.size===0||working||narratorSelected;
   $('selectionEdit').disabled=selectedIds.size!==1||working;
   $('selectionDelete').disabled=!selectedIds.size||working;
   $('feed').querySelectorAll('.bubble[data-mid]').forEach(e=>{
@@ -384,14 +391,14 @@ function updateSelection(){
 }
 function clearSelection(){selectedIds.clear();updateSelection();}
 function toggleSelected(m){
-  if(!isMine(m))return;
+  if(!canManageWebMessage(m))return;
   if(selectedIds.has(m.id))selectedIds.delete(m.id);else selectedIds.add(m.id);
   updateSelection();
 }
 function installLongPress(box,m){
-  if(!isMine(m))return;
+  if(!canManageWebMessage(m))return;
   box.classList.add('owned');box.dataset.mid=m.id;box.tabIndex=0;box.setAttribute('role','button');
-  box.setAttribute('aria-label','Your action; long-press to select. Then tap other actions.');
+  box.setAttribute('aria-label',(m.kind==='narrator'?'Narration':'Message')+'; long-press to select. Then tap other messages.');
   let timer=null,held=false,startX=0,startY=0;
   const stop=()=>{clearTimeout(timer);timer=null;};
   box.addEventListener('pointerdown',e=>{if(e.button!==0)return;held=false;startX=e.clientX;startY=e.clientY;stop();timer=setTimeout(()=>{timer=null;held=true;toggleSelected(m);},480);});
@@ -573,29 +580,39 @@ $('publishNarrator').onclick=()=>safe(async()=>{
 
 
 function closeEdit(){
- $('editOverlay').classList.add('hidden');editId=null;
+ $('editOverlay').classList.add('hidden');editId=null;editOriginal=null;
  if($('authOverlay').classList.contains('hidden')&&$('narratorOverlay').classList.contains('hidden'))document.body.classList.remove('authOpen');
 }
 function openEdit(){
  if(selectedIds.size!==1)return;
  const m=roomMessages.find(x=>x.id===Array.from(selectedIds)[0]);
- if(!isMine(m))throw Error('Only your own messages may be edited.');
- editId=m.id;$('editBody').value=m.body;
+ if(!canManageWebMessage(m))throw Error('You do not have permission to edit this message.');
+ editId=m.id;editOriginal={...m,room_id:room};$('editBody').value=webVisibleText(m);$('editTitle').textContent=m.kind==='narrator'?'Edit narration':'Edit message';$('editNote').textContent=m.kind==='narrator'?'Text changes only. Saved inventory and Scene effects are preserved and will not run again.':'Earlier narration and saved state will not be rewritten. Players can only edit their own unresolved actions or OOC chat.';
  $('editOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('editBody').focus();
 }
 $('selectionCancel').onclick=clearSelection;
-$('selectionMode').onclick=async()=>{
- const ids=Array.from(selectedIds);
- if(!ids.length||!room)return;
- const allOoc=ids.every(id=>roomMessages.find(m=>m.id===id)?.kind==='ooc');
- const nextKind=allOoc?'player':'ooc';
- await safe(async()=>{
-   const {error}=await db.rpc('reclassify_own_messages',{p_room_id:room,p_message_ids:ids,p_kind:nextKind});
-   if(error)throw error;
-   clearSelection();await fetchMessages();
-   notice('Selected message'+(ids.length===1?'':'s')+' marked '+(nextKind==='ooc'?'OOC':'as character actions')+'.','good');
- });
-};
+async function changeWebMessages(action,kind=null,character=null){
+ const id=room,ids=action==='restore'?webDeletedMessages?.ids:[...selectedIds];if(!id||!ids?.length)return;
+ const {data,error}=await db.rpc('manage_hud_messages',{p_room:id,p_ids:ids,p_action:action,p_kind:kind,p_character:character});if(error)throw error;if(data!==ids.length)throw Error('Could not confirm message change. Refresh the room.');
+ const {data:rows,error:readError}=await db.from('messages').select('id,kind,character_name,deleted_at').eq('room_id',id).in('id',ids);if(readError)throw readError;
+ if(rows?.length!==ids.length||rows.some(row=>action==='delete'?!row.deleted_at:action==='restore'?!!row.deleted_at:row.kind!==kind||(kind==='player'&&character&&row.character_name!==character)))throw Error('Could not verify the changed messages. Refresh before retrying.');
+ webDeletedMessages=action==='delete'?{room:id,ids}:action==='restore'?null:webDeletedMessages;
+ closeWebMessageSpeaker();clearSelection();if(room===id){$('messageUndo').classList.toggle('hidden',!webDeletedMessages||webDeletedMessages.room!==id);await fetchMessages();}notice(action==='delete'?'Messages deleted. Saved state is unchanged.':action==='restore'?'Messages restored.':'Message speaker updated. Earlier outcomes are unchanged.','good');
+}
+function closeWebMessageSpeaker(){$('messageSpeakerOverlay').classList.add('hidden');if(['authOverlay','editOverlay','narratorOverlay'].every(id=>$(id).classList.contains('hidden')))document.body.classList.remove('authOpen');}
+function openWebMessageSpeaker(){
+ const selected=roomMessages.filter(message=>selectedIds.has(message.id));if(!selected.length||selected.some(message=>message.kind==='narrator'))return;
+ const owner=members.some(member=>member.user_id===user?.id&&member.role==='owner'),names=new Set();const select=$('messageSpeakerChoice');select.replaceChildren();
+ for(const member of members){if(!owner&&member.user_id!==user?.id)continue;for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name])if(name)names.add(name);}
+ for(const name of names){const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}const option=document.createElement('option');option.value='__paths_ooc__';option.textContent='Player chat (OOC)';select.append(option);
+ select.value=selected[0].kind==='ooc'?'__paths_ooc__':selected[0].character_name||select.options[0]?.value||'__paths_ooc__';$('messageSpeakerOverlay').classList.remove('hidden');document.body.classList.add('authOpen');select.focus();
+}
+$('selectionMode').onclick=()=>safe(()=>changeWebMessages('speaker',roomMessages.filter(message=>selectedIds.has(message.id)).every(message=>message.kind==='ooc')?'player':'ooc'));
+$('selectionSpeaker').onclick=openWebMessageSpeaker;
+$('messageSpeakerCancel').onclick=closeWebMessageSpeaker;
+$('messageSpeakerOverlay').onclick=event=>{if(event.target===$('messageSpeakerOverlay'))closeWebMessageSpeaker();};
+$('messageSpeakerSave').onclick=()=>safe(()=>{const choice=$('messageSpeakerChoice').value;return changeWebMessages('speaker',choice==='__paths_ooc__'?'ooc':'player',choice==='__paths_ooc__'?null:choice);});
+$('restoreMessages').onclick=()=>safe(()=>changeWebMessages('restore'));
 $('selectionEdit').onclick=()=>safe(openEdit);
 $('editCancel').onclick=closeEdit;
 $('editOverlay').addEventListener('click',e=>{if(e.target===$('editOverlay'))closeEdit();});
@@ -605,22 +622,14 @@ $('editSave').onclick=()=>safe(async()=>{
  if(!text||text.length>8000)throw Error('Enter 1 to 8000 characters.');
  $('editSave').disabled=true;
  try{
-   const {error}=await db.rpc('edit_own_message',{p_message_id:editId,p_new_body:text});
-   if(error)throw error;
-   closeEdit();clearSelection();await fetchMessages();notice('Action edited.','good');
+   const original=editOriginal;if(!original||original.room_id!==room)throw Error('Room changed. Reopen the message editor.');
+   const {data,error}=await db.rpc('edit_hud_message',{p_message_id:editId,p_new_body:text,p_expected_body:original.body});
+   if(error)throw error;if(data!==true)throw Error('Edit could not be confirmed.');
+   const {data:row,error:readError}=await db.from('messages').select('id,body,kind,edited_at').eq('id',editId).single();if(readError)throw readError;if(!row?.edited_at||webVisibleText(row)!==text)throw Error('Edit verification failed. Refresh before retrying.');
+   closeEdit();clearSelection();await fetchMessages();notice('Message edit saved and verified.','good');
  }finally{$('editSave').disabled=false;}
 });
-$('selectionDelete').onclick=async()=>{
- const ids=Array.from(selectedIds);
- if(!room||!ids.length)return;
- if(!confirm('Permanently delete '+ids.length+' selected message'+(ids.length===1?'':'s')+'?'))return;
- await safe(async()=>{
-   const {data,error}=await db.rpc('delete_own_messages',{p_room_id:room,p_message_ids:ids});
-   if(error)throw error;
-   clearSelection();await fetchMessages();
-   notice(data+' message'+(data===1?'':'s')+' deleted.','good');
- });
-};
+$('selectionDelete').onclick=()=>{if(!selectedIds.size||!room)return;if(confirm('Delete '+selectedIds.size+' selected message(s)? You can Undo. Inventory and Scene effects will stay unchanged.'))safe(()=>changeWebMessages('delete'));};
 
 function openAuthDialog(){$('authError').textContent='';$('authError').classList.add('hidden');$('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('google').focus();}
 function closeAuthDialog(){$('authOverlay').classList.add('hidden');document.body.classList.remove('authOpen');$('guest').focus();}
@@ -629,7 +638,7 @@ $('guest').onclick=()=>safe(enterPortal);
 $('introEnter').onclick=()=>safe(beginJourney);
 $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('headerMenuOverlay').classList.contains('hidden'))closeHeaderMenu();else if(e.key==='Escape'&&!$('codeOverlay').classList.contains('hidden'))returnToStart();else if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('messageSpeakerOverlay').classList.contains('hidden'))closeWebMessageSpeaker();else if(e.key==='Escape'&&!$('headerMenuOverlay').classList.contains('hidden'))closeHeaderMenu();else if(e.key==='Escape'&&!$('codeOverlay').classList.contains('hidden'))returnToStart();else if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
 $('google').onclick=()=>safe(async()=>{sessionStorage.setItem('paths.adminAuth','1');const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo,queryParams:{prompt:'select_account'}}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
 // Guests now enter only through one-use personal invitation links.
 $('guestTrial').classList.add('hidden');

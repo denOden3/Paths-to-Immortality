@@ -1,3 +1,9 @@
+## Web v0.8.10 — owner long-press controls match the HUD
+
+The Web previously installed long-press handlers only on the signed-in author's character/OOC messages. Room owners can now select narrator and other participant bubbles as well. Edit preserves the narrator state block, Speaker and Character/OOC apply only to non-narrator messages, and Delete uses the shared recoverable deletion with Undo. Original authorship and saved inventory/Scene effects remain unchanged. All edits and message changes are read back before reporting success. Ordinary players retain server-enforced own-message and narrated-action restrictions.
+
+Verified with an actual pointer-timer DOM test on an owner narrator bubble, participant speaker-picker tests, ordinary-player denial and the existing Web/HUD DOM and bridge checks. Refresh the Web and confirm its header shows v0.8.10; the HUD remains v0.8.19.
+
 ## HUD v0.8.19 / Web v0.8.9 — long-press message controls
 
 Message bubbles no longer show inline Edit buttons. Hold a bubble for 480 ms to select it, then tap other bubbles for multi-select; scrolling and pointer cancellation do not select. Right-click and Enter/Space are desktop alternatives. The selection toolbar provides Edit (one bubble), Speaker, Character/OOC, Delete and Cancel. The speaker picker uses participating characters; ordinary players see only their own choices. Paired owners may manage character/OOC/narrator bubbles in their active rooms; narrator identity cannot be reclassified. Original sender attribution is retained.
