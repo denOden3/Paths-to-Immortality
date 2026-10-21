@@ -10,7 +10,7 @@ vm.runInContext(`(async()=>{
  assert.ok($('back').classList.contains('hidden'));assert.equal($('composer').querySelector('small'),null);assert.equal($('voiceToggle'),null);assert.equal($('voiceStatus'),null);
  const ids=[...document.querySelectorAll('[id]')].map(x=>x.id);assert.equal(new Set(ids).size,ids.length,'duplicate IDs');
  for(const m of ${JSON.stringify(code)}.matchAll(/\$\('([^']+)'\)/g))assert.ok($(m[1]),'missing element '+m[1]);
- applyPresentation();show('welcome');assert.equal($('guest').parentElement.lastElementChild.id,'guest');assert.equal($('welcome').children.length,1);assert.equal($('accountAccess'),null);assert.ok(!$('toolsOpen').classList.contains('hidden'));
+ applyPresentation();show('welcome');assert.equal($('guest').parentElement.lastElementChild.id,'guest');assert.ok($('welcome').contains($('pti-starter')));assert.equal($('guest').textContent,'Multiplayer Session Sign In');assert.equal($('accountAccess'),null);assert.ok(!$('toolsOpen').classList.contains('hidden'));
  db={};await enterPortal();assert.equal(currentView,'identityGate');assert.equal(document.querySelectorAll('.identityChoice').length,2);
  show('intro');assert.equal(currentView,'welcome','Intro opened without invitation');
  openCodeDialog();assert.ok(!$('codeOverlay').classList.contains('hidden'));

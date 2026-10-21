@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.10</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.11</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -83,21 +83,199 @@ body.authOpen{overflow:hidden}
 .editSheet textarea{min-height:110px;max-height:38dvh;margin:12px 0}
 </style>
 <link rel="stylesheet" href="portal.css">
-</head><body>
+<style>
+/* Public solo entrance */
+#welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
+</style></head><body>
 <div class="app">
-<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.10</div></header>
+<header class="head"><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.11</div></header>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
 <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="welcome" class="scroll">
-<div class="card"><h2>Welcome, wandering cultivator!</h2>
-<p>Step into the Jianghu and forge your own path toward immortality.</p>
-<button id="guest" class="btn primary">Step forth to the Jianghu!</button>
+<nav class="ptiRibbon" aria-label="Public navigation">
+<details><summary>World Codex</summary><div><a href="#pti-rules">Narration rules</a><a href="#pti-recruitment">Recruitment & calendar</a><a href="#pti-courtyard">Outer courtyard</a><a href="#pti-uniforms">Dress & uniforms</a></div></details>
+<details><summary>Characters</summary><div><a href="#pti-starter">Create a solo character</a><a href="#pti-examiner">Meet Elder Shen</a></div></details>
+<details><summary>Play</summary><div><a href="#pti-starter">Solo adventure</a><a href="#guest">Multiplayer sign in</a></div></details>
+<details><summary>About</summary><div><a href="#pti-about">Paths to Immortality</a><a href="#pti-sources">Reference snapshot</a></div></details>
+</nav>
+<div class="ptiLandscape" aria-hidden="true"><svg viewBox="0 0 1000 180" preserveAspectRatio="xMidYMid slice"><circle cx="735" cy="48" r="28" fill="#edcf9c" opacity=".8"/><path d="M0 140 110 62 170 108 290 20 400 119 480 69 600 127 740 17 840 104 930 50 1000 106V180H0Z" fill="#65545e"/><path d="M0 157 95 111 180 148 330 64 460 157 560 102 670 143 800 76 910 145 1000 96V180H0Z" fill="#40313f"/><path d="M0 164Q190 130 350 167T680 155T1000 162V180H0Z" fill="#241e27"/></svg></div>
+<div class="ptiBody">
+<article id="pti-about"><h2>Welcome, wandering cultivator!</h2><p>Step into the Jianghu and forge your own path toward immortality.</p><p class="ptiIntro">Paths to Immortality is a collaborative xianxia world of mountain sects, cultivation, unlikely friendships, and choices with consequences. Explore a solo adventure with ChatGPT, or join an invited multiplayer session.</p></article>
+<section id="pti-starter" aria-labelledby="pti-start-title"><span class="ptiEyebrow">YOUR STORY STARTS HERE</span><h3 id="pti-start-title">Choose your path into the world</h3>
+<div class="ptiModes" role="group" aria-label="Prompt mode"><button id="pti-browse" class="btn" aria-pressed="true">With browsing<span>Read public references from PTI</span></button><button id="pti-offline" class="btn" aria-pressed="false">Without browsing<span>Include references in your prompt</span></button></div>
+<div id="pti-options" hidden><label>Character name <input id="pti-character" maxlength="80" placeholder="Leave blank to create together"></label><label>Starting scenario <select id="pti-scenario"><option value="recruitment">Cloudveil Recruitment · Day 1</option></select></label><p class="muted">A new, provisional character. Existing players’ profiles and histories are not included.</p><fieldset><legend>Additional references</legend><label><input type="checkbox" id="pti-add-courtyard" checked> Courtyard, meals & overnight lodging</label><label><input type="checkbox" id="pti-add-uniforms"> Sect dress & uniforms</label></fieldset></div>
+<div class="ptiPromptHeader"><label for="pti-prompt">Your solo starter</label><button id="pti-copy" class="btn primary" type="button">Copy Prompt</button></div><p class="muted">Paste into a new ChatGPT conversation. Confirm your character before the story begins.</p><textarea id="pti-prompt" readonly rows="8" aria-label="Generated solo prompt"></textarea><div class="ptiPromptFooter"><button id="pti-expand" class="btn" aria-expanded="false">Expand preview</button><span id="pti-copy-status" role="status" aria-live="polite"></span></div>
+<p class="muted">Solo adventures await the world owner’s approval before becoming shared canon.</p></section>
+<div class="ptiMultiplayer"><div><h3>Travel together</h3><span class="muted">Enter an invited session or manage your rooms.</span></div><button id="guest" class="btn primary">Multiplayer Session Sign In</button></div>
+<section id="pti-sources"><h3>Public starting references</h3><p class="muted">Selected player-safe excerpts from the 18 October 2026 solo pack. This is a dated snapshot, not a live Notion connection or the complete World Codex.</p><details class="ptiRef" id="pti-rules"><summary>Narration rules</summary><pre>## A. Universal Narration— all scenes
+1. **Respect player agency.** Control the environment, NPCs, ordinary consequences, and situations; never invent PCs&#x27; private thoughts, unsubmitted dialogue, consent, important choices or major movements, achievements, cultivation breakthroughs or possessions. Quote a PC&#x27;s speech only if their player provided it.
+2. **Attempts have uncertain outcomes.** Show what the PC attempts, then resolve it consistently with skill, setting, established limitations and consequences; don&#x27;t assume success. Do not control another PC&#x27;s reaction or consent.
+3. **NPCs are alive, not props.** They can act first, have motives, gossip, interrupt, disagree, command or complicate situations where appropriate, but cannot choose a PC&#x27;s major decisions.
+4. **Use vivid, responsive xianxia prose.** Let incidents develop naturally, with grounded descriptions, fair obstacles, and useful next decisions. Avoid gratuitous plot twists, sudden powers, repetitive prophecy, and spectacle invented merely to fill space.
+5. **Preserve distinct player knowledge.** Observed physical facts, NPC claims, rumors, opinions, future plans and private GM possibilities are different categories. A character&#x27;s opinion is not objective world law. Do not reveal hidden mystery answers or promote speculative bloodlines, powers or twists to canon.
+6. **Check actual sources.** Before consequential narration, retrieve the current Rules and relevant world/character/location/chronology/archived scene records *when access is available*. Never invent verification, content, character statistics, source links or prior chapter details. If a source is unavailable, state that plainly and either ask for it or proceed as a clearly provisional non-canonical scene.
+7. **Time and continuity.** The [Notion reference](https://app.notion.com/p/3f7b0ac52efe8155b36bfe2ca7493c62) defines dates (360-day year; four seasons, Early/Mid/End periods, 30 days each). Advance the fictional clock through plausible travel, activities and agreed transitions—not chat volume or real time. Confirm milestones instead of assuming a scheduled event actually happened. Preserve injuries, clothing, inventory, relationships and unfinished mysteries across confirmed checkpoints.
+8. **Canon hierarchy.** Approved Codex/world facts and verified played outcomes take precedence over unsourced improvisation. Flag incompatible claims for [Notion reference](https://app.notion.com/p/3fab0ac52efe8187818dcd595195c09e), preserving the original accounts; do not silently retcon them.
+## B. Solo Narration — one PC
+1. Start by requesting the player&#x27;s **approved character**, **fictional date or latest verified checkpoint**, **location**, and **activity/goal**, with optional time of day, pacing, tone, player-selected tracker fields and boundaries. Do not preset an existing player character; wait until the essentials are supplied.
+2. Read this rulebook and the relevant character page, known location, Heavenly Chronology, and previous solo/shared source records before deciding what is already established. Reconcile incompatible dates instead of automatically advancing the other PC.
+3. Narrate lively NPC responses and natural consequences without deciding the player&#x27;s actions, speech or private thoughts. Leave a clear opportunity to continue. A compact tracker may show requested fields; use **Unverified** for unknown numbers and values.
+4. At a natural stopping point, offer rather than impose closure: **“If you&#x27;re happy with this scene&#x27;s conclusion, say End scene to archive it; otherwise we can keep playing.”**
+5. When the player explicitly says **End scene**, stop scene narration and follow Section D. Mark a paused/unresolved ending accurately if the goal remains incomplete. A solo scene&#x27;s newly described world lore is an observation/proposal unless shared canon review approves it.
 
-</div>
+## D. End Scene, Chronicles &amp; Canon Review
+1. **Closure trigger:** An explicit **End scene** for solo play, or an authorized agreed end of a shared session. Do not close another player&#x27;s session or invent consent.
+2. **One durable scene record per session**, in the correct [Notion reference](https://app.notion.com/p/3f7b0ac52efe8155b36bfe2ca7493c62) (character&#x27;s Solo Chronicles or Shared Chronicles). Include approved PC/participants, in-world time span, ordered locations, goal, completed/paused status, chronological plot recap, NPC reactions, actual consequences, unresolved hooks and source/chat link **only if accessible**. Include full transcript only if actually accessible and requested.
+3. **Verified character changes only.** Record new items, cultivation, injuries, clothes, money, relationships and state changes only when actually established by play. Do not infer achievement from a proposal or scheduled event.
+4. **Provenance for world discoveries:** List each named or vaguely mentioned person, place, sect, shop, food, rumor, opinion and mystery with who stated it, when and in which source. Add appropriate leads to [Notion reference](https://app.notion.com/p/3fab0ac52efe81e7b414e003302dd015) without automatically making claims objective canon.
+5. **Cross-index without duplicating chapters.** Link the single chapter under every confirmed visited location&#x27;s history, every involved character&#x27;s Scene Log and all applicable dates on the Heavenly Calendar. Brief dated location changes should link to that chapter. Distinguish **current state** from **historical damage** and never assume unseen repairs.
+6. **Canon review:** Shared-world additions, contradictions and consequential changes require appropriate creator review. Use [Notion reference](https://app.notion.com/p/3fab0ac52efe8187818dcd595195c09e) for genuine conflicts; divergent opinions or hearsay may coexist. A scene archive, Notion page or submitted TXT file alone does **not** automatically approve new world facts.
+7. **No phantom saves:** Use actual available Notion tools and edit permissions, and verify creation/update before reporting success. If writes are unavailable or fail, say the scene is **not archived**, then provide a genuinely downloadable UTF-8 `.txt` backup of accessible scene facts, or a single plain-text code block if file creation is not possible. Never invent links, transcripts or missing events. The player may send the backup to the Codex owner for review; manual import is not automatic.
+8. **Concurrent timelines:** If new records conflict with newer edits or independent solo clocks, label the proposed update **Pending Reconciliation**; do not overwrite newer history.
 
-</section>
+## F. NPC permanence, discovery and spoiler controls
+### NPC permanence policy
+- **Core:** Approved Codex NPCs, including Elder Shen, remain canon.
+- **Recurring:** An improvised NPC who returns meaningfully, forms a significant relationship, gains an unresolved thread, or changes the world may be proposed as **Proposed Recurring** in a scene recap. Proposal alone is not approval: participating players confirm their played facts, and the campaign creators approve permanent additions under Sections A.8 and D.6 before a permanent profile is created.
+- **Incidental:** Background applicants, guards, and merchants need no permanent profile automatically. Their verified actions remain part of scene history even if no profile is created.
+- Preserve established identity, role, appearance, behavior, relationships, actions, and personal knowledge when promoting an NPC. A narrator saying “I’ll remember” or merely creating a record does not approve permanence.
+### Discovered information and shared profiles
+- Use the uniform NPC profile fields in [Notion reference](https://app.notion.com/p/3f7b0ac52efe812fa523e5ed4a10b5cd). Unknown or undisclosed information is **???**. Approved public Codex facts may be listed as public reference; private authoring facts are not automatically player-character knowledge.
+- Information can be learned through conversation, witnessed events, scrolls, magazines, notices, or other in-world sources. Record who learned it, when, and its scene/document source. A discovery need not be spoken directly by the NPC.
+- Distinguish confirmed facts, NPC claims, rumors, interpretations, and unresolved contradictions. An uncertain claim does not replace a confirmed field. Do not infer exact age from appearance, rank, or cultivation; retain the reference date of an age stated in an older document.
+- One character’s discovery is not automatically shared with every character. Keep knowledge ownership and any later sharing explicit, following A.5, C.1, and D.4.
+### Spoiler controls in Notion
+- Toggles are for readability, not access control: anyone with access can expand them. Store genuinely GM-only material in a separate page with appropriately restricted permissions.
+- A linked authoring dossier may contain undisclosed canon or optional plot seeds. Neither a link nor reading it out of character makes its contents known in the story.
+- NPC unknowns do not override the solo tracker convention in B.3: use **???** for undiscovered NPC profile fields and **Unverified** for unknown tracker numbers or values.
+### Record maintenance reference
+For practical profile and scene-log maintenance, see [Notion reference](https://app.notion.com/p/3f7b0ac52efe812b9f62dd757d55db1d). Historical exports live in [Notion reference](https://app.notion.com/p/3fab0ac52efe81f9b9e7e284bc2b24f9); neither location overrides this rulebook.</pre></details><details class="ptiRef" id="pti-recruitment"><summary>Recruitment · Day 1</summary><pre>**One year is 360 days:** four seasons (Spring, Summer, Autumn, Winter), each with **Early, Mid, and End** periods of exactly **30 days**. Thus there are twelve named 30-day periods per year.
+**Date format:** **Year 312 · Early Spring, 1st · Morning**. Use 1st, 2nd, 3rd, 4th … 30th, plus optional Midday, Afternoon, Evening, or Night. After **End Winter, 30th**, advance to the next year&#x27;s **Early Spring, 1st**. No Gregorian months, weekdays or leap days are assumed.
+Old recruitment references to **Day 1** and **Day 2** mean **Early Spring, 1st** and **Early Spring, 2nd** for the opening Year 312 recruitment schedule. Renaming the dates does not confirm any unplayed outcomes.
+
+At the southern footof the Qingluan Mountains stands an immense gray-stone gate engraved with clouds and cranes. Moss grows between steps; bells and prayer ribbons stir in cold mountain wind. Temporary awnings shelter registrars, visiting families, merchants, and hundreds of applicants. Above the gate, stone paths vanish into drifting mist. The Outer Disciples&#x27; Courtyard lies uphill beyond the supervised entrance.
+**Sensory cues:** cold morning mist, damp slate, ink and bamboo paper, steamed buns from temporary stalls, murmurs of anxious applicants, faint ringing from high mountain bells.
+## Opening state — Recruitment Day 1
+Registration opens after sunrise. Applicants receive a numbered wooden token and instructions. Elder **Shen Yizhen** (NPC-EXAM-01) supervises the process with junior disciples and clerks. The examination proceeds in adaptable phases rather than one rigid linear queue:
+1. **Registration &amp; Observation (Day 1):** Record identity, examination token, basic behavior, practical background, and interpersonal judgment. Permit ordinary social scenes and mistakes; recruitment seeks a viable broad cohort, not flawless personalities.
+2. **Basic Practical Assessment (Day 1):** Observe problem-solving, coordination, endurance, ordinary perception, and willingness to learn. A candidate may use familiar physical skills or unexpected ingenuity; permanent roots and full cultivation aptitude are **not yet revealed**.
+3. **Mountain Path Trial (Day 1):** The ordinary route is an achievable but tiring **ascent up the mountain**, testing perseverance, self-management, willingness to continue, and everyday judgment. Candidates may take breaks, move slowly, forage safely, assist others, or **withdraw voluntarily**. Passing does not require dramatic spiritual power. For candidates who actively pursue harder challenges, investigate strange phenomena, or welcome difficult tasks, the route can reveal **optional adaptive trials**—such as a moving obstacle, boulder, qi-responsive puzzle, or spiritual illusion—that reward ingenuity, initiative, and persistence. Taking more optional trials **may demonstrate unusual motivation or capabilities but does not prove a rare spiritual root**, which only the Day 2 crystal can reveal. Do not inflict harder challenges just to punish curiosity or because a player has more messages; offer meaningful opportunities to decline or approach challenges differently.
+4. **Heavenly Aptitude Examination, Acceptance Ceremony &amp; Peak Assignment (Day 2):** All qualifying candidates arrive at #central-assembly-hall to undertake a **second spiritual test** (crystal and supervised illusion/formation), learn their innate roots and affinities, receive a realistic cultivation-potential assessment, gain formal status, and select among the branches officially offered to them.
+**Important:** Day 1&#x27;s broadly accessible trial qualifies an applicant for **provisional entry and overnight accommodation**, not guaranteed Inner/Direct Disciple status or instant branch selection. Most qualifiers can be accepted as Outer Disciples despite imperfect conduct or mundane spiritual talent. The Day 2 test chiefly differentiates **talent, early training opportunities, resource allocation, and exceptional rank offers**. Do not silently skip either day&#x27;s interactive examinations or force character actions.
+### Mountain Path Trial — responsive difficulty, not a contest
+**Ordinary applicants:** Most complete a steep but manageable pilgrimage path by pacing themselves, observing the terrain, and reaching the upper registration area. Some rest, hesitate, change approach, or give up; these are believable individual outcomes, not personal failures the GM must mock. A steady candidate may complete the route while gathering fruit, provided they actually keep to the exam&#x27;s reasonable constraints.
+**Challenge seekers:** The same mountain can present deeper branches, formations, or obstacles to candidates who deliberately investigate or challenge themselves. A candidate might spend much longer solving a difficult qi-responsive test if her own actions lead there. Do not retroactively declare her a prodigy on that basis; mark actual observed behavior and reserve root revelations for Day 2.
+**Fair grading:** Finishing the ordinary route qualifies the candidate for broad provisional entry; additional challenges can influence individual observations and later invitations but are **not compulsory for acceptance**. Avoid awarding a fixed rank, root, or preferred peak solely because a player&#x27;s Day 1 scene was longer or more strenuous. Respect independent scene timelines and meaningful, nonviolent solutions.
+## After the Mountain Path Trial — Day 1
+Once each candidate completes the third trial, Elder Shen or the supervising staff direct them to the existing **#outer-disciple-courtyard** forum and its **Registration Hall** (LOC-COURT-01). Use the player&#x27;s own scene and record its time; do not automatically pull a second player into the same post.
+- **Provisional registration:** A clerk checks the applicant&#x27;s name, examination token, and completion record. This is a second, practical check-in for overnight arrangements, distinct from the original Mountain Gate registration. It **does not certify sect admission**.
+- **Dormitory assignment:** Staff assign temporary accommodation in the existing East or West Dormitories. Let the player learn the room and any relevant rules in play; do not predetermine roommates or force the protagonists to share a room. Applicants are guests awaiting the decision, not yet enrolled Outer Disciples.
+- **Food, rest, and exploration:** Staff explain where to find the Dining Hall and may point out the bathhouse or dormitories. Invite the player to eat, rest, or explore permitted parts of the lower courtyard. Do not rush through these freeform scenes, force a bedtime, or skip meaningful choices.
+- **Next-day announcement:** Tell every candidate clearly that **a second examination of spiritual roots, elemental affinities, and cultivation aptitude**, followed by formal acceptance and peak assignment, takes place on **Recruitment Day 2** at **#central-assembly-hall**. The Day 1 trials do not substitute for this crystal-and-formation examination.
+- **Access:** Overnight candidates may use the assigned guest facilities but may not claim full disciple privileges, official uniforms, branch membership, or unrestricted access to higher peaks.</pre></details><details class="ptiRef" id="pti-courtyard"><summary>Courtyard reference</summary><pre>Source: https://app.notion.com/p/3f7b0ac52efe81f8922ef08d575af609
+Source last edited: 2026-10-13T08:08:27.024Z
+
+**ID:** LOC-COURT-01
+**Status:** Core canon, version 1.1
+**Aliases:** Outer Courtyard; disciples&#x27; dormitories; lower terrace; novice quarters
+**Discord channel:** #outer-disciple-courtyard
+**Related entries:** WORLD-SECT-01, RULE-CULT-01, LOC-GATE-01
+## Physical location
+A broad lower-mountain terrace of wooden walkways, modest tiled dormitories, communal kitchens, laundry lines, training squares, and a notice board beneath an old ginkgo tree. Water runs through stone channels to a bathhouse and small practice garden. The courtyard is humble but well maintained; beyond its roofs, upper peaks disappear behind cloud.
+## Areas
+- **Registration Hall:** after the third recruitment trial, records candidates&#x27; provisional arrival, examination token, and overnight accommodation; following the Day 2 Central Assembly Hall acceptance ceremony, confirms formal admission and provides orientation, daily duties, and introductory schedules. Temporary registration is not disciple status.
+- **East and West Dormitories:** simple rooms assigned flexibly; do not predetermine player roommates or force the protagonists to share quarters.
+- **Dining Hall &amp; Bathhouse:** ordinary daily life, gossip, friendships, and interruptions.
+- **Practice Square:** supervised basic breathing, movement, and safe sparring.
+- **Ginkgo Notice Board:** lectures, work requests, disciplinary notices, and apprenticeships.
+- **Lower Trail Junction:** leads west to Sword Peak, east to Verdant Pill Hall and herb terraces, north toward Talisman &amp; Formation Hall, and southeast toward Spirit Beast Vale; authorization may be required.
+## Ordinary routine
+Morning bell; breakfast; assignments and introductory lessons; afternoon duties or free study; evening meal; nighttime quiet hours. The GM may vary the schedule for festivals, incidents, and individual mentors. Outer Disciples normally receive basic meals, accommodation, and entry-level teaching. Merit may earn access to materials or specialized lessons; do not introduce grinding or excessive accounting.
+## Initial state
+At the start of Recruitment Day 1, existing outer disciples are busy preparing beds and orientation material. Candidates completing the third Mountain Gate trial are directed here to check in at the Registration Hall, receive **temporary dormitory assignments**, and find food or rest while awaiting **Day 2 aptitude findings and formal acceptance at #central-assembly-hall**. They may use designated guest facilities but are not yet enrolled disciples. Staff should explain this distinction clearly. The area becomes the shared home base after acceptance, and dormitory arrangements can be confirmed or adjusted thereafter without forcing roommates. Its residents may be invented as needed, then promoted to canon if significant.
+## Independent player scenes
+Players may attend different lessons, make friends, pursue interests, or be away on branch errands. Different channel scenes occur in the same shared world; synchronize dates and major consequences with journal updates. A player&#x27;s absence does not stop all other events, but never force that player&#x27;s action offscreen.</pre></details><details class="ptiRef" id="pti-uniforms"><summary>Dress &amp; uniforms</summary><pre>Source: https://app.notion.com/p/3f7b0ac52efe81cf82f0dccdbacea678
+Source last edited: 2026-10-13T10:45:39.512Z
+
+**ID:** WORLD-UNIFORM-01
+**Status:** Approved starting canon · 2026-10-12
+**Aliases:** Cloudveil uniform; sect robes; discipline of heaven; First Cloud; sect insignia
+**Related entries:** WORLD-SECT-01, LOC-COURT-01, WORLD-DISC-01
+**Applies to:** All Cloudveil disciples, official ceremonies, and sect-issued garments
+## Visual identity
+Cloudveil Sect presents itself as an **austere, disciplined, ethereal orthodox sect**. Disciples aspire to seem aloof, graceful, composed, and impeccably mannered. Their clothing expresses restraint and order rather than luxury. Appearance matters because every disciple represents the sect&#x27;s dignity in public.
+The guiding ideal: *“The clouds may wander freely, but never without form.”* This is a dress-and-conduct maxim; the sect&#x27;s established institutional motto remains *“Let the heart remain clear; let the clouds conceal no debt.”*
+## Standard color palette
+- **Cloud White:** #EEEDE8 — standard outer robes.
+- **Morning Mist:** #C7D5DD — light lining and trim.
+- **Pale Slate Blue:** #8EA6B5 — collars, sashes, and everyday contrasts.
+- **Mountain Slate:** #4A6174 — belts, deeper rank accents, and practical outerwear.
+- **Soft Silver:** #B4B9BF — subtle ceremonial embroidery and ornaments.
+These colors are descriptive references rather than exact dye standards. Variations in fabric and weathering are normal.
+## Shared construction
+- Cross-collared, overlapping robe layers inspired by traditional hanfu silhouettes.
+- Controlled, elegant drape; waist secured with a practical sash or belt.
+- Sleeves wide enough to look graceful, but designed to be tied back for practice, herb work, cooking, or training.
+- Serviceable fabric and footwear for steep, damp mountain paths.
+- A small embroidered **cloud-enfolded mountain** insignia, with complexity differing by rank.
+- Gender-neutral base construction. Fitting, permitted hair ornaments, and small accessories allow individual expression without erasing sect identity.
+- Neat hair, correctly folded collar, well-kept sash, and clean robes are expected at official occasions.
+Disciples may wear suitable workwear and protective accessories when their tasks require them. Minor wear during labor is not itself disgraceful. Repeated carelessness and deliberate disregard for official dress expectations can attract correction.
+## Rank distinctions
+### Applicant — before admission
+Applicants wear their own clothing, including travel clothes and rags. They are **not** issued sect uniforms until accepted. A candidate must not be denied respect simply for being poor.
+### Outer Disciple — “The First Cloud”
+Plain cloud-white cotton or linen-like robes, pale mist-blue trim, slate-blue sash, minimal cloud insignia near the upper chest or collar, and sturdy cloth shoes. Practical, affordable, and easy to launder and mend. A simple wooden hairpin is acceptable.
+A newly admitted disciple may receive slightly oversized robes, practical for later growth and appropriate to his modest standing.
+### Inner Disciple
+Finer construction and layered fabric, deeper blue-gray accents, restrained silver-thread cloud embroidery at cuffs and collar, and official identity jade. More refined without ostentation.
+### Core Disciple
+Well-made cloud-white and slate-blue robes, distinguished silver embroidery, elaborate but restrained sash or fastening, superior drape and individual authorized touches. Prestige derives from craftsmanship and composure rather than gaudy ornament.
+### Elders and Peak/Branch Leaders
+Greater personal latitude reflecting discipline and office. Their official robes retain an unmistakable Cloudveil insignia and dignified bearing. Authority symbols and garments may differ by appointment.
+## Branch identity
+All cultivation branches retain the shared Cloudveil silhouette. Specialization is shown through accessories and protective modifications rather than permanently exclusive color schemes.
+- Sword practitioners: fitted training sleeves, guards, sturdy belts.
+- Verdant Pill Hall: herb pouches, protective aprons, easy-to-secure cuffs.
+- Talisman &amp; Formation Hall: document cases, brush rolls, tool loops.
+- Spirit Beast Vale: durable fieldwear and animal-handling accessories.
+- Wuxing Peak: protective forearm wraps, reinforced training wear, equipment straps, and practical weapon-specific safety accessories.
+- Future approved branches may define suitable variations without redesigning the entire sect uniform.
+## Insignia
+A restrained **mountain summit embraced by curling cloud** symbolizes elevation, endurance, clarity within mist, and disciplined freedom. It may appear on uniforms, recruitment documents, entry gates, jade identity tokens, and official seals.
+## Dress culture
+Cloudveil values propriety and reputation. Disciples should maintain clean, properly worn official clothing, orderly hair, courtesy to elders and peers, and self-control in public. Enforcement must consider hardship, duties, safety, and the possibility of honest mistakes; discipline is not a pretext to humiliate the vulnerable.
+## Cross-reference
+The Disciplinary Hall wears a distinct **storm/thundercloud variant**, documented in WORLD-DISC-01. Its dark uniform marks delegated institutional authority rather than membership in an additional cultivation peak.</pre></details><details class="ptiRef" id="pti-examiner"><summary>Elder Shen · Public reference</summary><pre>Source: https://app.notion.com/p/3f7b0ac52efe812fa523e5ed4a10b5cd
+Source last edited: 2026-10-16T11:41:57.568Z
+
+Elder Shen Yizhen
+**Name:** Shen Yizhen
+**Title / aliases:** Elder Shen; recruitment examiner
+**Age:** ???
+**Gender / pronouns:** ???
+**Affiliation:** Cloudveil Sect, Recruitment Office
+**Role:** Senior Elder supervising the annual entrance examination
+**Appearance:** Tall and slightly spare; slate-blue robes with silver-thread cuffs; dark hair held by a plain wooden hairpin; usually carries a narrow bamboo writing tablet.
+**Public reputation:** Strict, observant, and consistent with examination procedures.
+**Cultivation realm / stage:** ???
+**Abilities / techniques:** ???
+**Background / origins:** ???
+**Relationships:** ???
+**Last confirmed whereabouts / date:** ???
+**Known encounters / events:** ???
+**Discovery sources:** The approved Codex supplies the public identity, role, appearance, and reputation above. No played discovery scene or document reference has been verified here yet; other fields remain ???.
+
+## Elder Shen — GM behavior and legitimate authority excerpt
+Source: https://app.notion.com/p/3f7b0ac52efe8104b5cad6cd04d507ed
+Source last edited: 2026-10-12T16:07:10.860Z
+
+## Voice and behavior
+Speaks in concise sentences, often with very dry humor. Observes before judging; refuses blatant bribes and performs his obligations carefully. Not needlessly cruel, not automatically kindly, and not easily flattered. May grow warmer toward diligent or inventive students, but trust must be earned. He notices procedural irregularities and dislikes wasting applicant potential on a technicality.
+## Duties and legitimate power
+Can direct registration staff, enforce examination safety, pause tests, investigate irregularities, and recommend admission or further assessment. He **does not** single-handedly overrule the Sect Master or assign a candidate a lifelong destiny. He may know applicant files and examination methods, but not unspoken player thoughts or unwitnessed events.</pre></details></section></div></section>
 <section id="identityGate" class="scroll hidden" aria-label="Choose your identity"><div class="portalHero"><h2>Before we begin your journey, please tell me who you are:</h2></div><div class="identityChoices"><button id="chooseAdministrator" class="identityChoice" type="button"><span class="identityIcon">☯</span><strong>The Jade Emperor</strong><span>The Administrator</span></button><button id="choosePlayer" class="identityChoice" type="button"><span class="identityIcon">☁</span><strong>A Wandering Cultivator</strong><span>A Player</span></button></div></section>
 <section id="intro" class="scroll hidden" aria-label="Session introduction">
 <div class="portalHero"><h2 id="playerWelcome"></h2><p id="playerGreeting"></p></div>
@@ -674,7 +852,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState!==
 window.addEventListener('online',()=>{if(room)fetchMessages().catch(console.warn);});
 
 const DEFAULT_PRESENTATION=Object.freeze({
- startTitle:'Welcome, wandering cultivator!',startCopy:'Step into the Jianghu and forge your own path toward immortality.',startButton:'Step forth to the Jianghu!',
+ startTitle:'Welcome, wandering cultivator!',startCopy:'Step into the Jianghu and forge your own path toward immortality.',startButton:'Multiplayer Session Sign In',
  playerTitle:'Welcome, {player}!',playerCopy:'Are you ready to continue your journey to the Jianghu?',
  codeLabel:'Insert invitation code for a session',generateButton:'Check invitation',beginButton:'Begin your journey!',density:'comfortable',alignment:'alternating',width:'standard'
 });
@@ -685,7 +863,7 @@ function cleanPresentation(raw){const result={...DEFAULT_PRESENTATION};for(const
 function el(tag,cls,text){const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=text;return x;}
 function greeting(p,name){return {title:p.playerTitle.replaceAll('{player}',name||'wanderer'),copy:p.playerCopy};}
 function applyPresentation(){
- $('welcome').querySelector('h2').textContent=presentation.startTitle;$('welcome').querySelector('p').textContent=presentation.startCopy;$('guest').textContent=presentation.startButton;
+ $('welcome').querySelector('h2').textContent=presentation.startTitle;$('welcome').querySelector('p').textContent=presentation.startCopy;$('guest').textContent='Multiplayer Session Sign In';
  $('sessionCodeLabel').textContent=presentation.codeLabel;$('generateScene').textContent='Check invitation';$('introEnter').textContent=presentation.beginButton;
  const app=document.querySelector('.app');app.dataset.density=presentation.density;app.dataset.align=presentation.alignment;app.dataset.width=presentation.width;updateGreeting();
 }
@@ -812,4 +990,26 @@ async function boot(){try{
  if(sessionStorage.getItem('paths.adminAuth')){sessionStorage.removeItem('paths.adminAuth');await finishAdministratorSignIn();}else if(user&&!portalIdentity.is_admin){await resumeOngoingSession();}
 }catch(e){console.error(e);notice('The entrance could not load. Check your connection and reload: '+e.message,'error');}}
 boot();
-</script></body></html>
+</script>
+<script id="pti-landing-script">
+(()=>{
+const q=id=>document.getElementById(id);let mode='browse';
+const base=`Act as GM for a player-controlled solo adventure in Paths to Immortality. This is provisional solo play, awaiting the world owner's canon review. Do not import existing player histories or claim Notion/database writes.
+First read the supplied references. Treat them as a dated snapshot from 18 October 2026, not verified current canon. Source links inside excerpts are provenance; no Notion connection is required. Ask for missing consequential facts instead of inventing them. Preserve player agency and play major progression interactively.
+Begin with one compact intake, not narration: character name, appearance/background, ordinary starting belongings, and confirmation of Year 312 · Early Spring, 1st · Morning · Cloudveil Mountain Gate; goal: attempt first-day recruitment. Ask optional pacing and boundaries. A new character starts Mortal/Unawakened with unexamined roots unless an approved profile establishes otherwise. No guaranteed admission, roots, powers, rewards or peak. Day 1 offers provisional lodging; roots and formal admission belong to Day 2. Do not advance to Day 2 automatically.
+When I say End scene, stop and provide a copyable plain-text session record of actual events, confirmed changes, unresolved hooks and final checkpoint. Mark it Awaiting canon review; not saved to Notion. Use the reference rulebook's recording fields; if file creation is unavailable, use a text block.
+`;
+function render(){q('pti-options').hidden=mode!=='offline';q('pti-browse').setAttribute('aria-pressed',mode==='browse');q('pti-offline').setAttribute('aria-pressed',mode==='offline');
+const url=new URL(location.href);url.hash='';url.search='';
+let result=base;
+if(mode==='browse')result+='\nRead the public starting references on '+url.href+'#pti-sources (Narration rules, Recruitment, Courtyard, and Elder Shen). Retrieve the actual reference text, not just the title or snippet. If retrieval fails or is incomplete, disclose it and ask me to use PTI’s Without browsing starter; do not start the scene or claim compliance. Confirm the reference snapshot date in your intake.';
+else{const name=q('pti-character').value.trim();if(name)result+='\nProposed character name: '+name+'\n';const ids=['rules','recruitment','examiner'];if(q('pti-add-courtyard').checked)ids.push('courtyard');if(q('pti-add-uniforms').checked)ids.push('uniforms');result+='\nUse the following embedded references without browsing. Do not require external retrieval.\n';for(const id of ids)result+='\n--- '+q('pti-'+id).querySelector('summary').textContent+' ---\n'+q('pti-'+id).querySelector('pre').textContent+'\n';}
+q('pti-prompt').value=result;q('pti-copy-status').textContent=result.length.toLocaleString()+' characters';}
+q('pti-browse').onclick=()=>{mode='browse';render()};q('pti-offline').onclick=()=>{mode='offline';render()};q('pti-options').addEventListener('input',render);q('pti-options').addEventListener('change',render);
+q('pti-copy').onclick=async()=>{try{await navigator.clipboard.writeText(q('pti-prompt').value);q('pti-copy-status').textContent='Copied — ready to paste.'}catch{q('pti-prompt').focus();q('pti-prompt').select();q('pti-prompt').setSelectionRange(0,q('pti-prompt').value.length);q('pti-copy-status').textContent='Select Copy from your device’s text menu.'}};
+q('pti-expand').onclick=()=>{const expanded=q('pti-expand').getAttribute('aria-expanded')!=='true';q('pti-expand').setAttribute('aria-expanded',expanded);q('pti-prompt').rows=expanded?24:8;q('pti-expand').textContent=expanded?'Collapse preview':'Expand preview'};
+const menus=[...document.querySelectorAll('.ptiRibbon>details')];for(const m of menus)m.addEventListener('toggle',()=>{if(m.open)for(const other of menus)if(other!==m)other.open=false});document.addEventListener('click',e=>{if(!e.target.closest('.ptiRibbon'))menus.forEach(m=>m.open=false)});document.addEventListener('keydown',e=>{if(e.key==='Escape')menus.forEach(m=>m.open=false)});
+document.querySelectorAll('.ptiRibbon a').forEach(a=>a.addEventListener('click',()=>{const target=document.querySelector(a.getAttribute('href'));if(target?.matches('details'))target.open=true;menus.forEach(m=>m.open=false);if(target)target.scrollIntoView({block:'start'})}));render();
+})();
+</script>
+</body></html>
