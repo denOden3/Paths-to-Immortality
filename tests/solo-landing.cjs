@@ -3,10 +3,11 @@ const {parseHTML}=require(process.env.PORTAL_DOM_MODULE||'/tmp/paths-qa/node_mod
 const html=fs.readFileSync('index.html','utf8'),{document,window}=parseHTML(html);
 let copied='';const location={href:'https://denoden3.github.io/Paths-to-Immortality/?invite=private#old'};
 const script=document.getElementById('pti-landing-script').textContent;
-vm.runInNewContext(script,{document,location,URL,navigator:{clipboard:{writeText:async t=>{copied=t}}}});
+vm.runInNewContext(fs.readFileSync('reference-data.js','utf8'),{window});
+vm.runInNewContext(script,{document,location,URL,window,navigator:{clipboard:{writeText:async t=>{copied=t}}}});
 const q=id=>document.getElementById(id);
 (async()=>{
-assert.ok(q('pti-prompt').value.includes('https://denoden3.github.io/Paths-to-Immortality/#pti-sources'));
+assert.ok(q('pti-prompt').value.includes('https://denoden3.github.io/Paths-to-Immortality/codex/rules.html'));
 assert.ok(!q('pti-prompt').value.includes('invite=private'));
 assert.equal(q('pti-options').hidden,true);
 q('pti-add-courtyard').checked=true;
