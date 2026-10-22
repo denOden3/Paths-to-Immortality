@@ -10,5 +10,24 @@ const down=new Event('pointerdown');Object.assign(down,{button:0,clientX:0,clien
 assert.ok(!$('selectionBar').classList.contains('hidden'),'owner narrator long-press did not show toolbar');assert.ok(!$('selectionEdit').disabled);assert.ok($('selectionMode').disabled);assert.ok($('selectionSpeaker').disabled);
 vm.runInContext('openEdit()',ctx);assert.equal($('editBody').value,'A story.');assert.match($('editNote').textContent,/will not run again/);vm.runInContext('closeEdit();clearSelection();toggleSelected(roomMessages[1]);openWebMessageSpeaker()',ctx);assert.ok(!$('selectionSpeaker').disabled);assert.ok($('messageSpeakerChoice').textContent.includes('Guest'));assert.ok($('messageSpeakerChoice').textContent.includes('Owner'));
 vm.runInContext("closeWebMessageSpeaker();clearSelection();user={id:'guest'};",ctx);assert.equal(vm.runInContext('canManageWebMessage(roomMessages[0])',ctx),false,'player can select narration');assert.equal(vm.runInContext('canManageWebMessage(roomMessages[1])',ctx),true);vm.runInContext('toggleSelected(roomMessages[1]);openWebMessageSpeaker()',ctx);assert.ok(!$('messageSpeakerChoice').textContent.includes('Owner'));assert.ok($('messageSpeakerChoice').textContent.includes('Guest'));
+
+// Chat controls: hold Speaker for the character list, never exposing other users' characters.
+assert.ok($('webSpeakerMenu'),'Web speaker menu missing');
+assert.equal($('modeSpeaker').getAttribute('aria-haspopup'),'menu');
+assert.equal($('modeSpeaker').getAttribute('aria-controls'),'webSpeakerMenu');
+assert.ok($('chatJumpTop')&&$('chatJumpBottom'),'Chat jump controls missing');
+$('modeSpeaker').getBoundingClientRect=()=>({right:420,top:420,width:160,height:44});
+vm.runInContext("user={id:'owner'};activeCharacter='Owner';setChatMode('player');openWebSpeakerMenu()",ctx);
+assert.ok(!$('webSpeakerMenu').classList.contains('hidden'),'speaker list failed to open');
+assert.ok($('webSpeakerMenu').textContent.includes('Owner'),'own character not shown');
+assert.ok(!$('webSpeakerMenu').textContent.includes('Guest'),'another player character leaked to selector');
+$('webSpeakerMenu').querySelector('button').click();
+assert.equal(vm.runInContext('activeCharacter',ctx),'Owner');
+vm.runInContext("user={id:'guest'};activeCharacter='Guest';setChatMode('player');openWebSpeakerMenu()",ctx);
+assert.ok($('webSpeakerMenu').textContent.includes('Guest'),'guest character omitted');
+assert.ok(!$('webSpeakerMenu').textContent.includes('Owner'),'guest can browse other characters');
+vm.runInContext('closeWebSpeakerMenu()',ctx);
+assert.ok(code.includes(".order('created_at',{ascending:false}).order('id',{ascending:false}).limit(300)"),'Web should load the most recent 300 messages');
+assert.ok(code.includes("roomMessages=(data||[]).slice().reverse();"),'newest-first fetch should display chronologically');
 assert.ok(code.includes("db.rpc('manage_hud_messages'"));assert.ok(code.includes("db.rpc('edit_hud_message'"));assert.ok(!code.includes("db.rpc('delete_own_messages'"));
 console.log('PASS: owner narrator and other-player selection, real long-press toolbar, narrator-safe text editor, participant speaker picker and ordinary-player limits');
