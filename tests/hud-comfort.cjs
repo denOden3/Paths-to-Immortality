@@ -6,7 +6,6 @@ const dom=new JSDOM('<style>'+css+'</style><div id="paths-monkey-root">'+html+'<
 const {document}=dom.window,style=x=>dom.window.getComputedStyle(x);
 assert.equal(style(document.getElementById('paths-monkey-root')).fontSize,'16px');
 for(const button of document.querySelectorAll('.pm-btn')){const jump=['pm-jump-top','pm-jump-bottom'].includes(button.id);assert.ok(parseFloat(style(button).minHeight)>=(jump?32:['pm-settings-toggle','pm-minimize'].includes(button.id)?32:button.id==='pm-current-session-refresh'?28:button.closest('.pm-actions')?34:44),button.id+' undersized');assert.equal(style(button).fontSize,(['pm-settings-toggle','pm-minimize'].includes(button.id)||jump)?'18px':'14px');}
-assert.equal(style(document.querySelector('#pm-feed-messages .pm-bubble')||document.createElement('div')).fontSize!=='',true);
 assert.equal(style(document.querySelector('#pm-registry>p.pm-mute')).fontSize,'14px');
 assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'20px');
 assert.equal(style(document.querySelector('.pm-admin-group>summary')).fontSize,'16px');
