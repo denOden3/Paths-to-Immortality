@@ -274,6 +274,7 @@ function cycleWebSpeaker(){
 function closeWebSpeakerMenu(){
   $('webSpeakerMenu').classList.add('hidden');
   $('modeSpeaker').setAttribute('aria-expanded','false');
+  webSpeakerLongPressed=false;
 }
 function openWebSpeakerMenu(){
   webTyping.stop();const menu=$('webSpeakerMenu'),choices=ownCharacters();menu.replaceChildren();
