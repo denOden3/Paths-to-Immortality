@@ -4,17 +4,23 @@ const dom=new JSDOM('<div id="paths-monkey-root">'+template+'</div>'),document=d
 assert.equal($('message-mode'),null,'separate OOC control should be removed');
 assert.equal($('message-speaker').textContent,'Speaker ▾');
 assert.equal($('message-speaker').getAttribute('aria-haspopup'),'dialog');
-const messages=[{id:'a',kind:'player',sender_id:'owner',character_name:'First',body:'One'},{id:'b',kind:'ooc',sender_id:'owner',body:'Two'},{id:'n',kind:'narrator',body:'A story. [PATHS_STATE]{"version":1,"inventory":[],"scenes":[]}[/PATHS_STATE]'}];
-const ctx=vm.createContext({document,$,account:{user_id:'owner'},paired:true,busy:false,selectedRoom:{id:'room',title:'Room'},members:[{user_id:'owner',allowed_characters:['First','Second']},{user_id:'guest',allowed_characters:['Guest']}],messages:structuredClone(messages),selectedMessageIds:new Set(),messageSelectionRoom:null,lastDeletedMessages:null,setTimeout:fn=>{timers.set(++counter,fn);return counter;},clearTimeout:id=>timers.delete(id),visibleNarration:body=>body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim(),feedback(){},authed:async(method,path,options)=>{
+const messages=[{id:'a',kind:'player',sender_id:'owner',character_name:'First',body:'One'},{id:'b',kind:'ooc',sender_id:'owner',body:'Two'},{id:'c',kind:'player',sender_id:'guest',character_name:'Guest',body:'Other player'},{id:'d',kind:'ooc',sender_id:'guest',body:'Other OOC'},{id:'n',kind:'narrator',body:'A story. [PATHS_STATE]{"version":1,"inventory":[],"scenes":[]}[/PATHS_STATE]'}];
+const ctx=vm.createContext({document,$,account:{user_id:'anonymousMonkey'},paired:true,busy:false,selectedRoom:{id:'room',title:'Room'},members:[{role:'owner',user_id:'owner',allowed_characters:['First','Second']},{role:'member',user_id:'guest',allowed_characters:['Guest']}],messages:structuredClone(messages),selectedMessageIds:new Set(),messageSelectionRoom:null,lastDeletedMessages:null,setTimeout:fn=>{timers.set(++counter,fn);return counter;},clearTimeout:id=>timers.delete(id),visibleNarration:body=>body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim(),feedback(){},authed:async(method,path,options)=>{
  if(method==='POST'){const b=options.body;for(const m of ctx.messages.filter(m=>b.p_ids.includes(m.id))){if(b.p_action==='delete')m.deleted_at='now';else if(b.p_action==='restore')m.deleted_at=null;else {m.kind=b.p_kind;if(b.p_character)m.character_name=b.p_character;}}return b.p_ids.length;}
  const ids=path.match(/id=in\.\(([^)]*)\)/)[1].split(',');return ctx.messages.filter(m=>ids.includes(m.id));
 },refreshScene:async()=>vm.runInContext('renderFeed()',ctx)});
-vm.runInContext(source.slice(source.indexOf('  function renderFeed() {'),source.indexOf('  async function postAction()')),ctx);
+vm.runInContext(source.slice(source.indexOf('  function messageAlignmentClass('),source.indexOf('  async function postAction()')),ctx);
 function pointer(el,type,x=0,y=0){const event=new dom.window.Event(type,{bubbles:true,cancelable:true});Object.assign(event,{button:0,clientX:x,clientY:y});el.dispatchEvent(event);}
 function bubble(id){return $('feed-messages').querySelector('[data-message-id="'+id+'"]');}
 function flush(){for(const [id,fn] of [...timers]){timers.delete(id);fn();}}
 (async()=>{
  vm.runInContext('renderFeed()',ctx);assert.equal($('feed-messages').querySelectorAll('button').length,0);assert.ok($('message-selection').classList.contains('pm-hide'));
+ assert.ok(bubble('a').classList.contains('pm-own'),'paired owner action should appear on right even though Monkey ID differs');
+ assert.ok(bubble('b').classList.contains('pm-own'),'owner OOC should appear on right');
+ assert.ok(bubble('c').classList.contains('pm-other'),'other character should appear on left');
+ assert.ok(bubble('d').classList.contains('pm-other'),'other player OOC should appear on left');
+ assert.ok(bubble('n').classList.contains('pm-narrator'),'narrator must stay visually separate');
+ assert.ok(source.includes('.pm-bubble.pm-own{margin-left:auto')&&source.includes('.pm-bubble.pm-other{margin-left:0'),'chat alignment styles are present');
  pointer(bubble('a'),'pointerdown');pointer(bubble('a'),'pointermove',20,0);flush();assert.equal(ctx.selectedMessageIds.size,0,'scroll selected a bubble');
  pointer(bubble('a'),'pointerdown');pointer(bubble('a'),'pointercancel');flush();assert.equal(ctx.selectedMessageIds.size,0,'canceled pointer selected');
  pointer(bubble('a'),'pointerdown');flush();assert.equal(ctx.selectedMessageIds.size,1);assert.ok(!$('message-selection').classList.contains('pm-hide'));pointer(bubble('a'),'pointerup');bubble('a').click();assert.equal(ctx.selectedMessageIds.size,1,'release unselected long-pressed bubble');
@@ -26,7 +32,9 @@ function flush(){for(const [id,fn] of [...timers]){timers.delete(id);fn();}}
  await vm.runInContext("manageSelectedMessages('speaker','player','Second')",ctx);assert.ok(bubble('a').textContent.includes('Second'));assert.ok($('message-speaker-overlay').classList.contains('pm-hide'));
  bubble('a').dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter'}));vm.runInContext('openMessageSpeakerPicker()',ctx);assert.equal($('message-speaker-choice').value,'Second');assert.equal($('message-speaker-choice').lastElementChild.value,'__paths_ooc__');
  await vm.runInContext("manageSelectedMessages('speaker','ooc',null)",ctx);assert.ok(bubble('a').textContent.includes('OOC'),'selected-message speaker picker must support OOC');
- ctx.paired=false;vm.runInContext('renderFeed()',ctx);assert.equal(bubble('n'),null,'ordinary player can select narrator');bubble('a').dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter'}));vm.runInContext('openMessageSpeakerPicker()',ctx);assert.deepEqual([...$('message-speaker-choice').options].map(x=>x.textContent),['First','Second','Player chat (OOC)']);
+ ctx.paired=false;ctx.account.user_id='owner';vm.runInContext('renderFeed()',ctx);
+ assert.ok(bubble('a').classList.contains('pm-own'),'nonpaired user identity should also align right');
+ assert.ok(bubble('c').classList.contains('pm-other'),'nonpaired other speaker should align left');assert.equal(bubble('n'),null,'ordinary player can select narrator');bubble('a').dispatchEvent(new dom.window.KeyboardEvent('keydown',{key:'Enter'}));vm.runInContext('openMessageSpeakerPicker()',ctx);assert.deepEqual([...$('message-speaker-choice').options].map(x=>x.textContent),['First','Second','Player chat (OOC)']);
  ctx.selectedRoom={id:'another'};vm.runInContext('updateMessageSelection()',ctx);assert.equal(ctx.selectedMessageIds.size,0,'selection followed another room');
- console.log('PASS: combined Speaker menu including OOC, scroll/cancel protection, multi-select, keyboard/right-click, narrator restrictions, verified Delete/Undo and character/OOC conversions');
+ console.log('PASS: own-right / other-left / narrator-center bubbles, paired versus nonpaired identity, combined Speaker/OOC, scroll/cancel protection, multi-select, keyboard/right-click, narrator restrictions, verified Delete/Undo and character/OOC conversions');
 })().catch(e=>{console.error(e);process.exitCode=1;});
