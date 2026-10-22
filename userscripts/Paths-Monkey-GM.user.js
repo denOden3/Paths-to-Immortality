@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.21
+// @version      0.8.22
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.21';
+  const VERSION = '0.8.22';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -388,14 +388,16 @@
     #paths-monkey-root .pm-bubble.pm-oocBubble{background:#2b2632;border-style:dashed}
     /* v0.8.21: WhatsApp-style conversation alignment. Authenticated identity, not
        speaker label, determines the side. Narration remains centered. */
-    #paths-monkey-root .pm-bubble{max-width:min(72ch,84%)}
+    #paths-monkey-root .pm-bubble{max-width:min(70ch,76%);font-size:17px;line-height:1.65}
     #paths-monkey-root .pm-bubble.pm-own{margin-left:auto;margin-right:0;background:#49303c;border-color:#a77682;border-radius:12px 12px 4px 12px}
     #paths-monkey-root .pm-bubble.pm-other{margin-left:0;margin-right:auto;border-radius:12px 12px 12px 4px}
-    #paths-monkey-root .pm-bubble.pm-narrator{margin-left:auto;margin-right:auto;max-width:min(84ch,96%);border-radius:9px}
+    #paths-monkey-root .pm-bubble.pm-narrator{margin-left:auto;margin-right:auto;max-width:min(72ch,100%);border-radius:9px}
     #paths-monkey-root .pm-bubble.pm-own.pm-oocBubble{background:#423247;border-style:dashed}
     #paths-monkey-root .pm-bubble.pm-own.pm-selected{background:#634153}
     @media(max-width:600px){#paths-monkey-root .pm-bubble:not(.pm-narrator){max-width:92%}}
     #paths-monkey-root .pm-by{font-size:14px;line-height:1.4;margin-bottom:6px}
+    #paths-monkey-root .pm-message-head{align-items:baseline;gap:12px}
+    #paths-monkey-root .pm-message-time{color:var(--pm-muted);font-size:12px;font-weight:400;white-space:nowrap;margin-left:auto}
     #paths-monkey-root .pm-compose{padding:6px 10px 8px;background:#251d26;box-shadow:0 -1px 4px #0b080c55}
     #paths-monkey-root .pm-actions{margin:0 0 6px;padding:2px 2px 4px;gap:4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#ab8e98 #251d26;}
     #paths-monkey-root .pm-actions>.pm-btn{flex:0 0 auto;white-space:nowrap;background:transparent;border-color:transparent;padding:8px 10px}
@@ -1076,7 +1078,10 @@ function createTypingNotifier(send,context){
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
       by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
       if(msg.edited_at)by.append(document.createTextNode(' · edited'));
-      const heading=document.createElement('div');heading.className='pm-message-head';heading.append(by);
+      const heading=document.createElement('div');heading.className='pm-message-head';
+      const stamp=document.createElement('span');stamp.className='pm-message-time';
+      if(msg.created_at){const timestamp=new Date(msg.created_at);if(!Number.isNaN(timestamp.getTime()))stamp.textContent=timestamp.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+      heading.append(by,stamp);
       const content=document.createElement('div');content.className='pm-bubble-copy';content.textContent=msg.kind==='narrator'?visibleNarration(msg.body):msg.body;
       bubble.append(heading,content);installMessageLongPress(bubble,msg);el.append(bubble);
     }
