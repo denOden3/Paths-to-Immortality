@@ -1,3 +1,9 @@
+## HUD v0.8.20 — unified message speaker picker
+
+The selected-message toolbar now shows **Edit · Speaker ▾ · Delete · Cancel**; the separate **OOC** button is removed. **Speaker ▾** opens the existing authenticated picker for participating characters **or Player chat (OOC)**, so one action handles both speaker changes and character/OOC conversion. Multi-message selection remains supported; narrator messages cannot be reassigned, and edits never rewrite previous narration or saved state. The main compose speaker control is unchanged.
+
+Update the installed Paths HUD through Tampermonkey and refresh ChatGPT. No room reset or owner re-pairing is required.
+
 ## HUD v0.8.19 / Web v0.8.9 — long-press message controls
 
 Message bubbles no longer show inline Edit buttons. Hold a bubble for 480 ms to select it, then tap other bubbles for multi-select; scrolling and pointer cancellation do not select. Right-click and Enter/Space are desktop alternatives. The selection toolbar provides Edit (one bubble), Speaker, Character/OOC, Delete and Cancel. The speaker picker uses participating characters; ordinary players see only their own choices. Paired owners may manage character/OOC/narrator bubbles in their active rooms; narrator identity cannot be reclassified. Original sender attribution is retained.
