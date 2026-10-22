@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.12</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.13</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -21,6 +21,10 @@
 .speakerToggle.oocActive{background:#544456;border-color:#a992ac;color:#f3e4f1}
 .speakerToggle:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .speakerModeHint{font-size:12px;color:var(--muted)}
+.webSpeakerMenu{position:fixed;z-index:75;display:grid;gap:7px;padding:11px;background:#29212b;
+ border:1px solid #a37f87;border-radius:11px;box-shadow:0 10px 34px #000b;max-height:55dvh;overflow-y:auto}
+.webSpeakerMenu .webSpeakerOption{text-align:left;white-space:normal;min-height:43px}
+.webSpeakerMenu .webSpeakerOption[aria-current=true]{border-color:var(--gold);background:#53323f}
 
 .head h1{font-size:21px;margin:0;letter-spacing:.035em;line-height:1.18}.state{margin-left:auto;color:var(--gold);font-size:11px;text-align:right;max-width:118px;overflow-wrap:anywhere}
 .content{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px}.scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:12px}
@@ -88,7 +92,7 @@ body.authOpen{overflow:hidden}
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
 </style><link rel="stylesheet" href="public-shell.css"></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.12</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.13</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -171,6 +175,7 @@ body.authOpen{overflow:hidden}
 <div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button></div>
 <div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div></div>
 </div>
+<div id="webSpeakerMenu" class="webSpeakerMenu hidden" role="menu" aria-label="Choose speaking character or OOC"></div>
 <div id="headerMenuOverlay" class="headerMenuOverlay hidden" role="presentation"><section id="headerMenu" class="headerMenu" role="dialog" aria-modal="true" aria-label="Navigation"><button id="menuBack" class="btn" type="button" aria-label="Go back" title="Go back">←</button><button id="menuSignout" class="btn" type="button">Sign out</button></section></div>
 <div id="codeOverlay" class="authOverlay hidden" role="presentation"><section class="authSheet" role="dialog" aria-modal="true" aria-labelledby="sessionCodeLabel"><section aria-labelledby="ongoingSessionsTitle"><h2 id="ongoingSessionsTitle">Your ongoing sessions</h2><p id="playerSessionsStatus" class="muted" role="status"></p><div id="playerSessions" class="playerSessionLinks"></div></section><h2 id="sessionCodeLabel">Insert invitation code for a session</h2><div class="inviteRow"><input id="sessionCode" maxlength="300" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Invitation code or private link"><button id="generateScene" class="btn primary" type="button">Check invitation</button></div><button id="closeCode" class="authExit" type="button">Back</button></section></div>
 <div id="authOverlay" class="authOverlay hidden" role="presentation">
@@ -251,14 +256,62 @@ function setChatMode(mode){
   if(pendingMode!==chatMode||pendingCharacter!==activeCharacter){pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;}
   try{if(room)localStorage.setItem(modeKey(),mode);}catch{}
 }
-$('modeSpeaker').onclick=()=>{webTyping.stop();
-  const choices=ownCharacters();
-  if(chatMode==='ooc'){setChatMode('player');activeCharacter=choices[0]||activeCharacter;}
+function refreshSpeakerWorkspace(){
+  updateSpeakerDisplay();
+  if(chatPanelView&&chatPanelView!=='session')refreshChatPanel().catch(e=>notice(e.message,'error'));
+}
+function cycleWebSpeaker(){
+  webTyping.stop();const choices=ownCharacters();
+  if(chatMode==='ooc'){activeCharacter=choices[0]||activeCharacter;setChatMode('player');}
   else if(choices.length>1&&choices.indexOf(activeCharacter)<choices.length-1){
     activeCharacter=choices[choices.indexOf(activeCharacter)+1];pending=null;pendingCharacter=null;
   }else setChatMode('ooc');
-  updateSpeakerDisplay();if(chatPanelView&&chatPanelView!=='session')refreshChatPanel().catch(e=>notice(e.message,'error'));
-};
+  refreshSpeakerWorkspace();
+}
+function closeWebSpeakerMenu(){
+  $('webSpeakerMenu').classList.add('hidden');
+  $('modeSpeaker').setAttribute('aria-expanded','false');
+}
+function openWebSpeakerMenu(){
+  webTyping.stop();const menu=$('webSpeakerMenu'),choices=ownCharacters();menu.replaceChildren();
+  for(const name of choices){
+    const option=document.createElement('button');option.type='button';option.className='btn webSpeakerOption';
+    option.setAttribute('role','menuitem');option.textContent='🎭 '+name;
+    if(chatMode==='player'&&activeCharacter===name)option.setAttribute('aria-current','true');
+    option.onclick=()=>{activeCharacter=name;pending=null;pendingCharacter=null;setChatMode('player');closeWebSpeakerMenu();refreshSpeakerWorkspace();$('modeSpeaker').focus();};
+    menu.append(option);
+  }
+  const ooc=document.createElement('button');ooc.type='button';ooc.className='btn webSpeakerOption';ooc.setAttribute('role','menuitem');
+  ooc.textContent='💬 '+playerNameFor(user?.id)+' · OOC';if(chatMode==='ooc')ooc.setAttribute('aria-current','true');
+  ooc.onclick=()=>{setChatMode('ooc');closeWebSpeakerMenu();refreshSpeakerWorkspace();$('modeSpeaker').focus();};
+  menu.append(ooc);
+  menu.classList.remove('hidden');$('modeSpeaker').setAttribute('aria-expanded','true');
+  const anchor=$('modeSpeaker').getBoundingClientRect(),width=Math.min(320,window.innerWidth-24);
+  menu.style.width=width+'px';menu.style.left=Math.max(12,Math.min(anchor.right-width,window.innerWidth-width-12))+'px';
+  menu.style.top=Math.max(10,anchor.top-menu.offsetHeight-8)+'px';menu.querySelector('button')?.focus();
+}
+let webSpeakerHold=null,webSpeakerLongPressed=false,webSpeakerOrigin=null;
+function cancelWebSpeakerHold(){if(webSpeakerHold){clearTimeout(webSpeakerHold);webSpeakerHold=null;}}
+$('modeSpeaker').setAttribute('aria-haspopup','menu');
+$('modeSpeaker').setAttribute('aria-controls','webSpeakerMenu');
+$('modeSpeaker').setAttribute('aria-expanded','false');
+$('modeSpeaker').addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;
+  cancelWebSpeakerHold();webSpeakerLongPressed=false;webSpeakerOrigin={x:event.clientX,y:event.clientY};
+  webSpeakerHold=setTimeout(()=>{webSpeakerHold=null;webSpeakerLongPressed=true;openWebSpeakerMenu();},450);
+});
+$('modeSpeaker').addEventListener('pointermove',event=>{
+  if(webSpeakerOrigin&&(Math.abs(event.clientX-webSpeakerOrigin.x)>12||Math.abs(event.clientY-webSpeakerOrigin.y)>12))cancelWebSpeakerHold();
+});
+for(const name of ['pointerup','pointercancel','pointerleave'])$('modeSpeaker').addEventListener(name,cancelWebSpeakerHold);
+$('modeSpeaker').addEventListener('click',()=>{
+  if(webSpeakerLongPressed){webSpeakerLongPressed=false;return;}
+  if(!$('webSpeakerMenu').classList.contains('hidden')){closeWebSpeakerMenu();return;}
+  cycleWebSpeaker();
+});
+$('modeSpeaker').addEventListener('keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();openWebSpeakerMenu();}});
+$('webSpeakerMenu').addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closeWebSpeakerMenu();$('modeSpeaker').focus();}});
+document.addEventListener('pointerdown',event=>{if(!$('webSpeakerMenu').contains(event.target)&&event.target!==$('modeSpeaker'))closeWebSpeakerMenu();});
 const notice=(text,type='')=>{const el=$('notice');el.textContent=text;el.className='notice '+type;};
 const clear=()=>{$('notice').className='notice hidden';};
 const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTrial','send','invite','narrate','copyNarratorPrompt','publishNarrator','monkeyApprove','monkeyRefresh','monkeyRevoke','generateScene','refreshPlayers','saveArchiveLink'])$(id).disabled=v;};
