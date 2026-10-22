@@ -25,6 +25,9 @@
  border:1px solid #a37f87;border-radius:11px;box-shadow:0 10px 34px #000b;max-height:55dvh;overflow-y:auto}
 .webSpeakerMenu .webSpeakerOption{text-align:left;white-space:normal;min-height:43px}
 .webSpeakerMenu .webSpeakerOption[aria-current=true]{border-color:var(--gold);background:#53323f}
+.chatJumpControls{display:flex;gap:4px;align-items:center;flex:0 0 auto}
+.chatJumpControls .btn{min-width:34px;min-height:34px;font-size:18px;padding:3px 8px;border-radius:7px}
+@media(max-width:480px){.chatJumpControls .btn{min-width:30px;padding:3px 6px}}
 
 .head h1{font-size:21px;margin:0;letter-spacing:.035em;line-height:1.18}.state{margin-left:auto;color:var(--gold);font-size:11px;text-align:right;max-width:118px;overflow-wrap:anywhere}
 .content{flex:1;min-height:0;display:flex;flex-direction:column;padding:14px}.scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding-bottom:12px}
@@ -141,7 +144,7 @@ body.authOpen{overflow:hidden}
 </section>
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div></div>
+<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div><div class="chatJumpControls" role="group" aria-label="Jump within loaded chat history"><button id="chatJumpTop" class="btn sm" type="button" title="Jump to oldest loaded message" aria-label="Jump to oldest loaded message">↑</button><button id="chatJumpBottom" class="btn sm" type="button" title="Jump to newest message" aria-label="Jump to newest message">↓</button></div></div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
@@ -478,15 +481,17 @@ function createTypingNotifier(send,context){
 }
 let roomConnection='CONNECTING',narratorPreparing=false,roomTyping=[];
 const webTyping=createTypingNotifier(body=>db.rpc('set_room_typing',body),()=>({room,enabled:currentView==='chat',text:$('msg').value,character:chatMode==='player'?activeCharacter:null}));
+$('chatJumpTop').onclick=()=>{$('feed').scrollTop=0;};
+$('chatJumpBottom').onclick=()=>{$('feed').scrollTop=$('feed').scrollHeight;};
 function renderRoomStatus(){const connected=roomConnection==='SUBSCRIBED',writing=connected&&narratorPreparing,host=$('networkStatus');host.textContent=writing?'Narrator is writing...':connected&&roomTyping.length===1?roomTyping[0]+' is typing...':connected&&roomTyping.length>1?'Several players are typing...':connected?'● Live':roomConnection==='CHANNEL_ERROR'||roomConnection==='TIMED_OUT'?'⚠ Reconnecting':'○ Connecting';host.classList.toggle('isWriting',writing);host.title=writing?'The GM has requested narration; waiting for publication.':'Chat connection status';}
 async function refreshNarrationActivity(id){const {data,error}=await db.rpc('room_activity_status',{p_room:id});if(room!==id)return;narratorPreparing=!error&&data?.narrating===true;roomTyping=!error&&Array.isArray(data?.typing)?data.typing:[];renderRoomStatus();}
 async function fetchMessages(){
   if(!room)return;
   const active=room;
-  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name,deleted_at').eq('room_id',active).order('created_at',{ascending:true}).order('id',{ascending:true}).limit(300);
+  const {data,error}=await db.from('messages').select('id,sender_id,kind,body,created_at,edited_at,character_name,deleted_at').eq('room_id',active).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(300);
   if(error)throw error;if(room!==active)return;
   refreshNarrationActivity(active).catch(console.warn);
-  const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=data||[];if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
+  const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=(data||[]).slice().reverse();if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
   const el=$('feed'),previousScroll=el.scrollTop,nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
   if(!roomMessages.some(m=>!m.deleted_at)){
