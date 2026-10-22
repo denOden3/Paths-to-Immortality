@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.20
+// @version      0.8.21
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.20';
+  const VERSION = '0.8.21';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -386,6 +386,15 @@
     #paths-monkey-root .pm-bubble{margin:10px 0;padding:12px 14px;border-radius:6px;background:#241e27;border-color:#665158;font-size:16px;line-height:1.6;max-width:72ch}
     #paths-monkey-root .pm-bubble.pm-narrator{background:#211e23;border:1px solid #786047;border-left:3px solid var(--pm-gold)}
     #paths-monkey-root .pm-bubble.pm-oocBubble{background:#2b2632;border-style:dashed}
+    /* v0.8.21: WhatsApp-style conversation alignment. Authenticated identity, not
+       speaker label, determines the side. Narration remains centered. */
+    #paths-monkey-root .pm-bubble{max-width:min(72ch,84%)}
+    #paths-monkey-root .pm-bubble.pm-own{margin-left:auto;margin-right:0;background:#49303c;border-color:#a77682;border-radius:12px 12px 4px 12px}
+    #paths-monkey-root .pm-bubble.pm-other{margin-left:0;margin-right:auto;border-radius:12px 12px 12px 4px}
+    #paths-monkey-root .pm-bubble.pm-narrator{margin-left:auto;margin-right:auto;max-width:min(84ch,96%);border-radius:9px}
+    #paths-monkey-root .pm-bubble.pm-own.pm-oocBubble{background:#423247;border-style:dashed}
+    #paths-monkey-root .pm-bubble.pm-own.pm-selected{background:#634153}
+    @media(max-width:600px){#paths-monkey-root .pm-bubble:not(.pm-narrator){max-width:92%}}
     #paths-monkey-root .pm-by{font-size:14px;line-height:1.4;margin-bottom:6px}
     #paths-monkey-root .pm-compose{padding:6px 10px 8px;background:#251d26;box-shadow:0 -1px 4px #0b080c55}
     #paths-monkey-root .pm-actions{margin:0 0 6px;padding:2px 2px 4px;gap:4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#ab8e98 #251d26;}
@@ -1046,6 +1055,14 @@ function createTypingNotifier(send,context){
     const changes=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Recent changes';changes.append(summary);for(const entry of data.changes||[]){const copy=document.createElement('p');copy.textContent=entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+entry.source;changes.append(copy);}host.append(changes);
   }
   async function changeHudInventory(id,character,body){if(selectedRoom?.id!==id)return;const success=await authed('POST','/rest/v1/rpc/change_character_inventory',{body:{p_room:id,p_character:character,...body}});if(success!==true)throw new Error('Could not confirm inventory change.');if(selectedRoom?.id===id&&$('workspace-character').value===character)await refreshHudWorkspace();}
+  function messageAlignmentClass(msg) {
+    if (msg.kind === 'narrator') return 'pm-narrator';
+    if (msg.kind !== 'player' && msg.kind !== 'ooc') return 'pm-neutral';
+    // Owner-paired HUD uses a separate anonymous Monkey session: the real
+    // message sender belongs to the role=owner membership, not Monkey's ID.
+    const myId = paired ? members.find(member => member.role === 'owner')?.user_id : account?.user_id;
+    return msg.sender_id && myId && msg.sender_id === myId ? 'pm-own' : 'pm-other';
+  }
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
     const el=$('feed-messages');el.replaceChildren();
@@ -1054,7 +1071,7 @@ function createTypingNotifier(send,context){
     for (const msg of messages) {
       if(msg.deleted_at)continue;
       const bubble=document.createElement('div');
-      bubble.className='pm-bubble'+(msg.kind==='narrator'?' pm-narrator':'')+(msg.kind==='ooc'?' pm-oocBubble':'');
+      bubble.className='pm-bubble '+messageAlignmentClass(msg)+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
       by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
