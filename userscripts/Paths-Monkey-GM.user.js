@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.19
+// @version      0.8.20
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.19';
+  const VERSION = '0.8.20';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -525,7 +525,7 @@
           <button id="pm-feed-toggle" type="button" class="pm-btn pm-mini" title="Information, invitations and controls for this chatroom">Session tools</button>
           <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button><button id="pm-toolbar-end" class="pm-btn pm-mini pm-end" type="button">End session</button>
         </div>
-        <div id="pm-message-selection" class="pm-message-selection pm-hide" role="group" aria-label="Selected message actions"><span id="pm-message-count"></span><button id="pm-message-edit" class="pm-btn pm-mini" type="button">Edit</button><button id="pm-message-speaker" class="pm-btn pm-mini" type="button">Speaker</button><button id="pm-message-mode" class="pm-btn pm-mini" type="button">OOC</button><button id="pm-message-delete" class="pm-btn pm-mini" type="button">Delete</button><button id="pm-message-cancel" class="pm-btn pm-mini" type="button">Cancel</button></div>
+        <div id="pm-message-selection" class="pm-message-selection pm-hide" role="group" aria-label="Selected message actions"><span id="pm-message-count"></span><button id="pm-message-edit" class="pm-btn pm-mini" type="button">Edit</button><button id="pm-message-speaker" class="pm-btn pm-mini" type="button" aria-haspopup="dialog" aria-controls="pm-message-speaker-overlay" title="Choose a character or player chat (OOC)">Speaker ▾</button><button id="pm-message-delete" class="pm-btn pm-mini" type="button">Delete</button><button id="pm-message-cancel" class="pm-btn pm-mini" type="button">Cancel</button></div>
         <div id="pm-message-undo" class="pm-hide" role="status"><span>Message deleted. Saved state is unchanged.</span> <button id="pm-message-restore" class="pm-btn pm-edit-bubble" type="button">Undo</button></div>
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
@@ -537,7 +537,7 @@
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
-    <div id="pm-message-speaker-overlay" class="pm-backdrop pm-hide" role="presentation"><section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-message-speaker-title"><h2 id="pm-message-speaker-title">Change speaker</h2><p class="pm-mute">Choose a participating character. Earlier narration and saved state will not be rewritten.</p><select id="pm-message-speaker-choice" class="pm-text" aria-label="New message speaker"></select><div class="pm-row"><button id="pm-message-speaker-cancel" class="pm-btn" type="button">Cancel</button><button id="pm-message-speaker-save" class="pm-btn pm-primary" type="button">Save speaker</button></div></section></div>
+    <div id="pm-message-speaker-overlay" class="pm-backdrop pm-hide" role="presentation"><section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-message-speaker-title"><h2 id="pm-message-speaker-title">Change speaker</h2><p class="pm-mute">Choose a participating character or Player chat (OOC). Earlier narration and saved state will not be rewritten.</p><select id="pm-message-speaker-choice" class="pm-text" aria-label="New message speaker"></select><div class="pm-row"><button id="pm-message-speaker-cancel" class="pm-btn" type="button">Cancel</button><button id="pm-message-speaker-save" class="pm-btn pm-primary" type="button">Save speaker</button></div></section></div>
     <div id="pm-edit-overlay" class="pm-backdrop pm-hide" role="presentation"><section class="pm-panel" role="dialog" aria-modal="true" aria-labelledby="pm-edit-title"><h2 id="pm-edit-title">Edit message</h2><p id="pm-edit-note" class="pm-mute"></p><textarea id="pm-edit-body" class="pm-text" maxlength="8000" aria-label="Edit message text"></textarea><div class="pm-row"><button id="pm-edit-cancel" class="pm-btn" type="button">Cancel</button><button id="pm-edit-save" class="pm-btn pm-primary" type="button">Save changes</button></div><p id="pm-edit-error" role="status"></p></section></div>
     <div id="pm-rooms-page" class="pm-backdrop pm-hide" role="presentation">
       <section class="pm-panel pm-room-page" role="dialog" aria-modal="true" aria-labelledby="pm-rooms-page-title">
@@ -1073,8 +1073,8 @@ function createTypingNotifier(send,context){
     for(const id of selectedMessageIds)if(!messages.some(message=>message.id===id&&canManageMessage(message)))selectedMessageIds.delete(id);
     const selected=selectedMessages(),hasNarrator=selected.some(message=>message.kind==='narrator');
     $('message-selection').classList.toggle('pm-hide',!selected.length);$('message-count').textContent=selected.length+' selected';
-    $('message-edit').disabled=selected.length!==1||busy;$('message-speaker').disabled=!selected.length||hasNarrator||busy;$('message-mode').disabled=!selected.length||hasNarrator||busy;
-    $('message-mode').textContent=selected.length&&selected.every(message=>message.kind==='ooc')?'Character':'OOC';$('message-delete').disabled=!selected.length||busy;
+    $('message-edit').disabled=selected.length!==1||busy;$('message-speaker').disabled=!selected.length||hasNarrator||busy;
+    $('message-delete').disabled=!selected.length||busy;
     for(const bubble of $('feed-messages').querySelectorAll('[data-message-id]')){const on=selectedMessageIds.has(bubble.dataset.messageId);bubble.classList.toggle('pm-selected',on);bubble.setAttribute('aria-pressed',String(on));}
   }
   function toggleMessageSelection(message){if(!canManageMessage(message))return;messageSelectionRoom=selectedRoom.id;if(selectedMessageIds.has(message.id))selectedMessageIds.delete(message.id);else selectedMessageIds.add(message.id);updateMessageSelection();}
@@ -1592,7 +1592,6 @@ function createTypingNotifier(send,context){
   $('message-edit').onclick=()=>{const selected=selectedMessages();if(selected.length===1)openMessageEditor(selected[0]);};
   $('message-cancel').onclick=clearMessageSelection;
   $('message-speaker').onclick=openMessageSpeakerPicker;
-  $('message-mode').onclick=()=>runTask(()=>manageSelectedMessages('speaker',selectedMessages().every(message=>message.kind==='ooc')?'player':'ooc'));
   $('message-delete').onclick=()=>{if(confirm('Delete '+selectedMessageIds.size+' selected message(s)? You can Undo. Inventory and Scene history will stay unchanged.'))runTask(()=>manageSelectedMessages('delete'));};
   $('message-restore').onclick=()=>runTask(()=>manageSelectedMessages('restore'));
   $('message-speaker-cancel').onclick=closeMessageSpeakerPicker;
