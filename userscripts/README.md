@@ -1,3 +1,9 @@
+## HUD v0.8.21 — WhatsApp-style message bubbles
+
+In the Paths **HUD** chatroom, the current authenticated participant's character and OOC messages align **right**, other participants' messages align **left**, and Heavenly Voice narration remains **centered**. The bubble remains labeled with its character/player and retains the existing edit/selection behavior. Your paired owner HUD determines your identity from the room member with **role=owner** rather than from the separate anonymous Monkey login, so Xiao Lan is right and Puuchan's Xu Yi is left. Unpaired players use their own guest login to identify the right-side messages. This is a display-only change; message senders, room membership and stored chat messages are unchanged.
+
+Update the existing Paths HUD userscript from [the GitHub raw installer](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js), then reload ChatGPT; no re-pairing is needed.
+
 ## HUD v0.8.20 — unified message speaker picker
 
 The selected-message toolbar now shows **Edit · Speaker ▾ · Delete · Cancel**; the separate **OOC** button is removed. **Speaker ▾** opens the existing authenticated picker for participating characters **or Player chat (OOC)**, so one action handles both speaker changes and character/OOC conversion. Multi-message selection remains supported; narrator messages cannot be reassigned, and edits never rewrite previous narration or saved state. The main compose speaker control is unchanged.
