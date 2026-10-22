@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.22
+// @version      0.8.23
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.22';
+  const VERSION = '0.8.23';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -398,6 +398,8 @@
     #paths-monkey-root .pm-by{font-size:14px;line-height:1.4;margin-bottom:6px}
     #paths-monkey-root .pm-message-head{align-items:baseline;gap:12px}
     #paths-monkey-root .pm-message-time{color:var(--pm-muted);font-size:12px;font-weight:400;white-space:nowrap;margin-left:auto}
+    #paths-monkey-root .pm-chat-jump{display:flex;gap:4px;flex:0 0 auto}
+    #paths-monkey-root .pm-chat-jump>.pm-btn{min-width:32px;min-height:32px;padding:3px 6px;font-size:18px;line-height:1;border-radius:6px}
     #paths-monkey-root .pm-compose{padding:6px 10px 8px;background:#251d26;box-shadow:0 -1px 4px #0b080c55}
     #paths-monkey-root .pm-actions{margin:0 0 6px;padding:2px 2px 4px;gap:4px;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#ab8e98 #251d26;}
     #paths-monkey-root .pm-actions>.pm-btn{flex:0 0 auto;white-space:nowrap;background:transparent;border-color:transparent;padding:8px 10px}
@@ -526,7 +528,7 @@
     <div id="pm-registry-create" class="pm-hide"><label for="pm-registry-name" class="pm-label">New player name</label><div class="pm-input-row"><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register</button></div></div>
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
-      <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
+      <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><div class="pm-chat-jump" role="group" aria-label="Navigate chat history"><button id="pm-jump-top" class="pm-btn pm-mini" type="button" aria-label="Jump to oldest loaded message" title="Jump to oldest loaded message">↑</button><button id="pm-jump-bottom" class="pm-btn pm-mini" type="button" aria-label="Jump to newest message" title="Jump to newest message">↓</button></div><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-narration-progress" class="pm-progress pm-hide" role="status" aria-live="polite">The Jade Emperor is preparing narration… <button id="pm-narration-cancel" class="pm-btn pm-mini" type="button">Cancel indicator</button></div><div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
     </section>
     <section id="pm-compose" class="pm-compose" aria-label="Character or player message composer">
@@ -1087,6 +1089,8 @@ function createTypingNotifier(send,context){
     }
     updateMessageSelection();el.scrollTop=el.scrollHeight;
   }
+  $('jump-top').onclick=()=>{$('feed').scrollTop=0;};
+  $('jump-bottom').onclick=()=>{$('feed').scrollTop=$('feed').scrollHeight;};
   function canManageMessage(message){return !!message&&!message.deleted_at&&!!account&&(paired||(['player','ooc'].includes(message.kind)&&message.sender_id===account.user_id));}
   function selectedMessages(){return messages.filter(message=>selectedMessageIds.has(message.id)&&canManageMessage(message));}
   function clearMessageSelection(){selectedMessageIds.clear();messageSelectionRoom=null;updateMessageSelection();}
