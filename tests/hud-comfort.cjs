@@ -5,14 +5,15 @@ const html=source.split('root.innerHTML = `')[1].split('`;')[0];
 const dom=new JSDOM('<style>'+css+'</style><div id="paths-monkey-root">'+html+'</div>');
 const {document}=dom.window,style=x=>dom.window.getComputedStyle(x);
 assert.equal(style(document.getElementById('paths-monkey-root')).fontSize,'16px');
-for(const button of document.querySelectorAll('.pm-btn')){assert.ok(parseFloat(style(button).minHeight)>=(['pm-settings-toggle','pm-minimize'].includes(button.id)?32:button.id==='pm-current-session-refresh'?28:button.closest('.pm-actions')?34:44),button.id+' undersized');assert.equal(style(button).fontSize,['pm-settings-toggle','pm-minimize'].includes(button.id)?'18px':'14px');}
+for(const button of document.querySelectorAll('.pm-btn')){const jump=['pm-jump-top','pm-jump-bottom'].includes(button.id);assert.ok(parseFloat(style(button).minHeight)>=(jump?32:['pm-settings-toggle','pm-minimize'].includes(button.id)?32:button.id==='pm-current-session-refresh'?28:button.closest('.pm-actions')?34:44),button.id+' undersized');assert.equal(style(button).fontSize,(['pm-settings-toggle','pm-minimize'].includes(button.id)||jump)?'18px':'14px');}
+assert.equal(style(document.querySelector('#pm-feed-messages .pm-bubble')||document.createElement('div')).fontSize!=='',true);
 assert.equal(style(document.querySelector('#pm-registry>p.pm-mute')).fontSize,'14px');
 assert.equal(style(document.querySelector('#pm-registry h2')).fontSize,'20px');
 assert.equal(style(document.querySelector('.pm-admin-group>summary')).fontSize,'16px');
 assert.equal(style(document.querySelector('#pm-registry-toggle')).marginTop,'8px');
 assert.equal(style(document.getElementById('pm-action')).fontSize,'16px','composer body text shrunk');
 for(const id of ['pm-settings-toggle','pm-settings-close','pm-rooms-page-close','pm-feed-refresh'])assert.ok(document.getElementById(id).getAttribute('aria-label'));
-assert.ok(css.includes('select:focus-visible'));assert.ok(css.includes('summary:focus-visible'));
+assert.ok(css.includes('select:focus-visible'));assert.ok(css.includes('max-width:min(70ch,76%)'));assert.ok(css.includes('.pm-message-time'));assert.ok(document.getElementById('pm-jump-top'));assert.ok(document.getElementById('pm-jump-bottom'));assert.ok(css.includes('summary:focus-visible'));
 const sample=document.createElement('details');sample.className='pm-character-card pm-saved-character';sample.open=true;sample.innerHTML='<summary>Xu Yi</summary><div class="pm-character-body"><p class="pm-character-description">Description</p><div class="pm-row pm-character-actions"><button class="pm-btn">Notion</button><button class="pm-btn">Edit</button></div><div class="pm-character-editor">Editor</div></div>';document.getElementById('paths-monkey-root').append(sample);
 assert.equal(style(sample).padding,'0px');assert.equal(style(sample.querySelector('.pm-character-body')).display,'grid');assert.equal(style(sample.querySelector('.pm-character-actions')).flexDirection,'column');assert.equal(style(sample.querySelector('.pm-character-editor')).gridColumn,'1/-1');
 // Check actual opaque palette pairs against the 4.5:1 normal-text threshold.
