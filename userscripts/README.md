@@ -1,3 +1,12 @@
+## Paths HUD v0.8.23 + Web v0.8.13 — consistent shared chat
+
+- **HUD (v0.8.23):** Message bubbles now follow Web's 17px / 1.65 reading typography and 70ch / 76% width, with small timestamps in each message header. Narration stays centered; ownership-specific left/right layout and the OOC treatment remain intact. ↑ / ↓ controls in the room header jump to the oldest **loaded** and newest visible message.
+- **Web (v0.8.13):** Long-press the compose **speaker** button (or press Arrow Down when focused) for a full list of **your own available characters** and player chat (OOC). Tap still cycles speakers for quick switching. An ↑ / ↓ pair jumps within the loaded message history.
+- **History correction:** Web's initial fetch now loads the **newest 300 messages**, then renders them in chronological order, rather than loading the first/oldest 300. Older-than-loaded paging is **not yet implemented**; a history jump button is not a substitute for server-side pagination.
+- **Access:** Existing ownership and role checks still restrict the owner administration features. No database or live inventory migration was needed. Full live browser regression remains to be tested.
+
+Install the [latest HUD userscript](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js) and reload ChatGPT. Web changes load after GitHub Pages publishes the main branch and the browser refreshes.
+
 ## HUD v0.8.21 — WhatsApp-style message bubbles
 
 In the Paths **HUD** chatroom, the current authenticated participant's character and OOC messages align **right**, other participants' messages align **left**, and Heavenly Voice narration remains **centered**. The bubble remains labeled with its character/player and retains the existing edit/selection behavior. Your paired owner HUD determines your identity from the room member with **role=owner** rather than from the separate anonymous Monkey login, so Xiao Lan is right and Puuchan's Xu Yi is left. Unpaired players use their own guest login to identify the right-side messages. This is a display-only change; message senders, room membership and stored chat messages are unchanged.
