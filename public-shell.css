@@ -6,6 +6,21 @@
 .codexContent{overflow:auto!important;display:block!important}.codexArticle{max-width:1000px;margin:auto;padding:40px clamp(22px,5vw,70px);line-height:1.75}.codexArticle h2{font-size:clamp(26px,3vw,38px);margin:10px 0 12px}.codexArticle pre{white-space:pre-wrap;overflow-wrap:anywhere;font:15px/1.8 system-ui}.codexArticle .snapshot{color:var(--muted);font-size:13px;border-bottom:1px solid var(--border);padding-bottom:20px}.codexArticle a{color:var(--gold)}
 @media(max-width:760px){.app.publicView{grid-template-columns:minmax(0,1fr)}.publicView>.content{grid-column:1}.publicView>.head{padding:10px 12px;gap:9px}.publicView>.head .state{font-size:11px}.publicView .ptiSidebar{display:none}.publicView.sidebarOpen .ptiSidebar{display:flex;position:fixed;left:0;top:0;bottom:0;width:min(290px,85vw);z-index:91;box-shadow:12px 0 36px #0008}.publicView.sidebarOpen .ptiShade{display:block;position:fixed;inset:0;border:0;background:#0009;z-index:90}.publicView .ptiBody{padding:24px 18px}.publicView .ptiLandscape{height:125px}.codexArticle{padding:25px 20px}.publicView .ptiModes{grid-template-columns:1fr}}
 
+/* v0.8.16: private, collapsible quick-room shelf beneath Home. */
+.ptiSidebar .ptiRoomsShelf>div{margin-top:3px}
+.ptiSidebar .ptiRoomButton{display:block;width:100%;min-height:41px;margin:3px 0;
+  border:0;border-radius:7px;background:transparent;color:#f5ded1;
+  padding:10px;text-align:left;font:inherit;font-size:13px;line-height:1.4;
+  overflow-wrap:anywhere;cursor:pointer}
+.ptiSidebar .ptiRoomButton:hover,.ptiSidebar .ptiRoomButton:focus-visible{
+  color:#fff4e3;background:#50353e;outline:2px solid #eeb678;outline-offset:1px}
+.ptiSidebar .ptiRoomButton .ptiRoomDot{display:inline-block;margin-right:6px;color:#f3c68d}
+.ptiSidebar .ptiRoomButton .ptiRoomName{font-weight:600}
+.ptiSidebar .ptiRoomsStatus{margin:4px 6px 7px;color:#e3c8be;font-size:12px;line-height:1.5}
+.ptiSidebar .ptiRoomsShelf summary{font-weight:650}
+.ptiSidebar .ptiRoomsShelf[open]>summary{color:var(--gold)}
+.ptiSidebar .ptiRoomSignin{border:1px solid #a07883!important}
+
 /* Accessible high-contrast public character directory and biographies. */
 .codexArticle.ptiPublicCharacterPage{max-width:970px}
 .ptiPublicCharacterPage h3{font-size:clamp(17px,2vw,22px);color:var(--gold);margin:28px 0 8px}
