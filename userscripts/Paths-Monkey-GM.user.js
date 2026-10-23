@@ -602,6 +602,8 @@
         <div id="pm-review-approvals" class="pm-review-approvals"></div>
         <div class="pm-review-actions">
           <button id="pm-review-save" class="pm-btn" type="button">Save draft</button>
+          <button id="pm-review-novel" class="pm-btn" type="button">Prepare literary draft in ChatGPT</button>
+          <button id="pm-review-export" class="pm-btn" type="button">Export source TXT</button>
           <button id="pm-review-refresh" class="pm-btn" type="button">Refresh reviews</button>
           <button id="pm-review-approve" class="pm-btn" type="button">Approve this revision</button>
           <button id="pm-review-finalize" class="pm-btn pm-primary" type="button">Approve &amp; Conclude</button>
@@ -968,6 +970,30 @@
     chronicleReviewRoom=id;displayChronicleReview(data);
     $('chronicle').classList.remove('pm-hide');updateChatScrollbar();
     feedback('Chronicle review opened. Save edits, then ask every player to approve this revision.');
+  }
+  function exportChronicleSource(){
+    if(!chronicleReview)throw new Error('Open the Chronicle first.');
+    const text=$('review-editor').value;
+    const file=new Blob([text],{type:'text/plain;charset=utf-8'});
+    const url=URL.createObjectURL(file),a=document.createElement('a');
+    a.href=url;a.download='PTI_Chronicle_Review_'+chronicleReviewRoom.slice(0,8)+'_r'+chronicleReview.revision+'.txt';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+    feedback('Complete editable Chronicle exported to TXT. The source was not truncated.');
+  }
+  function prepareChronicleLiteraryDraft(){
+    if(!chronicleReview)throw new Error('Open the Chronicle first.');
+    const source=$('review-editor').value;
+    const guidance='Cloudveil Chronicle review: Read the current Notion Narration Rules Sections A, C and D and relevant character and chronology records. This is a DRAFTING task only. Do not write Notion, conclude a session or publish any story. Transform the complete chronological session source below into a faithful novel-style Chronicle plus Before/After character states, NPC discoveries and unresolved threads. Preserve each player\'s actual actions and dialogue; do not invent unseen successes, possessions or discoveries. Treat GM statements and player claims differently. Return a COMPLETE editable draft, not a summary. The player will review and save it in Paths HUD.\n\n';
+    if(source.length>38000){
+      exportChronicleSource();
+      feedback('Source too large to place safely in one prompt. TXT exported: attach it to ChatGPT and use the Chronicle drafting instructions below. Do not truncate the history.');
+      copyText(guidance+'(Attach the exported full transcript TXT to this message.)');
+      return;
+    }
+    const prompt=guidance+source;
+    copyText(prompt);
+    const filled=fillNativeComposer(prompt);
+    feedback(filled?'Full Chronicle source placed in ChatGPT composer; press Send and paste the edited literary draft back into this review.':'Chronicle drafting prompt copied; paste into ChatGPT, press Send, and copy the edited draft back into this review.');
   }
   async function refreshChronicleReview(){
     if(!chronicleReviewRoom)return;
@@ -1947,6 +1973,8 @@ function createTypingNotifier(send,context){
   $('end-session').onclick=()=>runTask(openChronicleReview);
   $('review-close').onclick=closeChronicleReview;
   $('review-save').onclick=()=>runTask(saveChronicleReview);
+  $('review-novel').onclick=()=>runTask(prepareChronicleLiteraryDraft);
+  $('review-export').onclick=()=>runTask(exportChronicleSource);
   $('review-refresh').onclick=()=>runTask(refreshChronicleReview);
   $('review-approve').onclick=()=>runTask(approveChronicleReview);
   $('review-finalize').onclick=()=>runTask(finalizeChronicleReview);
