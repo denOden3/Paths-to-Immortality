@@ -1,3 +1,12 @@
+## Paths HUD v0.8.26 — wider narration and hold-to-jump scrollbar
+
+- **Wider, left-anchored narration:** Heavenly Voice bubbles now use up to ~105 characters of text width rather than the old centered 72-character column. Character bubbles can grow to ~90 characters while keeping their own/right and other/left chat alignment; mobile narration uses the available content width.
+- **Room title + Live:** These sit together near the left side of the chat content, rather than stretching the title to one side and live status to the far right. The header stays visible while scrolling.
+- **Right-edge scrollbar:** A distinct high-contrast, draggable scrollbar follows the message viewport. Drag its thumb or use ordinary wheel/touch scrolling. **Long press for 520ms** on its track to reveal **↑ oldest loaded / ↓ newest** jump buttons. Right-click or keyboard Enter/Space on the track also opens them; Arrow/Page/Home/End keys work for accessibility. The jump buttons no longer clutter the header and stay attached to the scrollbar until selected or dismissed.
+- **Keep your reading place:** The HUD refreshes recent room messages periodically. It now retains scroll position while viewing older messages and follows the newest only if you were already near the bottom or just opened the room.
+- Existing message ownership, speaker choices, inventory and Scene records, narrator request verification and Supabase RPC behavior are untouched. Scroll up only through the **latest 24 loaded messages**, not yet a paginated archive.
+- Install/update the [Paths HUD userscript](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js) in Tampermonkey and reload the ChatGPT conversation. The new styles and interactions were validated with source/syntax and mocked event tests; a live browser visual test is still recommended.
+
 ## Paths HUD v0.8.25 — auto-publish detection and manual recovery
 
 - **Fix: No premature warning.** Immediately after pressing **Narrate**, while the newly prepared GM request is still in ChatGPT's composer, the HUD now says **Ready: press ChatGPT Send** instead of **Cannot find the original Narrate request**.
