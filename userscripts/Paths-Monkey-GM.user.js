@@ -1125,7 +1125,6 @@ function createTypingNotifier(send,context){
     const myId = paired ? members.find(member => member.role === 'owner')?.user_id : account?.user_id;
     return msg.sender_id && myId && msg.sender_id === myId ? 'pm-own' : 'pm-other';
   }
-  let chatScrollRenderedRoom=null;
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
     const feed=$('feed'),el=$('feed-messages');
@@ -1155,6 +1154,7 @@ function createTypingNotifier(send,context){
     feed.scrollTop=!sameRoom||nearBottom?feed.scrollHeight:prevTop;
     updateChatScrollbar();
   }
+  let chatScrollRenderedRoom=null;
   function closeChatJumpMenu(){$('chat-jump-menu').classList.add('pm-hide');}
   function updateChatScrollbar(){
     const feed=$('feed'),track=$('chat-scroll-track'),thumb=$('chat-scroll-thumb'),rail=$('chat-rail');
