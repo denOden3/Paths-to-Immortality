@@ -1,3 +1,11 @@
+## Paths HUD v0.8.25 — auto-publish detection and manual recovery
+
+- **Fix: No premature warning.** Immediately after pressing **Narrate**, while the newly prepared GM request is still in ChatGPT's composer, the HUD now says **Ready: press ChatGPT Send** instead of **Cannot find the original Narrate request**.
+- **Fix: Completed replies can be recognized without a visible old prompt.** ChatGPT may re-render or virtualize previous messages. The HUD can now read the assistant's complete `[PATHS_NARRATION]` code block using the exact pending request ID even if the user-message DOM node is missing. It still waits until generation ends and the reply remains stable before publishing through the owner-authorized RPC, and still checks the state application receipt.
+- **Fallback:** Under the pending narration status, expand **Manual recovery if auto-publish fails**, paste the **entire completed code block** from this same ChatGPT conversation and press **Validate & publish this reply**. It uses the *same* pending request ID, pairing and RPC validation; the backend rejects stale, already-processed or unauthorized requests. **Do not press Narrate again** merely to recover a completed reply.
+- **Presence cleanup:** A verified publish now clears the room's `Narrator is writing` indicator, without treating a presence-cleanup failure as a narration failure.
+- **Upgrade:** Install/update [Paths HUD](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js) and reload the **same** conversation. The prior pending request remains in script storage. Existing rooms, invites, and player records are untouched. Code was syntax-checked and the detection functions tested with mock DOM arrangements; live ChatGPT/Tampermonkey integration still requires browser verification.
+
 ## Paths HUD v0.8.24 — clearer narrator bridge and dismissible Delete notice
 
 - A **×** beside the deleted-message **Undo** notice dismisses the banner immediately, without changing saved inventory/Scene state. Until dismissed, the original Undo offer remains available; it does not auto-expire.
