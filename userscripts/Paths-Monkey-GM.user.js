@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.25
+// @version      0.8.26
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.25';
+  const VERSION = '0.8.26';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -466,6 +466,51 @@
     #paths-monkey-root #pm-speaker-choices{display:grid;gap:6px;margin-top:8px}
     #paths-monkey-root #pm-speaker-choices>.pm-btn{width:100%;text-align:left;white-space:normal}
 
+
+    /* v0.8.26: wide literary chat and a permanent right-edge scroll track. */
+    #paths-monkey-root .pm-feed{padding-right:36px;scrollbar-width:none}
+    #paths-monkey-root .pm-feed::-webkit-scrollbar{display:none}
+    #paths-monkey-root #pm-feed>.pm-row,#paths-monkey-root #pm-feed-messages{
+      max-width:none;width:100%;margin-inline:0}
+    #paths-monkey-root #pm-feed>.pm-row{position:sticky;top:-12px;z-index:2;
+      display:flex;justify-content:flex-start;align-items:center;flex-wrap:nowrap;
+      gap:12px;padding:8px 2px 10px;margin-bottom:12px;
+      background:#17141a;border-bottom:1px solid #503943}
+    #paths-monkey-root #pm-chat-title{font-size:15px;font-weight:700;flex:0 1 auto;
+      max-width:min(62%,560px);min-width:0;margin-right:0;text-overflow:ellipsis}
+    #paths-monkey-root #pm-room-status{font-size:12px;flex:0 0 auto;
+      min-width:0;max-width:35%}
+    #paths-monkey-root .pm-bubble.pm-own,#paths-monkey-root .pm-bubble.pm-other{
+      max-width:min(90ch,92%);font-size:17px;line-height:1.65}
+    #paths-monkey-root .pm-bubble.pm-narrator{width:min(100%,105ch);max-width:100%;
+      margin:10px auto 10px 0;font-size:17px;line-height:1.72}
+    #paths-monkey-root .pm-chat-rail{position:absolute;right:4px;
+      top:calc(var(--pm-header-height,53px) + 11px);
+      bottom:calc(var(--pm-native,95px) + var(--pm-compose-height,120px) + 10px);
+      width:20px;display:flex;justify-content:center;z-index:4;pointer-events:none}
+    #paths-monkey-root .pm-chat-scroll-track{position:relative;width:13px;height:100%;
+      min-height:36px;background:#30262f;border:1px solid #6c5665;border-radius:12px;
+      touch-action:none;user-select:none;cursor:pointer;pointer-events:auto}
+    #paths-monkey-root .pm-chat-scroll-track:hover{border-color:#d3a67e;background:#3c2d37}
+    #paths-monkey-root .pm-chat-scroll-thumb{position:absolute;left:-1px;top:0;
+      width:13px;min-height:38px;border-radius:12px;border:1px solid #f3be81;
+      background:#ad8492;box-shadow:0 0 5px #140c15a6;pointer-events:none}
+    #paths-monkey-root .pm-chat-scroll-track:focus-visible{outline:3px solid #ffcf8e;outline-offset:3px}
+    #paths-monkey-root .pm-chat-jump-menu{position:absolute;right:26px;top:6px;
+      display:flex;flex-direction:column;gap:5px;padding:6px;background:#352934;
+      border:1px solid #c89c78;border-radius:8px;box-shadow:0 5px 18px #000c;
+      pointer-events:auto}
+    #paths-monkey-root .pm-chat-jump-menu>.pm-btn{width:42px;min-width:42px;
+      height:40px;min-height:40px;padding:3px;font-size:21px;line-height:1}
+    @media(max-width:600px){
+      #paths-monkey-root .pm-feed{padding-right:25px}
+      #paths-monkey-root .pm-bubble.pm-narrator{width:100%}
+      #paths-monkey-root .pm-chat-rail{right:2px}
+      #paths-monkey-root #pm-feed>.pm-row{gap:7px}
+      #paths-monkey-root #pm-chat-title{font-size:14px;max-width:62%}
+      #paths-monkey-root #pm-room-status{max-width:34%}
+    }
+
     /* v0.8.19: compact, aligned Admin navigation and session details. */
     #paths-monkey-root #pm-sidebar .pm-admin-group{margin:0;padding:0}
     #paths-monkey-root #pm-sidebar .pm-admin-group>summary{box-sizing:border-box;min-height:44px;line-height:24px;margin:0;padding:10px 0}
@@ -529,9 +574,20 @@
     <div id="pm-registry-create" class="pm-hide"><label for="pm-registry-name" class="pm-label">New player name</label><div class="pm-input-row"><input id="pm-registry-name" class="pm-text" maxlength="45" placeholder="e.g. Puuchan"><button id="pm-registry-add" class="pm-btn pm-primary" type="button">Register</button></div></div>
     <p id="pm-registry-status" class="pm-mute" role="status" aria-live="polite"></p><div id="pm-registry-list"></div></section>
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
-      <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><div class="pm-chat-jump" role="group" aria-label="Navigate chat history"><button id="pm-jump-top" class="pm-btn pm-mini" type="button" aria-label="Jump to oldest loaded message" title="Jump to oldest loaded message">↑</button><button id="pm-jump-bottom" class="pm-btn pm-mini" type="button" aria-label="Jump to newest message" title="Jump to newest message">↓</button></div><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
+      <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-narration-progress" class="pm-progress pm-hide" role="status" aria-live="polite">The Jade Emperor is preparing narration… <button id="pm-narration-cancel" class="pm-btn pm-mini" type="button">Cancel indicator</button></div><div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
     </section>
+    <div id="pm-chat-rail" class="pm-chat-rail pm-hide" aria-label="Chat scrollbar">
+      <div id="pm-chat-scroll-track" class="pm-chat-scroll-track" role="scrollbar" tabindex="0"
+        aria-controls="pm-feed" aria-orientation="vertical" aria-label="Chat scrollbar; hold to show jump controls"
+        aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="pm-chat-scroll-thumb" class="pm-chat-scroll-thumb"></div>
+      </div>
+      <div id="pm-chat-jump-menu" class="pm-chat-jump-menu pm-hide" role="group" aria-label="Navigate loaded chat history">
+        <button id="pm-jump-top" class="pm-btn pm-mini" type="button" aria-label="Jump to oldest loaded message" title="Jump to oldest loaded message">↑</button>
+        <button id="pm-jump-bottom" class="pm-btn pm-mini" type="button" aria-label="Jump to newest message" title="Jump to newest message">↓</button>
+      </div>
+    </div>
     <section id="pm-compose" class="pm-compose" aria-label="Character or player message composer">
       <div id="pm-compose-inner">
         <div class="pm-actions" role="group" aria-label="Session actions; scroll sideways for more">
