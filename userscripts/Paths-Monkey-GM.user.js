@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.26
+// @version      0.8.27
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.26';
+  const VERSION = '0.8.27';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -467,6 +467,22 @@
     #paths-monkey-root #pm-speaker-choices>.pm-btn{width:100%;text-align:left;white-space:normal}
 
 
+    /* v0.8.27: full-size Chronicle review over the room, not a tiny dialog. */
+    #paths-monkey-root .pm-chronicle{position:absolute;inset:var(--pm-header-height,53px) 0 var(--pm-native,95px);
+      overflow-y:auto;z-index:6;background:#17141a;padding:16px clamp(12px,4vw,36px);
+      pointer-events:auto;overscroll-behavior:contain}
+    #paths-monkey-root .pm-chronicle-inner{width:min(1120px,100%);margin:0 auto;display:grid;gap:10px}
+    #paths-monkey-root .pm-chronicle .pm-review-editor{display:block;width:100%;min-height:48vh;
+      height:calc(100dvh - 380px);max-height:68dvh;resize:vertical;
+      white-space:pre-wrap;line-height:1.6;font-size:16px}
+    #paths-monkey-root .pm-review-approvals{display:grid;gap:5px}
+    #paths-monkey-root .pm-review-actions{display:flex;gap:8px;flex-wrap:wrap}
+    #paths-monkey-root .pm-review-actions .pm-btn{min-width:130px}
+    #paths-monkey-root .pm-review-note{color:var(--pm-gold);font-size:14px;line-height:1.5}
+    #paths-monkey-root.pm-admin .pm-chronicle,#paths-monkey-root.pm-collapsed .pm-chronicle,
+    #paths-monkey-root.pm-inactive .pm-chronicle{display:none!important}
+    @media(min-width:791px){#paths-monkey-root .pm-chronicle{left:var(--pm-sidebar-width)}}
+    @media(max-width:600px){#paths-monkey-root .pm-chronicle .pm-review-editor{height:40dvh;min-height:40dvh}}
     /* v0.8.26: wide literary chat and a permanent right-edge scroll track. */
     #paths-monkey-root .pm-feed{padding-right:36px;scrollbar-width:none}
     #paths-monkey-root .pm-feed::-webkit-scrollbar{display:none}
@@ -576,6 +592,22 @@
     <section id="pm-feed" class="pm-feed pm-hide" aria-label="Recent shared messages">
       <div class="pm-row"><strong id="pm-chat-title" tabindex="0" aria-label="Room title; scroll sideways for full name">☁ Chatroom</strong><span id="pm-room-status" role="status" aria-live="polite">Connecting…</span><button id="pm-feed-refresh" hidden aria-label="Refresh chatroom" class="pm-btn pm-mini" type="button">↻</button><button id="pm-feed-close" hidden class="pm-btn pm-mini" type="button">← Admin</button></div>
       <div id="pm-narration-progress" class="pm-progress pm-hide" role="status" aria-live="polite">The Jade Emperor is preparing narration… <button id="pm-narration-cancel" class="pm-btn pm-mini" type="button">Cancel indicator</button></div><div id="pm-feed-messages" class="pm-mute">Connect a room to view messages.</div><div id="pm-workspace" class="pm-hide"><label class="pm-label" for="pm-workspace-character">Viewing character</label><select id="pm-workspace-character" class="pm-text"></select><div id="pm-workspace-content" aria-live="polite"></div></div>
+    </section>
+    <section id="pm-chronicle" class="pm-chronicle pm-hide" aria-label="Chronicle review">
+      <div class="pm-chronicle-inner">
+        <div class="pm-row"><h2 class="pm-name">📖 Chronicle Review</h2><button id="pm-review-close" class="pm-btn pm-mini" type="button">← Room</button></div>
+        <p class="pm-review-note">All non-deleted room messages are included in this source draft, not just the latest 24. Rewrite it into a faithful story and verify character states before asking everyone to approve. Changes reset approvals.</p>
+        <p id="pm-review-status" class="pm-mute" role="status" aria-live="polite"></p>
+        <textarea id="pm-review-editor" class="pm-text pm-review-editor" aria-label="Editable complete Chronicle draft" spellcheck="true"></textarea>
+        <div id="pm-review-approvals" class="pm-review-approvals"></div>
+        <div class="pm-review-actions">
+          <button id="pm-review-save" class="pm-btn" type="button">Save draft</button>
+          <button id="pm-review-refresh" class="pm-btn" type="button">Refresh reviews</button>
+          <button id="pm-review-approve" class="pm-btn" type="button">Approve this revision</button>
+          <button id="pm-review-finalize" class="pm-btn pm-primary" type="button">Approve &amp; Conclude</button>
+        </div>
+        <p class="pm-review-note">All current players must approve the saved revision. Once concluded, the approved archive is available in Room Logs for sending to ChatGPT and then Notion.</p>
+      </div>
     </section>
     <div id="pm-chat-rail" class="pm-chat-rail pm-hide" aria-label="Chat scrollbar">
       <div id="pm-chat-scroll-track" class="pm-chat-scroll-track" role="scrollbar" tabindex="0"
@@ -902,6 +934,84 @@
     const body=setupPayload('scene'),success=await authed('POST','/rest/v1/rpc/save_room_details',{body:{p_room:roomId,p_title:title,...body}});if(success!==true)throw new Error('Saving session details could not be confirmed.');
     rooms=rooms.map(room=>room.id===roomId?{...room,title}:room);if(selectedRoom?.id!==roomId)return;selectedRoom={...selectedRoom,title};put('room',selectedRoom);$('rooms-page-status').textContent='Tools for '+title;renderOngoingSessions();renderRoomLogs();await loadSceneIntro();$('session-details-editor').open=false;feedback('Session details saved for '+title);
   }
+  let chronicleReview=null,chronicleReviewRoom=null;
+  function closeChronicleReview(){
+    $('chronicle').classList.add('pm-hide');
+    chronicleReview=null;chronicleReviewRoom=null;
+    updateChatScrollbar();
+  }
+  function displayChronicleReview(data,replaceEditor=true){
+    chronicleReview=data;
+    if(!data?.exists)throw new Error('No Chronicle review exists for this room.');
+    const editor=$('review-editor');
+    if(replaceEditor)editor.value=data.draft||'';
+    const votes=data.approvals||[];
+    $('review-approvals').replaceChildren();
+    for(const v of votes){const row=document.createElement('div');
+      row.textContent=(v.approved?'✓ ':'○ ')+(v.name||'Player')+' — '+(v.approved?'Approved':'Awaiting approval');
+      $('review-approvals').append(row);}
+    $('review-status').textContent='Draft revision '+data.revision+
+      ' · '+votes.filter(v=>v.approved).length+'/'+votes.length+' approvals'+
+      (data.source_changed?' · Chat changed: restart review before saving or approving.':'');
+    $('review-finalize').disabled=data.source_changed||votes.some(v=>!v.approved)||!votes.length;
+    $('review-approve').disabled=data.source_changed;
+  }
+  async function openChronicleReview(){
+    if(!selectedRoom||!paired)throw new Error('Select an active paired-owner room.');
+    const id=selectedRoom.id;
+    const data=await authed('POST','/rest/v1/rpc/chronicle_begin',{body:{p_room:id}});
+    if(selectedRoom?.id!==id)return;
+    chronicleReviewRoom=id;displayChronicleReview(data);
+    $('chronicle').classList.remove('pm-hide');updateChatScrollbar();
+    feedback('Chronicle review opened. Save edits, then ask every player to approve this revision.');
+  }
+  async function refreshChronicleReview(){
+    if(!chronicleReviewRoom)return;
+    const edited=$('review-editor').value!==chronicleReview?.draft;
+    if(edited&&!confirm('Discard unsaved Chronicle edits and load the current saved draft?'))return;
+    const data=await authed('POST','/rest/v1/rpc/chronicle_status',{body:{p_room:chronicleReviewRoom}});
+    displayChronicleReview(data);
+  }
+  async function saveChronicleReview(){
+    if(!chronicleReviewRoom||!chronicleReview)throw new Error('Open the Chronicle first.');
+    const data=await authed('POST','/rest/v1/rpc/chronicle_save',
+      {body:{p_room:chronicleReviewRoom,p_revision:chronicleReview.revision,p_draft:$('review-editor').value}});
+    displayChronicleReview(data);feedback('Chronicle revision '+data.revision+' saved. All players must approve it.');
+  }
+  async function approveChronicleReview(){
+    if(!chronicleReview)throw new Error('Open Chronicle review first.');
+    if($('review-editor').value!==chronicleReview.draft)
+      throw new Error('You have unsaved edits. Save the draft before approving it.');
+    const data=await authed('POST','/rest/v1/rpc/chronicle_vote',
+      {body:{p_room:chronicleReviewRoom,p_revision:chronicleReview.revision}});
+    displayChronicleReview(data);feedback('Your approval of revision '+data.revision+' was recorded.');
+  }
+  async function finalizeChronicleReview(){
+    if(!chronicleReview)throw new Error('Open Chronicle review first.');
+    if($('review-editor').value!==chronicleReview.draft)
+      throw new Error('Save your changes before concluding.');
+    if(!confirm('Conclude this room with the current approved Chronicle? Players will lose room access, but messages and the approved archive are preserved.'))return;
+    const id=chronicleReviewRoom;
+    const result=await authed('POST','/rest/v1/rpc/chronicle_finalize',
+      {body:{p_room:id,p_revision:chronicleReview.revision}});
+    if(result?.room_state!=='ended')throw new Error('Session conclusion was not verified.');
+    closeChronicleReview();await loadRooms();await refreshScene();setInfoVisible(true);
+    feedback('✓ Session concluded with an approved Chronicle. Open Room Logs to send it to ChatGPT for Notion archiving.');
+  }
+  async function sendChronicleToChatGPT(id,title){
+    const archive=await authed('POST','/rest/v1/rpc/chronicle_status',{body:{p_room:id}});
+    if(!archive?.exists||archive.status!=='approved'||archive.room_state!=='ended')
+      throw new Error('There is no approved concluded Chronicle for this room.');
+    const text='PATHS TO IMMORTALITY — APPROVED SHARED CHRONICLE TO NOTION\n'+
+      'This text was approved by the players and stored in Supabase. Read the current Notion Narration Rules, especially Sections A and D, before writing.\n'+
+      'Create or update the Shared Chronicle on Notion, then cross-link the relevant character Scene Logs, location histories, and Heavenly Calendar. Preserve actual played facts, do not invent unverified acquisitions, revelations or actions.\n'+
+      'Do not alter the approved source history. Record the actual Notion page URL(s) in your response. Do not claim success without verifying connector writes.\n'+
+      'Room: '+title+'\nRevision: '+archive.revision+'\n\nAPPROVED CHRONICLE:\n'+archive.draft;
+    copyText(text);
+    const success=fillNativeComposer(text);
+    feedback(success?'Approved Chronicle placed in ChatGPT composer. Review and press ChatGPT Send.':'Approved Chronicle copied. Paste it into ChatGPT and press Send.');
+    return success;
+  }
   function renderPreparedInvites(){
     const host=$('prepared-invites');host.replaceChildren();const items=selectedRoom?.session_state==='active'?get('preparedInvites.'+selectedRoom.id,[]):[];host.classList.toggle('pm-hide',!items.length);if(!items.length)return;const title=document.createElement('h3');title.textContent='Prepared invitations';host.append(title);
     const note=document.createElement('p');note.className='pm-mute';note.textContent='Send each code privately. Players choose established or temporary characters. Codes stop working after use, expiry, End or Reset.';host.append(note);
@@ -919,6 +1029,7 @@
     if([...select.options].some(x=>x.value===previous))select.value=previous;
   }
   async function controlSession(action){
+    if(action==='end'){await openChronicleReview();return;}
     if(!paired||!selectedRoom)throw new Error('Select an owner room first.');
     const target=action==='kick'?$('kick-player').value:null;if(action==='kick'&&!target)throw new Error('Select a player to remove.');
     const prompt=action==='reset'?'Reset this session? This erases its chat messages and scene introduction, removes all players and invalidates all invitations. Character reminders are kept.':action==='end'?'End this session? Players lose access and all invitations stop working. Messages are kept.':'Remove the selected player from this room and invalidate their pending invitations?';
@@ -1084,7 +1195,14 @@
     await loadRooms();const item=rooms.find(x=>x.id===id);if(!item){$('roomlogs-detail').textContent='This room is no longer available.';return;}
     if(item.session_state==='active'){await chooseRoom(item);return;}
     const host=$('roomlogs-detail');host.replaceChildren();const heading=document.createElement('h3');heading.textContent='Scene ended';const name=document.createElement('p');name.textContent=item.title;host.append(heading,name);
-    if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}host.scrollIntoView?.({block:'nearest'});
+    if(item.ended_at){const date=document.createElement('p');date.className='pm-mute';date.textContent='Concluded: '+new Date(item.ended_at).toLocaleString();host.append(date);}
+    const archive=await authed('POST','/rest/v1/rpc/chronicle_status',{body:{p_room:id}});
+    if(archive?.exists&&archive.status==='approved'){
+      const info=document.createElement('p');info.className='pm-mute';info.textContent='✓ Approved Chronicle · revision '+archive.revision+' · Notion upload via ChatGPT';
+      const button=document.createElement('button');button.className='pm-btn pm-primary';button.type='button';button.textContent='Send approved Chronicle to ChatGPT';
+      button.onclick=()=>runTask(()=>sendChronicleToChatGPT(id,item.title));host.append(info,button);
+    } else {const info=document.createElement('p');info.textContent='This concluded room has no approved Chronicle.';host.append(info);}
+    host.scrollIntoView?.({block:'nearest'});
   }
 function createTypingNotifier(send,context){
  let timer=null,last=0,activeRoom=null,queue=Promise.resolve();
@@ -1539,7 +1657,7 @@ function createTypingNotifier(send,context){
     $('sidebar').setAttribute('aria-hidden',String(!open));$('logo-toggle').setAttribute('aria-expanded',String(open));
   }
   function setInfoVisible(visible){
-    closeHudWorkspace();root.classList.remove('pm-info-overlay','pm-info-dismissed');
+    closeChronicleReview();closeHudWorkspace();root.classList.remove('pm-info-overlay','pm-info-dismissed');
     $('settings').classList.add('pm-hide');$('rooms-page').classList.add('pm-hide');
     visible=visible||!account||!selectedRoom||selectedRoom.session_state!=='active';
     closeRegistry();closeRoomLogs();
@@ -1822,7 +1940,12 @@ function createTypingNotifier(send,context){
   $('refresh-location-ideas').onclick=()=>runTask(loadSceneLocationIdeas);
   $('save-scene').onclick=()=>runTask(saveSceneIntroduction);
   $('kick-player-button').onclick=()=>runTask(()=>controlSession('kick'));
-  $('end-session').onclick=()=>runTask(()=>controlSession('end'));
+  $('end-session').onclick=()=>runTask(openChronicleReview);
+  $('review-close').onclick=closeChronicleReview;
+  $('review-save').onclick=()=>runTask(saveChronicleReview);
+  $('review-refresh').onclick=()=>runTask(refreshChronicleReview);
+  $('review-approve').onclick=()=>runTask(approveChronicleReview);
+  $('review-finalize').onclick=()=>runTask(finalizeChronicleReview);
   $('reset-session').onclick=()=>runTask(()=>controlSession('reset'));
   $('make-invite').onclick=()=>runTask(createSessionInvitation);
   $('copy-invite-code').addEventListener('click',()=>{const code=$('invite-code').value;if(code){GM_setClipboard(code);feedback('Private invitation code copied.');}});
@@ -1866,7 +1989,7 @@ function createTypingNotifier(send,context){
   $('identity-toggle').addEventListener('contextmenu',event=>{event.preventDefault();clearTimeout(speakerHold);speakerHeld=true;openSpeakerPicker();});
   $('identity-toggle').addEventListener('keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();openSpeakerPicker();}});
   $('speaker-close').onclick=closeSpeakerPicker;
-  $('toolbar-end').onclick=()=>runTask(()=>controlSession('end'));
+  $('toolbar-end').onclick=()=>runTask(openChronicleReview);
 
   $('action').addEventListener('input',()=>{autoGrowAction();saveDraft();hudTyping.input();if(pendingRequestBody!==$('action').value.trim()){pendingRequestBody=null;pendingRequestId=null;pendingRequestKind=null;}});
   $('action').addEventListener('blur',()=>hudTyping.stop());
