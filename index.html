@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.15</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.16</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -102,7 +102,7 @@ body.authOpen{overflow:hidden}
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
 </style><link rel="stylesheet" href="public-shell.css"></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.15</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.16</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -407,6 +407,82 @@ $('toolsBack').onclick=backFromTools;
 async function safe(fn){if(working)return;busy(true);clear();try{await fn();}catch(e){console.error(e);const msg=e?.message||'Could not complete request. Please retry.';notice(msg,'error');if(!$('authOverlay').classList.contains('hidden')){$('authError').textContent=msg;$('authError').classList.remove('hidden');}if(!$('narratorOverlay').classList.contains('hidden')){$('narratorError').textContent=msg;$('narratorError').classList.remove('hidden');}}finally{busy(false);}}
 function saveDraft(){if(room)try{localStorage.setItem(draftKey(),$('msg').value);}catch{}}
 function endLive(){webTyping.stop();if(guardTimer){clearInterval(guardTimer);guardTimer=null;}if(subscription){db.removeChannel(subscription);subscription=null;}if(poll){clearInterval(poll);poll=null;}saveDraft();hideNarrator();clearSelection();closeEdit();closeWebMessageSpeaker();webDeletedMessages=null;$('messageUndo').classList.add('hidden');}
+// One-click private room shortcuts. Data is fetched only after Supabase has
+// established the current user, and is never persisted in public/local storage.
+let sidebarRoomsRequest=0,sidebarRoomsLoadedFor=null;
+function sidebarRoomHost(){return document.getElementById('pti-rooms-list');}
+function sidebarRoomStatus(copy){
+  const host=sidebarRoomHost();if(!host)return;
+  host.replaceChildren();const p=document.createElement('p');p.className='ptiRoomsStatus';p.textContent=copy;host.append(p);
+}
+function sidebarRoomButton(title,onClick,extraClass=''){
+  const button=document.createElement('button');button.type='button';button.className='ptiRoomButton '+extraClass;
+  button.textContent=title;button.onclick=onClick;return button;
+}
+function sidebarRoomSignin(){
+  const host=sidebarRoomHost();if(!host)return;
+  sidebarRoomStatus('Sign in once to see your own active rooms.');
+  host.append(sidebarRoomButton('Sign in as Jade Emperor ↗',()=>{
+    if(!db){sidebarRoomStatus('The entrance is still loading. Try again shortly.');return;}
+    sessionStorage.setItem('paths.sidebarRoomsAfterAuth','1');
+    openAuthDialog();
+  },'ptiRoomSignin'));
+}
+function sidebarRoomRender(items){
+  const host=sidebarRoomHost();if(!host)return;
+  host.replaceChildren();
+  if(!items.length){sidebarRoomStatus('No active rooms for this account.');return;}
+  const label=document.createElement('p');label.className='ptiRoomsStatus';
+  label.textContent=items.length+' active room'+(items.length===1?'':'s');host.append(label);
+  for(const item of items){
+    const button=sidebarRoomButton('',()=>safe(async()=>{
+      if(!user){sidebarRoomSignin();return;}
+      button.disabled=true;
+      try{
+        const opened=await openRoom(item.id,item.session_generation||null);
+        if(!opened)sidebarRoomStatus('This room is no longer active or accessible. Open Rooms again to refresh.');
+      }finally{button.disabled=false;}
+    }));
+    button.title='Open '+item.title+' directly in the chatroom';
+    const dot=document.createElement('span');dot.className='ptiRoomDot';dot.textContent='●';
+    const name=document.createElement('span');name.className='ptiRoomName';name.textContent=item.title;
+    button.append(dot,name);host.append(button);
+  }
+}
+async function sidebarRoomRefresh(){
+  const shelf=document.getElementById('pti-rooms-shelf'),host=sidebarRoomHost();
+  if(!shelf||!host||!shelf.open)return;
+  const request=++sidebarRoomsRequest,actor=user?.id;
+  if(!db){sidebarRoomStatus('Connecting to your rooms…');return;}
+  if(!actor){sidebarRoomSignin();return;}
+  sidebarRoomStatus('Loading your active rooms…');
+  try{
+    let items=[];
+    if(portalIdentity.is_admin){
+      const {data,error}=await db.rpc('portal_room_log');
+      if(error)throw error;
+      items=(data||[]).filter(x=>x.session_state==='active');
+    }else{
+      const membership=await db.from('room_members').select('room_id').eq('user_id',actor);
+      if(membership.error)throw membership.error;
+      const ids=[...new Set((membership.data||[]).map(x=>x.room_id))];
+      if(ids.length){
+        const rooms=await db.from('rooms').select('id,title,session_state,session_generation')
+          .in('id',ids).eq('session_state','active').order('created_at',{ascending:false});
+        if(rooms.error)throw rooms.error;
+        items=rooms.data||[];
+      }
+    }
+    if(request!==sidebarRoomsRequest||actor!==user?.id)return;
+    sidebarRoomsLoadedFor=actor;
+    sidebarRoomRender(items);
+  }catch(error){
+    if(request!==sidebarRoomsRequest)return;
+    console.warn('Private rooms could not be loaded',error);
+    sidebarRoomStatus('Unable to load rooms. Close and reopen Rooms to retry.');
+  }
+}
+document.addEventListener('pti:rooms-open',()=>{sidebarRoomRefresh().catch(console.warn);});
 function renderRoomLog(items){
  const host=$('roomList');host.replaceChildren();if(!items.length){host.append(el('p','muted','No rooms yet. Create a room from your HUD to begin.'));return;}
  for(const [state,label]of [['active','Ongoing'],['ended','Concluded']]){const group=items.filter(x=>x.session_state===state);if(!group.length)continue;const section=el('section','roomLogGroup');section.append(el('h4','',label));for(const item of group){const button=el('button','btn roomLogButton'),head=el('span','row');button.type='button';head.append(el('strong','',item.title),el('span','playerStatus '+(state==='active'?'isInSession':'isNotInSession'),label));button.append(head);if(state==='ended')button.append(el('span','roomArchiveNote',item.notion_url?'Notion link saved':'No Notion link recorded'));button.onclick=()=>safe(()=>selectLoggedRoom(item));section.append(button);}host.append(section);}
@@ -956,7 +1032,7 @@ $('menuBack').onclick=()=>safe(returnFromPage);
 $('menuSignout').onclick=()=>safe(async()=>{closeHeaderMenu(false);await portalSignout();});
 $('headerMenuOverlay').addEventListener('click',e=>{if(e.target===$('headerMenuOverlay'))closeHeaderMenu();});
 $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...$('headerMenu').querySelectorAll('button')].filter(x=>!x.disabled&&!x.classList.contains('hidden'));if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
-async function portalSignout(){endLive();++playerSessionsRequest;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+async function portalSignout(){endLive();++playerSessionsRequest;++sidebarRoomsRequest;sidebarRoomsLoadedFor=null;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];sidebarRoomSignin();$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
 $('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);$('navPlayers').onclick=()=>safe(async()=>{if(!portalIdentity.is_admin)returnToStart();else{await refreshRegistry();show('adminPlayers');}});
@@ -993,7 +1069,19 @@ async function boot(){try{
  $('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();
  if(error&&error.name!=='AuthSessionMissingError')console.warn(error);user=data?.user||null;
  await loadPresentation();await refreshPortalIdentity();show('welcome');
- if(sessionStorage.getItem('paths.adminAuth')){sessionStorage.removeItem('paths.adminAuth');await finishAdministratorSignIn();}else if(user&&!portalIdentity.is_admin){await resumeOngoingSession();}
+ if(sessionStorage.getItem('paths.adminAuth')){
+    sessionStorage.removeItem('paths.adminAuth');
+    await finishAdministratorSignIn();
+  }else if(user&&!portalIdentity.is_admin){await resumeOngoingSession();}
+  const shelf=document.getElementById('pti-rooms-shelf');
+  if(sessionStorage.getItem('paths.sidebarRoomsAfterAuth')){
+    sessionStorage.removeItem('paths.sidebarRoomsAfterAuth');
+    if(user&&portalIdentity.is_admin){
+      show('welcome');
+      if(shelf)shelf.open=true;
+    }
+  }
+  if(shelf?.open)await sidebarRoomRefresh();
 }catch(e){console.error(e);notice('The entrance could not load. Check your connection and reload: '+e.message,'error');}}
 boot();
 </script>
