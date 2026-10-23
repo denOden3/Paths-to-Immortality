@@ -348,7 +348,9 @@ const show=where=>{
   if(where==='chat')$('composer').classList.remove('hidden');
   document.querySelector('.app').classList.toggle('inChat',where==='chat');
   document.querySelector('.app').classList.toggle('publicView',where==='welcome');
-  currentView=where;
+  const previousView=currentView;currentView=where;
+  if(where==='welcome'&&previousView!=='welcome'&&document.getElementById('pti-rooms-shelf')?.open)
+    sidebarRoomRefresh().catch(console.warn);
   if(rosterTimer){clearInterval(rosterTimer);rosterTimer=null;}
   if(where==='adminPlayers'&&portalIdentity.is_admin)rosterTimer=setInterval(()=>{if(document.visibilityState==='visible')refreshRegistry().catch(()=>{if(currentView==='adminPlayers')$('rosterFeedback').textContent='Could not refresh. Tap Refresh players to try again.';});},15000);
   closeHeaderMenu(false);
