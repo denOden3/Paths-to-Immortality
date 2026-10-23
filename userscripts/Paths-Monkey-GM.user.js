@@ -600,6 +600,7 @@
         <p id="pm-review-status" class="pm-mute" role="status" aria-live="polite"></p>
         <textarea id="pm-review-editor" class="pm-text pm-review-editor" aria-label="Editable complete Chronicle draft" spellcheck="true"></textarea>
         <div id="pm-review-approvals" class="pm-review-approvals"></div>
+        <div class="pm-h">Player suggestions</div><div id="pm-review-notes" class="pm-review-approvals"></div>
         <div class="pm-review-actions">
           <button id="pm-review-save" class="pm-btn" type="button">Save draft</button>
           <button id="pm-review-novel" class="pm-btn" type="button">Prepare literary draft in ChatGPT</button>
@@ -952,6 +953,10 @@
     for(const v of votes){const row=document.createElement('div');
       row.textContent=(v.approved?'✓ ':'○ ')+(v.name||'Player')+' — '+(v.approved?'Approved':'Awaiting approval');
       $('review-approvals').append(row);}
+    $('review-notes').replaceChildren();
+    for(const note of data.notes||[]){const entry=document.createElement('p');
+      entry.className='pm-mute';entry.textContent=(note.name||'Player')+': '+note.comment;
+      $('review-notes').append(entry);}
     $('review-status').textContent='Draft revision '+data.revision+
       ' · '+votes.filter(v=>v.approved).length+'/'+votes.length+' approvals'+
       (data.source_changed?' · Chat changed: restart review before saving or approving.':'');
