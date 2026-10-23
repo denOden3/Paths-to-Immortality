@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.24
+// @version      0.8.25
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.24';
+  const VERSION = '0.8.25';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -547,7 +547,8 @@
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
         <div id="pm-speaker-menu" class="pm-speaker-menu pm-hide" role="dialog" aria-label="Choose your participating character"><div class="pm-row"><strong>Speak as</strong><button id="pm-speaker-close" class="pm-btn pm-mini" type="button" aria-label="Close character picker">✕</button></div><div id="pm-speaker-choices"></div></div>
-        <div id="pm-bridge-status" class="pm-bridge-status pm-hide" role="status" aria-live="polite"><span id="pm-bridge-copy"></span> <button id="pm-bridge-check" class="pm-btn pm-edit-bubble pm-hide" type="button">Check reply</button> <button id="pm-bridge-retry" class="pm-btn pm-edit-bubble pm-hide" type="button">Retry publish</button> <button id="pm-bridge-cancel" class="pm-btn pm-edit-bubble" type="button">Cancel</button></div>
+        <div id="pm-bridge-status" class="pm-bridge-status pm-hide" role="status" aria-live="polite"><span id="pm-bridge-copy"></span> <button id="pm-bridge-check" class="pm-btn pm-edit-bubble pm-hide" type="button">Check reply</button> <button id="pm-bridge-retry" class="pm-btn pm-edit-bubble pm-hide" type="button">Retry publish</button> <button id="pm-bridge-cancel" class="pm-btn pm-edit-bubble" type="button">Cancel</button>
+          <details id="pm-bridge-manual" class="pm-hide"><summary>Manual recovery if auto-publish fails</summary><p class="pm-mute">Copy the completed ChatGPT narration code block (including [PATHS_NARRATION]) here. Publishing still requires your paired owner identity, the matching request ID, and server approval.</p><textarea id="pm-bridge-paste" class="pm-text" rows="4" maxlength="14000" placeholder="Paste the complete [PATHS_NARRATION] ... [/PATHS_NARRATION] block"></textarea><button id="pm-bridge-publish-paste" class="pm-btn pm-mini" type="button">Validate &amp; publish this reply</button></details></div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
@@ -1194,6 +1195,7 @@ function createTypingNotifier(send,context){
     const q=narrationRequest;$('bridge-status').classList.toggle('pm-hide',!q);if(!q)return;
     $('bridge-copy').textContent=q.error|| (q.phase==='publishing'?'Publishing narration…':q.phase==='published'?'✓ Published · State applied':q.phase==='rejected'?'Narration published · State changes rejected': 'Waiting for the completed GM reply…'+(bridgeScanDetail?' '+bridgeScanDetail:''));
     $('bridge-check').classList.toggle('pm-hide',q.phase!=='waiting');
+    $('bridge-manual').classList.toggle('pm-hide',q.phase!=='waiting');
     $('bridge-retry').classList.toggle('pm-hide',q.phase!=='failed');$('bridge-cancel').disabled=q.phase==='publishing';$('bridge-cancel').textContent=['published','rejected'].includes(q.phase)?'Dismiss':'Cancel';
   }
   function cancelNarrationBridge(){if(bridgePublishing)return;saveNarrationRequest(null);bridgeCandidate='';bridgeScanDetail='';if(selectedRoom&&paired)setNarrationActivity(false).catch(()=>{});}
@@ -1216,58 +1218,90 @@ function createTypingNotifier(send,context){
       if(!receipt)throw new Error('Narration is posted, but its state receipt could not be verified. Retry to verify.');
       if(receipt.status==='rejected'){q.phase='rejected';q.error='Narration posted; NO state changes applied: '+receipt.error;}
       else if(receipt.status==='applied'){q.phase='published';q.error='';}else throw new Error('State update is not confirmed as applied.');
-      saveNarrationRequest(q);if(selectedRoom?.id===q.context.room_id){try{await refreshScene();if(hudWorkspaceView)await refreshHudWorkspace();}catch(error){feedback('Narration verified; room refresh failed: '+error.message,true);}}
+      saveNarrationRequest(q);
+      try{await setNarrationActivity(false);}catch(_){/* A verified narration must not become unverified due to presence cleanup. */}
+      if(selectedRoom?.id===q.context.room_id){try{await refreshScene();if(hudWorkspaceView)await refreshHudWorkspace();}catch(error){feedback('Narration verified; room refresh failed: '+error.message,true);}}
     }catch(error){q.phase='failed';q.error=error.message;saveNarrationRequest(q);}finally{bridgePublishing=false;}
   }
-  function narrationChatTurns(requestId){
-    // Start with role-bearing message elements; fall back to complete turns when
-    // ChatGPT moves author metadata inside a differently structured turn.
-    const direct=[...document.querySelectorAll('[data-message-author-role]')]
+  function narrationChatTurns(){
+    // ChatGPT sometimes moves the role attribute inside a turn wrapper and
+    // sometimes removes earlier turns from the live DOM while they remain in
+    // the conversation. Neither should prevent reading a *matching* reply.
+    const turns=[...document.querySelectorAll('[data-testid^="conversation-turn-"]')]
+      .filter(el=>!root.contains(el));
+    if(turns.length)return turns.map(el=>({
+      role:el.querySelector('[data-message-author-role]')?.getAttribute('data-message-author-role')||
+        (el.querySelector('[data-testid="user-message"]')?'user':
+          el.querySelector('[data-testid="assistant-message"],.markdown')?'assistant':null),
+      el
+    })).filter(x=>x.role);
+    return [...document.querySelectorAll('[data-message-author-role]')]
       .filter(el=>!root.contains(el))
       .map(el=>({role:el.getAttribute('data-message-author-role'),el}));
-    if(direct.some(turn=>turn.role==='user'&&turn.el.textContent.includes(requestId)))return direct;
-    return [...document.querySelectorAll('[data-testid^="conversation-turn-"]')]
-      .filter(el=>!root.contains(el))
-      .map(el=>{
-        const role=el.querySelector('[data-message-author-role]')?.getAttribute('data-message-author-role')||
-          (el.querySelector('[data-testid="user-message"]')?'user':
-          el.querySelector('[data-testid="assistant-message"],.markdown')?'assistant':null);
-        return {role,el};
-      }).filter(turn=>turn.role==='user'||turn.role==='assistant');
+  }
+  function narrationReplyContent(el){
+    const raw=el.textContent||'';
+    if(raw.includes('[PATHS_NARRATION]')&&raw.includes('[/PATHS_NARRATION]'))return raw;
+    return [...el.querySelectorAll('pre code,pre')]
+      .map(code=>code.textContent||'')
+      .find(value=>value.includes('[PATHS_NARRATION]')&&value.includes('[/PATHS_NARRATION]'))||'';
+  }
+  function matchingNarrationReply(requestId){
+    const turns=narrationChatTurns();
+    // Find an assistant response that contains this exact, unguessable request
+    // ID. Do not require the earlier user prompt to remain mounted in the DOM.
+    const candidates=turns.filter(t=>t.role==='assistant').map(t=>narrationReplyContent(t.el));
+    // Code blocks have an independently rendered source in some ChatGPT UIs.
+    // Never accept code in a user message, the HUD or ChatGPT composer.
+    const pre=[...document.querySelectorAll('main pre code,main pre')]
+      .filter(el=>!root.contains(el)&&!el.closest('[data-message-author-role="user"],[data-testid="user-message"]'))
+      .map(el=>el.textContent||'');
+    const candidatesOrdered=[...candidates,...pre].reverse();
+    return candidatesOrdered.find(value=>value.includes('[PATHS_NARRATION]')&&
+      value.includes('[/PATHS_NARRATION]')&&value.includes(requestId))||'';
+  }
+  function unsentNarrationPrompt(requestId){
+    const editor=nativeComposer();
+    return !!editor&&(editor.innerText||editor.value||'').includes(requestId);
+  }
+  async function acceptNarrationReply(source,manual=false){
+    const q=narrationRequest;
+    if(!q||q.phase!=='waiting'||bridgePublishing)throw new Error('No waiting narration request.');
+    if(!account||!paired)throw new Error('Reconnect the paired owner HUD first.');
+    if(q.path!==location.pathname&&q.path!=='/')throw new Error('This request belongs to another ChatGPT conversation.');
+    if(!manual&&!matchingNarrationReply(q.request_id))throw new Error('The matching assistant reply is no longer visible.');
+    const envelope=parseNarrationEnvelope(source,q.request_id);
+    if(!envelope)throw new Error('No complete [PATHS_NARRATION] envelope found.');
+    q.path=location.pathname;q.body=envelope.body;bridgeNotice('');saveNarrationRequest(q);
+    await publishNarrationReply();
   }
   async function scanNarrationReply(manual=false){
     const q=narrationRequest;if(!q||q.phase!=='waiting'||bridgePublishing)return;
-    if(!account||!paired){bridgeNotice('Reconnect your authorized owner HUD to continue.');return;}
-    if(q.path!==location.pathname&&q.path!=='/'){bridgeNotice('This pending request belongs to a different ChatGPT conversation.');return;}
-    // Never inspect arbitrary assistant replies: find the user message containing
-    // this exact request ID, then only the responding assistant turn.
-    const nodes=narrationChatTurns(q.request_id);
-    const requestIndex=nodes.findLastIndex(turn=>turn.role==='user'&&turn.el.textContent.includes(q.request_id));
-    if(requestIndex<0){bridgeNotice('Cannot find the original Narrate request in this chat.');return;}
-    const replies=nodes.slice(requestIndex+1).filter(turn=>turn.role==='assistant');
-    const reply=replies.at(-1)?.el;
-    if(!reply){bridgeNotice('The GM has not replied yet.');return;}
+    if(!account||!paired){bridgeNotice('Reconnect the paired owner HUD to continue.');return;}
+    if(q.path!==location.pathname&&q.path!=='/'){bridgeNotice('This request belongs to a different ChatGPT conversation.');return;}
+    if(unsentNarrationPrompt(q.request_id)){
+      bridgeNotice('Ready: press ChatGPT Send to submit the prepared request.');return;
+    }
     if(document.querySelector('[data-testid="stop-button"],button[aria-label="Stop generating"],button[aria-label="Stop streaming"]')){
-      bridgeNotice('ChatGPT is still generating; it will publish after the reply finishes.');return;
+      bridgeNotice('ChatGPT is still generating; publishing will start once it finishes.');return;
     }
-    let text=reply.textContent||'';
-    // A code widget can expose its raw source in <pre> without including it in
-    // the surrounding turn's text. Use that source only when the turn itself
-    // lacks the envelope markers.
-    if(!text.includes('[PATHS_NARRATION]')||!text.includes('[/PATHS_NARRATION]')){
-      const code=[...reply.querySelectorAll('pre,code')].map(el=>el.textContent||'')
-        .find(candidate=>candidate.includes('[PATHS_NARRATION]')&&candidate.includes('[/PATHS_NARRATION]'));
-      if(code)text=code;
+    const reply=matchingNarrationReply(q.request_id);
+    if(!reply){
+      bridgeNotice('No completed matching GM reply visible yet. If it finished, use Manual recovery below.');return;
     }
-    if(!text.includes('[/PATHS_NARRATION]')||!text.includes(q.request_id)){
-      bridgeNotice('The assistant reply has no complete matching narration envelope.');return;
+    if(bridgeCandidate!==reply){
+      bridgeCandidate=reply;bridgeStableAt=Date.now();
+      if(!manual){bridgeNotice('Completed narration found; verifying it is stable…');return;}
     }
-    if(bridgeCandidate!==text){bridgeCandidate=text;bridgeStableAt=Date.now();if(!manual){bridgeNotice('Narration found; checking that the reply is complete…');return;}}
     if(!manual&&Date.now()-bridgeStableAt<1800)return;
-    bridgeNotice('');
-    try{const envelope=parseNarrationEnvelope(text,q.request_id);if(!envelope){bridgeNotice('No valid narration envelope found.');return;}
-      q.path=location.pathname;q.body=envelope.body;saveNarrationRequest(q);await publishNarrationReply();}
+    try{await acceptNarrationReply(reply);}
     catch(error){q.phase='failed';q.error=error.message;saveNarrationRequest(q);}
+  }
+  async function publishPastedNarration(){
+    const source=$('bridge-paste').value.trim();
+    if(!source)throw new Error('Paste the complete assistant narration envelope first.');
+    try{await acceptNarrationReply(source,true);}
+    catch(error){bridgeNotice('Manual recovery: '+error.message);throw error;}
   }
   function copyText(value) {
     GM_setClipboard(value,'text');
@@ -1667,6 +1701,7 @@ function createTypingNotifier(send,context){
   $('edit-save').onclick=()=>runTask(saveMessageEdit);$('edit-cancel').onclick=closeMessageEditor;
   $('edit-overlay').onclick=event=>{if(event.target===$('edit-overlay'))closeMessageEditor();};
   $('bridge-check').onclick=()=>scanNarrationReply(true).catch(error=>feedback('Narration check failed: '+error.message,true));
+  $('bridge-publish-paste').onclick=()=>runTask(publishPastedNarration);
   $('bridge-retry').onclick=()=>{if(narrationRequest?.body)runTask(publishNarrationReply);else{narrationRequest.phase='waiting';narrationRequest.error='';bridgeScanDetail='';saveNarrationRequest(narrationRequest);bridgeCandidate='';}};
   $('bridge-cancel').onclick=cancelNarrationBridge;
   $('narrate').onclick=()=>runTask(prepareNarrate);
