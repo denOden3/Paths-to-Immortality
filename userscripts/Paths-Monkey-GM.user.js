@@ -961,6 +961,10 @@
     const id=selectedRoom.id;
     const data=await authed('POST','/rest/v1/rpc/chronicle_begin',{body:{p_room:id}});
     if(selectedRoom?.id!==id)return;
+    // Session Tools use the Admin overlay; switch to the chat first or the
+    // review page would be hidden under the existing .pm-admin display rule.
+    $('rooms-page').classList.add('pm-hide');
+    setInfoVisible(false);
     chronicleReviewRoom=id;displayChronicleReview(data);
     $('chronicle').classList.remove('pm-hide');updateChatScrollbar();
     feedback('Chronicle review opened. Save edits, then ask every player to approve this revision.');
