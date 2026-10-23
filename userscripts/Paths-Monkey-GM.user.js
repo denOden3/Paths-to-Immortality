@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.23
+// @version      0.8.24
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.23';
+  const VERSION = '0.8.24';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -39,7 +39,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   let account = get('account', null);
   let paired=false;
-  let narrationRequest=get('narrationRequest',null),bridgePublishing=false,bridgeCandidate='',bridgeStableAt=0;
+  let narrationRequest=get('narrationRequest',null),bridgePublishing=false,bridgeCandidate='',bridgeStableAt=0,bridgeScanDetail='';
   let editingMessage=null;
   const selectedMessageIds=new Set();let messageSelectionRoom=null,lastDeletedMessages=null;
   let selectedRoom = get('room', null);
@@ -209,7 +209,8 @@
     #paths-monkey-root .pm-bubble.pm-selected{outline:2px solid var(--pm-gold);background:#493447}
     #paths-monkey-root .pm-bubble.pm-selectable{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
     #paths-monkey-root .pm-message-selection{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--pm-stroke)}
-    #paths-monkey-root #pm-message-undo{font-size:14px;padding:4px 0}
+    #paths-monkey-root #pm-message-undo{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;padding:4px 0}
+     #paths-monkey-root #pm-message-undo .pm-notice-dismiss{margin-left:auto;min-width:32px;min-height:32px;padding:4px 8px;font-size:17px;line-height:1}
     #paths-monkey-root #pm-edit-body{min-height:180px;max-height:55dvh}
     #paths-monkey-root .pm-bridge-status{font-size:13px;line-height:1.4;padding:4px 0}
 
@@ -539,14 +540,14 @@
           <button id="pm-session-info" class="pm-btn pm-mini" type="button" aria-pressed="false">Session Info</button><button id="pm-scene-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Scene</button><button id="pm-inventory-view" class="pm-btn pm-mini" type="button" aria-pressed="false">Inventory</button><button id="pm-toolbar-end" class="pm-btn pm-mini pm-end" type="button">End session</button>
         </div>
         <div id="pm-message-selection" class="pm-message-selection pm-hide" role="group" aria-label="Selected message actions"><span id="pm-message-count"></span><button id="pm-message-edit" class="pm-btn pm-mini" type="button">Edit</button><button id="pm-message-speaker" class="pm-btn pm-mini" type="button" aria-haspopup="dialog" aria-controls="pm-message-speaker-overlay" title="Choose a character or player chat (OOC)">Speaker ▾</button><button id="pm-message-delete" class="pm-btn pm-mini" type="button">Delete</button><button id="pm-message-cancel" class="pm-btn pm-mini" type="button">Cancel</button></div>
-        <div id="pm-message-undo" class="pm-hide" role="status"><span>Message deleted. Saved state is unchanged.</span> <button id="pm-message-restore" class="pm-btn pm-edit-bubble" type="button">Undo</button></div>
+        <div id="pm-message-undo" class="pm-hide" role="status"><span>Message deleted. Saved state is unchanged.</span> <button id="pm-message-restore" class="pm-btn pm-edit-bubble" type="button">Undo</button><button id="pm-message-undo-dismiss" class="pm-btn pm-mini pm-notice-dismiss" type="button" title="Dismiss deleted-message notice" aria-label="Dismiss deleted-message notice">×</button></div>
         <div class="pm-composer-line">
           <textarea id="pm-action" class="pm-text pm-editor" rows="1" maxlength="8000" placeholder="What does Xiao Lan do?" aria-label="Compose character or player message"></textarea>
           <button id="pm-identity-toggle" aria-label="Switch character and player chat; hold to choose a character" aria-haspopup="dialog" aria-expanded="false" aria-controls="pm-speaker-menu" class="pm-mode-btn" type="button" aria-pressed="true" title="Switch character action / player chat">👤</button>
           <button id="pm-send" type="button" class="pm-btn pm-primary pm-mini" title="Send this message to Paths Web">Send</button>
         </div>
         <div id="pm-speaker-menu" class="pm-speaker-menu pm-hide" role="dialog" aria-label="Choose your participating character"><div class="pm-row"><strong>Speak as</strong><button id="pm-speaker-close" class="pm-btn pm-mini" type="button" aria-label="Close character picker">✕</button></div><div id="pm-speaker-choices"></div></div>
-        <div id="pm-bridge-status" class="pm-bridge-status pm-hide" role="status" aria-live="polite"><span id="pm-bridge-copy"></span> <button id="pm-bridge-retry" class="pm-btn pm-edit-bubble pm-hide" type="button">Retry publish</button> <button id="pm-bridge-cancel" class="pm-btn pm-edit-bubble" type="button">Cancel</button></div>
+        <div id="pm-bridge-status" class="pm-bridge-status pm-hide" role="status" aria-live="polite"><span id="pm-bridge-copy"></span> <button id="pm-bridge-check" class="pm-btn pm-edit-bubble pm-hide" type="button">Check reply</button> <button id="pm-bridge-retry" class="pm-btn pm-edit-bubble pm-hide" type="button">Retry publish</button> <button id="pm-bridge-cancel" class="pm-btn pm-edit-bubble" type="button">Cancel</button></div>
         <div id="pm-feedback" class="pm-feedback" role="status" aria-live="polite"></div>
       </div>
     </section>
@@ -1125,6 +1126,7 @@ function createTypingNotifier(send,context){
   }
   function closeMessageSpeakerPicker(){$('message-speaker-overlay').classList.add('pm-hide');}
   function renderMessageUndo(){$('message-undo').classList.toggle('pm-hide',!lastDeletedMessages||lastDeletedMessages.room!==selectedRoom?.id);}
+  function dismissMessageUndo(){lastDeletedMessages=null;renderMessageUndo();}
   async function manageSelectedMessages(action,kind=null,character=null){
     const room=selectedRoom?.id,ids=action==='restore'?lastDeletedMessages?.ids:[...selectedMessageIds];if(!room||!ids?.length)return;
     const changed=await authed('POST','/rest/v1/rpc/manage_hud_messages',{body:{p_room:room,p_ids:ids,p_action:action,p_kind:kind,p_character:character}});
@@ -1190,10 +1192,12 @@ function createTypingNotifier(send,context){
   function saveNarrationRequest(request){narrationRequest=request;put('narrationRequest',request);renderBridgeStatus();}
   function renderBridgeStatus(){
     const q=narrationRequest;$('bridge-status').classList.toggle('pm-hide',!q);if(!q)return;
-    $('bridge-copy').textContent=q.error|| (q.phase==='publishing'?'Publishing narration…':q.phase==='published'?'✓ Published · State applied':q.phase==='rejected'?'Narration published · State changes rejected':'Waiting for the completed GM reply…');
+    $('bridge-copy').textContent=q.error|| (q.phase==='publishing'?'Publishing narration…':q.phase==='published'?'✓ Published · State applied':q.phase==='rejected'?'Narration published · State changes rejected': 'Waiting for the completed GM reply…'+(bridgeScanDetail?' '+bridgeScanDetail:''));
+    $('bridge-check').classList.toggle('pm-hide',q.phase!=='waiting');
     $('bridge-retry').classList.toggle('pm-hide',q.phase!=='failed');$('bridge-cancel').disabled=q.phase==='publishing';$('bridge-cancel').textContent=['published','rejected'].includes(q.phase)?'Dismiss':'Cancel';
   }
-  function cancelNarrationBridge(){if(bridgePublishing)return;saveNarrationRequest(null);bridgeCandidate='';if(selectedRoom&&paired)setNarrationActivity(false).catch(()=>{});}
+  function cancelNarrationBridge(){if(bridgePublishing)return;saveNarrationRequest(null);bridgeCandidate='';bridgeScanDetail='';if(selectedRoom&&paired)setNarrationActivity(false).catch(()=>{});}
+  function bridgeNotice(message){if(bridgeScanDetail!==message){bridgeScanDetail=message;renderBridgeStatus();}}
   function parseNarrationEnvelope(text,requestId){
     const matches=[...text.matchAll(/\[PATHS_NARRATION\]([\s\S]*?)\[\/PATHS_NARRATION\]/g)];
     if(matches.length!==1)return null;const data=JSON.parse(matches[0][1]);
@@ -1215,18 +1219,54 @@ function createTypingNotifier(send,context){
       saveNarrationRequest(q);if(selectedRoom?.id===q.context.room_id){try{await refreshScene();if(hudWorkspaceView)await refreshHudWorkspace();}catch(error){feedback('Narration verified; room refresh failed: '+error.message,true);}}
     }catch(error){q.phase='failed';q.error=error.message;saveNarrationRequest(q);}finally{bridgePublishing=false;}
   }
-  async function scanNarrationReply(){
-    const q=narrationRequest;if(!q||q.phase!=='waiting'||bridgePublishing||!account||!paired)return;
-    if(q.path!==location.pathname&&q.path!=='/')return;
-    // Only watch a reply to this explicit Narrate request in this conversation.
-    const nodes=[...document.querySelectorAll('[data-message-author-role]')].filter(el=>!root.contains(el));
-    const requestIndex=nodes.findLastIndex(el=>el.getAttribute('data-message-author-role')==='user'&&el.textContent.includes(q.request_id));
-    if(requestIndex<0)return;
-    const replies=nodes.slice(requestIndex+1).filter(el=>el.getAttribute('data-message-author-role')==='assistant');const reply=replies.at(-1);if(!reply)return;
-    if(document.querySelector('[data-testid="stop-button"],button[aria-label="Stop generating"],button[aria-label="Stop streaming"]'))return;
-    const text=reply.textContent||'';if(!text.includes('[/PATHS_NARRATION]')||!text.includes(q.request_id))return;
-    if(bridgeCandidate!==text){bridgeCandidate=text;bridgeStableAt=Date.now();return;}if(Date.now()-bridgeStableAt<1800)return;
-    try{const envelope=parseNarrationEnvelope(text,q.request_id);if(!envelope)return;q.path=location.pathname;q.body=envelope.body;saveNarrationRequest(q);await publishNarrationReply();}
+  function narrationChatTurns(requestId){
+    // Start with role-bearing message elements; fall back to complete turns when
+    // ChatGPT moves author metadata inside a differently structured turn.
+    const direct=[...document.querySelectorAll('[data-message-author-role]')]
+      .filter(el=>!root.contains(el))
+      .map(el=>({role:el.getAttribute('data-message-author-role'),el}));
+    if(direct.some(turn=>turn.role==='user'&&turn.el.textContent.includes(requestId)))return direct;
+    return [...document.querySelectorAll('[data-testid^="conversation-turn-"]')]
+      .filter(el=>!root.contains(el))
+      .map(el=>{
+        const role=el.querySelector('[data-message-author-role]')?.getAttribute('data-message-author-role')||
+          (el.querySelector('[data-testid="user-message"]')?'user':
+          el.querySelector('[data-testid="assistant-message"],.markdown')?'assistant':null);
+        return {role,el};
+      }).filter(turn=>turn.role==='user'||turn.role==='assistant');
+  }
+  async function scanNarrationReply(manual=false){
+    const q=narrationRequest;if(!q||q.phase!=='waiting'||bridgePublishing)return;
+    if(!account||!paired){bridgeNotice('Reconnect your authorized owner HUD to continue.');return;}
+    if(q.path!==location.pathname&&q.path!=='/'){bridgeNotice('This pending request belongs to a different ChatGPT conversation.');return;}
+    // Never inspect arbitrary assistant replies: find the user message containing
+    // this exact request ID, then only the responding assistant turn.
+    const nodes=narrationChatTurns(q.request_id);
+    const requestIndex=nodes.findLastIndex(turn=>turn.role==='user'&&turn.el.textContent.includes(q.request_id));
+    if(requestIndex<0){bridgeNotice('Cannot find the original Narrate request in this chat.');return;}
+    const replies=nodes.slice(requestIndex+1).filter(turn=>turn.role==='assistant');
+    const reply=replies.at(-1)?.el;
+    if(!reply){bridgeNotice('The GM has not replied yet.');return;}
+    if(document.querySelector('[data-testid="stop-button"],button[aria-label="Stop generating"],button[aria-label="Stop streaming"]')){
+      bridgeNotice('ChatGPT is still generating; it will publish after the reply finishes.');return;
+    }
+    let text=reply.textContent||'';
+    // A code widget can expose its raw source in <pre> without including it in
+    // the surrounding turn's text. Use that source only when the turn itself
+    // lacks the envelope markers.
+    if(!text.includes('[PATHS_NARRATION]')||!text.includes('[/PATHS_NARRATION]')){
+      const code=[...reply.querySelectorAll('pre,code')].map(el=>el.textContent||'')
+        .find(candidate=>candidate.includes('[PATHS_NARRATION]')&&candidate.includes('[/PATHS_NARRATION]'));
+      if(code)text=code;
+    }
+    if(!text.includes('[/PATHS_NARRATION]')||!text.includes(q.request_id)){
+      bridgeNotice('The assistant reply has no complete matching narration envelope.');return;
+    }
+    if(bridgeCandidate!==text){bridgeCandidate=text;bridgeStableAt=Date.now();if(!manual){bridgeNotice('Narration found; checking that the reply is complete…');return;}}
+    if(!manual&&Date.now()-bridgeStableAt<1800)return;
+    bridgeNotice('');
+    try{const envelope=parseNarrationEnvelope(text,q.request_id);if(!envelope){bridgeNotice('No valid narration envelope found.');return;}
+      q.path=location.pathname;q.body=envelope.body;saveNarrationRequest(q);await publishNarrationReply();}
     catch(error){q.phase='failed';q.error=error.message;saveNarrationRequest(q);}
   }
   function copyText(value) {
@@ -1268,7 +1308,7 @@ function createTypingNotifier(send,context){
     if(bridgePublishing)throw new Error('Wait for the current publication to finish.');
     if(narrationRequest&&!['published','rejected'].includes(narrationRequest.phase)&&!confirm('Replace the pending narration request? Its later reply will be ignored.'))return;
     const request=await authed('POST','/rest/v1/rpc/prepare_hud_narration',{body:{p_room:selectedRoom.id}});
-    request.path=location.pathname;request.phase='waiting';saveNarrationRequest(request);bridgeCandidate='';
+    request.path=location.pathname;request.phase='waiting';bridgeScanDetail='';saveNarrationRequest(request);bridgeCandidate='';
     await setNarrationActivity(true);const instruction=makeNarrateInstruction(request);copyText(instruction);
     const filled=fillNativeComposer(instruction);
     feedback(filled?'GM request prepared. Press ChatGPT’s Send; the completed reply will publish automatically.':'GM request copied. Paste and send it in this ChatGPT conversation; the completed reply will publish automatically.');
@@ -1620,12 +1660,14 @@ function createTypingNotifier(send,context){
   $('message-speaker').onclick=openMessageSpeakerPicker;
   $('message-delete').onclick=()=>{if(confirm('Delete '+selectedMessageIds.size+' selected message(s)? You can Undo. Inventory and Scene history will stay unchanged.'))runTask(()=>manageSelectedMessages('delete'));};
   $('message-restore').onclick=()=>runTask(()=>manageSelectedMessages('restore'));
+  $('message-undo-dismiss').onclick=dismissMessageUndo;
   $('message-speaker-cancel').onclick=closeMessageSpeakerPicker;
   $('message-speaker-save').onclick=()=>runTask(()=>{const choice=$('message-speaker-choice').value;return manageSelectedMessages('speaker',choice==='__paths_ooc__'?'ooc':'player',choice==='__paths_ooc__'?null:choice);});
   $('message-speaker-overlay').onclick=event=>{if(event.target===$('message-speaker-overlay'))closeMessageSpeakerPicker();};
   $('edit-save').onclick=()=>runTask(saveMessageEdit);$('edit-cancel').onclick=closeMessageEditor;
   $('edit-overlay').onclick=event=>{if(event.target===$('edit-overlay'))closeMessageEditor();};
-  $('bridge-retry').onclick=()=>{if(narrationRequest?.body)runTask(publishNarrationReply);else{narrationRequest.phase='waiting';narrationRequest.error='';saveNarrationRequest(narrationRequest);bridgeCandidate='';}};
+  $('bridge-check').onclick=()=>scanNarrationReply(true).catch(error=>feedback('Narration check failed: '+error.message,true));
+  $('bridge-retry').onclick=()=>{if(narrationRequest?.body)runTask(publishNarrationReply);else{narrationRequest.phase='waiting';narrationRequest.error='';bridgeScanDetail='';saveNarrationRequest(narrationRequest);bridgeCandidate='';}};
   $('bridge-cancel').onclick=cancelNarrationBridge;
   $('narrate').onclick=()=>runTask(prepareNarrate);
   $('narration-cancel').onclick=()=>runTask(()=>setNarrationActivity(false));
