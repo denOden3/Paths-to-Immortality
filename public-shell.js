@@ -12,6 +12,26 @@ if(shelf){
   }
  }
 }
+// Sidebar room shortcuts appear beneath Home throughout the public Codex.
+// Only the authenticated home app fetches room names; static Codex pages link
+// back to it instead of caching/displaying private room data.
+const home=[...side.querySelectorAll('nav>a')].find(a=>a.textContent.trim()==='Home');
+if(home&&!side.querySelector('#pti-rooms-shelf')){
+ const rooms=document.createElement('details');rooms.id='pti-rooms-shelf';
+ rooms.className='ptiRoomsShelf';
+ const summary=document.createElement('summary');summary.textContent='Rooms';summary.setAttribute('aria-label','Expand your active rooms');
+ const contents=document.createElement('div');contents.id='pti-rooms-list';contents.setAttribute('aria-live','polite');
+ if(document.getElementById('roomList')){
+  const status=document.createElement('p');status.className='ptiRoomsStatus';status.textContent='Open to load your active rooms.';
+  contents.append(status);
+ }else{
+  const link=document.createElement('a');link.href=location.pathname.includes('/codex/')?'../index.html#rooms':'index.html#rooms';
+  link.textContent='Open your rooms on Home';contents.append(link);
+ }
+ rooms.append(summary,contents);home.insertAdjacentElement('afterend',rooms);
+ rooms.addEventListener('toggle',()=>{if(rooms.open)document.dispatchEvent(new CustomEvent('pti:rooms-open'));});
+ if(location.hash==='#rooms'){rooms.open=true;if(document.getElementById('roomList'))history.replaceState(null,'',location.pathname+location.search);}
+}
 const mobile=window.matchMedia('(max-width:760px)');
 function sync(){const open=mobile.matches?app.classList.contains('sidebarOpen'):!app.classList.contains('sidebarClosed');toggle.setAttribute('aria-expanded',String(open));shade.hidden=!(mobile.matches&&open);}
 function close(){app.classList.remove('sidebarOpen');sync();}
