@@ -1522,7 +1522,7 @@ function createTypingNotifier(send,context){
   }
   function compactNarrateContext(source){
     const intro=source.introduction||{},characters=source.characters||[];
-    const prev=source.previous_narration?.body?.replace(/\\[PATHS_STATE\\][\\s\\S]*?\\[\\/PATHS_STATE\\]\\s*$/,'').trim()||'';
+    const prev=source.previous_narration?.body?.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim()||'';
     return {title:source.title,session:{
       date:intro.scene_date,time:intro.time_of_day,start:intro.location_name,
       opening:intro.opening_text,goals:intro.session_goals},
@@ -1584,6 +1584,14 @@ function createTypingNotifier(send,context){
   async function publishNarrationReply(){
     const q=narrationRequest;if(!q?.body||bridgePublishing)return;bridgePublishing=true;q.phase='publishing';q.error='';saveNarrationRequest(q);
     try{
+      if(Array.isArray(q.personal_time)){
+        const current=await authed('POST','/rest/v1/rpc/time_checkpoint_list',{body:{p_room:q.context.room_id}});
+        const times=(current.characters||[]).filter(x=>x.has_checkpoint).map(x=>({
+          character:x.character,date:ptDate(x),source_note:x.source_note
+        }));
+        if(JSON.stringify(times)!==JSON.stringify(q.personal_time))
+          throw new Error('Personal time checkpoints changed while GM was writing. Cancel and prepare Narrate again to avoid a stale timeline.');
+      }
       const id=await authed('POST','/rest/v1/rpc/publish_hud_narration',{body:{p_request:q.request_id,p_body:q.body}});q.message_id=id;saveNarrationRequest(q);
       const rows=await authed('GET','/rest/v1/messages?select=id,kind,body&room_id=eq.'+encodeURIComponent(q.context.room_id)+'&id=eq.'+encodeURIComponent(id));
       if(rows?.[0]?.id!==id||rows[0].kind!=='narrator'||rows[0].body!==q.body.trim())throw new Error('Narration publication could not be verified. Retry to check the same request.');
