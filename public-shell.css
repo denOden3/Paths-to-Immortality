@@ -5,3 +5,22 @@
 .ptiSidebar,.ptiNavToggle,.ptiShade{display:none}.publicView .ptiNavToggle{display:inline-grid;place-items:center;min-width:42px;min-height:42px;padding:6px;font-size:20px}.publicView .ptiSidebar{display:flex;flex-direction:column;grid-column:1;grid-row:2;background:#211b23;border-right:1px solid var(--border);padding:24px 14px;overflow:auto;min-height:0}.ptiSideTitle{color:var(--gold);font-size:11px;letter-spacing:2px;padding:0 12px 20px}.ptiSidebar nav{display:grid;gap:7px}.ptiSidebar a,.ptiSidebar summary{display:block;padding:12px;border-radius:8px;color:var(--text);font-size:14px;text-decoration:none;cursor:pointer}.ptiSidebar summary{list-style:none}.ptiSidebar summary::after{content:'›';float:right}.ptiSidebar details[open]>summary::after{content:'⌄'}.ptiSidebar details>div{margin:3px 0 8px 12px;border-left:1px solid var(--border);padding-left:8px}.ptiSidebar details a{font-size:13px;color:var(--muted);padding:10px}.ptiSidebar a:hover,.ptiSidebar summary:hover{background:#352832}.ptiSidebar a[aria-current]{background:#612a33;color:#fff2e6;box-shadow:inset 3px 0 var(--gold)}.ptiSideFoot{margin-top:auto;padding:35px 12px 0;color:var(--gold);font-size:13px}.ptiSideFoot span{color:var(--muted);font-size:12px}.publicView.sidebarClosed{grid-template-columns:minmax(0,1fr)}.publicView.sidebarClosed>.content{grid-column:1}.publicView.sidebarClosed>.ptiSidebar{display:none}.ptiNavToggle:focus-visible,.ptiSidebar :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .codexContent{overflow:auto!important;display:block!important}.codexArticle{max-width:1000px;margin:auto;padding:40px clamp(22px,5vw,70px);line-height:1.75}.codexArticle h2{font-size:clamp(26px,3vw,38px);margin:10px 0 12px}.codexArticle pre{white-space:pre-wrap;overflow-wrap:anywhere;font:15px/1.8 system-ui}.codexArticle .snapshot{color:var(--muted);font-size:13px;border-bottom:1px solid var(--border);padding-bottom:20px}.codexArticle a{color:var(--gold)}
 @media(max-width:760px){.app.publicView{grid-template-columns:minmax(0,1fr)}.publicView>.content{grid-column:1}.publicView>.head{padding:10px 12px;gap:9px}.publicView>.head .state{font-size:11px}.publicView .ptiSidebar{display:none}.publicView.sidebarOpen .ptiSidebar{display:flex;position:fixed;left:0;top:0;bottom:0;width:min(290px,85vw);z-index:91;box-shadow:12px 0 36px #0008}.publicView.sidebarOpen .ptiShade{display:block;position:fixed;inset:0;border:0;background:#0009;z-index:90}.publicView .ptiBody{padding:24px 18px}.publicView .ptiLandscape{height:125px}.codexArticle{padding:25px 20px}.publicView .ptiModes{grid-template-columns:1fr}}
+
+/* Accessible high-contrast public character directory and biographies. */
+.codexArticle.ptiPublicCharacterPage{max-width:970px}
+.ptiPublicCharacterPage h3{font-size:clamp(17px,2vw,22px);color:var(--gold);margin:28px 0 8px}
+.ptiPublicCharacterPage p{font-size:16px;line-height:1.8;margin:10px 0 14px}
+.ptiPublicCharacterPage .codexLead{font-size:clamp(17px,2vw,20px);line-height:1.7;color:var(--text)}
+.ptiEyebrowText{color:var(--gold);font-size:12px!important;letter-spacing:.12em;text-transform:uppercase;font-weight:750;margin-bottom:3px!important}
+.ptiCharacterGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:13px;margin:14px 0 26px}
+.ptiCharacterCard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:13px;align-items:start;min-width:0;background:#29222c;border:1px solid #8b6d77;border-radius:13px;padding:18px 16px;color:var(--text)!important;text-decoration:none}
+.ptiCharacterCard:hover,.ptiCharacterCard:focus-visible{background:#40303d;border-color:var(--gold);outline:2px solid transparent}
+.ptiCharacterCard strong{display:block;font-size:18px}
+.ptiCharacterCard small{display:block;color:var(--gold);font-size:12px;margin:3px 0 8px}
+.ptiCharacterIntro{display:block;color:#eeddd2;font-size:14px;line-height:1.55}
+.ptiCharacterIcon{font-size:27px;line-height:1.4}
+.ptiProfileSub{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.ptiProfileSub>span:first-child{font-size:28px}
+.ptiProfilePill{background:#382c39;color:#f2d9d3;border:1px solid #977784;border-radius:100px;padding:3px 11px;font-size:13px;white-space:normal}
+.ptiPublicCharacterPage .ptiNote{padding:14px 16px;background:#28222c;border-left:3px solid var(--gold);border-radius:5px;color:#f2dfd2;font-size:14px;line-height:1.65}
+.ptiPublicCharacterPage .snapshot{color:#dac4bb;font-size:13px}
