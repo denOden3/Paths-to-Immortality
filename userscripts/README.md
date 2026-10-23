@@ -1,3 +1,10 @@
+## Paths HUD v0.8.24 — clearer narrator bridge and dismissible Delete notice
+
+- A **×** beside the deleted-message **Undo** notice dismisses the banner immediately, without changing saved inventory/Scene state. Until dismissed, the original Undo offer remains available; it does not auto-expire.
+- Pending narration requests now show why they are waiting: ChatGPT still generating, matching user prompt not visible, assistant reply not yet available, or missing/incomplete narration envelope. The **Check reply** button explicitly retries detection, but never bypasses the account/owner pairing, active request ID, same-chat checks or streaming guard.
+- The reply watcher can also recognize assistant/user turns when ChatGPT changes the placement of role metadata. The same authorized Supabase publish RPC, exact request ID validation, state receipt verification and idempotent retry rules remain intact. **No direct Notion edits or narrator messages are sent by installing this version.**
+- Update via the [existing Tampermonkey raw installer](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js), then **reload the same ChatGPT conversation**. A still-valid stored waiting request may be detected after reload; do not press Narrate again until checking its status. The in-room narrator message should be verified in the room. Source/syntax checks are complete; real-browser testing is still recommended.
+
 ## Paths HUD v0.8.23 + Web v0.8.13 — consistent shared chat
 
 - **HUD (v0.8.23):** Message bubbles now follow Web's 17px / 1.65 reading typography and 70ch / 76% width, with small timestamps in each message header. Narration stays centered; ownership-specific left/right layout and the OOC treatment remain intact. ↑ / ↓ controls in the room header jump to the oldest **loaded** and newest visible message.
