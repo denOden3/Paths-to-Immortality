@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.14</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.15</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -102,7 +102,7 @@ body.authOpen{overflow:hidden}
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
 </style><link rel="stylesheet" href="public-shell.css"></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.14</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.15</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -196,7 +196,7 @@ body.authOpen{overflow:hidden}
 </section>
 </div>
 <div id="composer" class="compose hidden">
-<div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button></div>
+<div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button><button id="personalTime" class="btn sm" type="button" aria-pressed="false">Personal Time</button></div>
 <div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div></div>
 </div>
 <div id="webSpeakerMenu" class="webSpeakerMenu hidden" role="menu" aria-label="Choose speaking character or OOC"></div>
@@ -437,12 +437,51 @@ if(isOwner)refreshOwnerMonkeyStatus().catch(e=>{$('monkeyApprovalStatus').textCo
 updateSpeakerDisplay();}
 
 let chatPanelView='',chatPanelRequest=0;
-const chatPanelIds={session:'sessionInfo',scene:'currentScene',inventory:'inventoryPanel'};
+const chatPanelIds={session:'sessionInfo',scene:'currentScene',inventory:'inventoryPanel',time:'personalTime'};
 function closeChatPanel(){ $('chatWorkspace').classList.remove('panelOpen');chatPanelView='';++chatPanelRequest;$('chatPanel').classList.add('hidden');$('chatPanel').replaceChildren();$('feed').classList.remove('hidden');for(const id of Object.values(chatPanelIds))$(id).setAttribute('aria-pressed','false');}
 async function toggleChatPanel(view){if(chatPanelView===view){closeChatPanel();return;}chatPanelView=view;$('chatWorkspace').classList.add('panelOpen');for(const [key,id] of Object.entries(chatPanelIds))$(id).setAttribute('aria-pressed',String(key===view));$('feed').classList.add('hidden');$('selectionBar').classList.add('hidden');$('chatPanel').classList.remove('hidden');await refreshChatPanel();}
 function workspaceField(label,type,value){const wrap=el('label','workspaceField',label),input=el('input');input.type=type;input.value=value||'';if(type==='number'){input.min='1';input.max='1000000';input.step='1';}else input.maxLength=label==='Item name'?80:350;wrap.append(input);return {wrap,input};}
+
+const timelineSeasons=['Spring','Summer','Autumn','Winter'];
+const timelineStages=['Early','Mid','End'];
+const timelineDayparts=['Morning','Midday','Afternoon','Evening','Night'];
+function timeLabel(x){return x.has_checkpoint?
+  'Year '+x.year+' · '+x.stage+' '+x.season+', '+x.day+' · '+x.daypart:
+  'No confirmed personal checkpoint';}
+function timeOption(values,value){
+ const select=el('select');for(const name of values){const option=el('option','',name);option.value=name;select.append(option);}
+ select.value=values.includes(value)?value:values[0];return select;
+}
+async function renderWebPersonalTime(id,character,request,host){
+ const {data,error}=await db.rpc('time_checkpoint_list',{p_room:id});if(error)throw error;
+ if(request!==chatPanelRequest||room!==id||chatPanelView!=='time'||activeCharacter!==character)return;
+ host.replaceChildren(el('h2','workspaceTitle','Personal Time Checkpoints'),
+  el('p','muted','Each character has a separate fictional time. Only record confirmed events; do not assume time dilation in a realm.'));
+ for(const x of data.characters||[])host.append(el('p','sceneCopy',x.character+' — '+timeLabel(x)));
+ const entry=(data.characters||[]).find(x=>x.character===character);
+ if(!entry?.can_save){host.append(el('p','muted','You cannot edit this character’s time.'));return;}
+ const form=el('form','card inventoryForm'),year=el('input'),day=el('input');
+ year.type='number';year.min='1';year.max='9999';year.step='1';year.value=String(entry.year||312);
+ day.type='number';day.min='1';day.max='30';day.step='1';day.value=String(entry.day||1);
+ const season=timeOption(timelineSeasons,entry.season||'Spring'),stage=timeOption(timelineStages,entry.stage||'Early');
+ const part=timeOption(timelineDayparts,entry.daypart||'Morning');
+ const note=el('textarea');note.maxLength=350;note.rows=3;note.placeholder='Verified scene or GM evidence, including any confirmed time distortion.';
+ for(const [name,field] of [['Year',year],['Season',season],['Stage',stage],['Day 1–30',day],['Time of day',part],['Evidence / continuity note',note]]){
+  const wrap=el('label','workspaceField',name);wrap.append(field);form.append(wrap);
+ }
+ const save=el('button','btn primary','Record confirmed time');save.type='submit';form.append(save);
+ form.onsubmit=e=>{e.preventDefault();safe(async()=>{
+  const {error:saveError}=await db.rpc('time_checkpoint_save',{
+   p_room:id,p_character:character,p_year:Number(year.value),p_season:season.value,
+   p_stage:stage.value,p_day:Number(day.value),p_daypart:part.value,p_source_note:note.value.trim()
+  });if(saveError)throw saveError;
+  notice('✓ Personal time recorded for '+character+'.','good');await refreshChatPanel();
+ });};
+ host.append(form);
+}
 async function refreshChatPanel(){
  if(!chatPanelView||!room)return;const view=chatPanelView,id=room,character=activeCharacter,request=++chatPanelRequest,host=$('chatPanel');host.replaceChildren(el('p','muted','Loading…'));
+ if(view==='time'){try{await renderWebPersonalTime(id,character,request,host);}catch(error){host.replaceChildren(el('p','',error.message));}return;}
  const {data,error}=await db.rpc('room_player_panel',{p_room:id,p_character:character});if(request!==chatPanelRequest||room!==id||activeCharacter!==character||chatPanelView!==view)return;if(error){host.replaceChildren(el('p','',error.message));return;}
  host.replaceChildren(el('h2','workspaceTitle',view==='session'?'Session Info':view==='scene'?'Scene':'Inventory'));if(view!=='session')host.append(el('p','workspaceCharacter',character));
  if(view==='session'){const facts=data.session||{};host.append(el('h3','workspaceRoomTitle',facts.title));for(const [label,value] of [['Status',facts.status],['Players',sessionPlayersText()],['In-world date',[facts.date,facts.time].filter(Boolean).join(' · ')],['Starting location',facts.starting_location],['Opening situation',facts.opening],['Session goals',facts.goals]]){const block=el('div','workspaceFact');const copy=el('p','sceneCopy',value||'Not recorded');if(label==='Players')copy.id='sessionPlayers';block.append(el('strong','',label),copy);host.append(block);}return;}
@@ -453,7 +492,7 @@ async function refreshChatPanel(){
  const log=el('details','inventoryLog');log.append(el('summary','','Recent changes'));for(const entry of data.changes||[])log.append(el('p','',entry.name+' · '+(entry.quantity_change>0?'+':'')+entry.quantity_change+' · '+entry.source+' · '+new Date(entry.created_at).toLocaleString()));host.append(log);
 }
 async function changeInventory(id,character,body){if(room!==id||activeCharacter!==character)return;const {data,error}=await db.rpc('change_character_inventory',{p_room:id,p_character:character,...body});if(error)throw error;if(data!==true)throw Error('Could not confirm inventory change.');if(room===id&&activeCharacter===character&&chatPanelView==='inventory')await refreshChatPanel();}
-$('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));
+$('sessionInfo').onclick=()=>safe(()=>toggleChatPanel('session'));$('currentScene').onclick=()=>safe(()=>toggleChatPanel('scene'));$('inventoryPanel').onclick=()=>safe(()=>toggleChatPanel('inventory'));$('personalTime').onclick=()=>safe(()=>toggleChatPanel('time'));
 const isMine=m=>m&&!m.deleted_at&&user&&m.sender_id===user.id&&(m.kind==='player'||m.kind==='ooc');
 const canManageWebMessage=m=>!!m&&!m.deleted_at&&!!user&&(isMine(m)||members.some(member=>member.user_id===user.id&&member.role==='owner'));
 const webVisibleText=m=>m.kind==='narrator'?m.body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim():m.body;
