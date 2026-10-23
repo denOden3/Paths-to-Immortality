@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#20171d"><meta name="referrer" content="no-referrer">
-<title>Paths to Immortality · Cloudveil Session v0.8.13</title>
+<title>Paths to Immortality · Cloudveil Session v0.8.14</title>
 <style>
 :root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--crimson:#b93541;--gold:#f1be7a;--good:#8fe3c6;--bad:#ffc3bc}
 *{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}a{color:var(--gold)}
@@ -88,6 +88,13 @@ body.authOpen{overflow:hidden}
 .selectionBar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0;padding:8px;border:1px solid #a67d83;border-radius:11px;background:#352631}
 .selectionBar .btn{padding:7px 10px;min-height:35px;font-size:12px}.selectionBar .count{color:var(--gold);font-size:12px;font-weight:800;flex:1;min-width:75px}
 .editSheet textarea{min-height:110px;max-height:38dvh;margin:12px 0}
+.chronicleReview{overflow:auto;padding:12px 2px 28px}
+.chronicleReview article{max-width:900px;margin:0 auto}
+.chronicleReview h2{margin:0 0 8px;font-size:21px}
+.chronicleReview pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui,sans-serif;
+  background:#201a23;padding:14px;border:1px solid var(--border);border-radius:8px;max-height:55dvh;overflow:auto}
+.chronicleVotes{display:grid;gap:5px;font-size:14px;margin-top:12px}
+.chronicleReview p{font-size:14px;line-height:1.55}
 </style>
 <link rel="stylesheet" href="portal.css">
 <style>
@@ -95,7 +102,7 @@ body.authOpen{overflow:hidden}
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
 </style><link rel="stylesheet" href="public-shell.css"></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.13</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.14</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -143,8 +150,18 @@ body.authOpen{overflow:hidden}
 
 </section>
 <section id="concludedRoom" class="scroll hidden" aria-label="Concluded scene"><article class="card"><h2>Scene ended</h2><h3 id="concludedTitle"></h3><p id="concludedDate" class="muted"></p><div id="concludedMeta" class="sceneMeta"></div><div id="concludedOpening" class="sceneCopy"></div><p id="concludedGoals" class="sceneCopy hidden"></p></article><article class="card"><h3>Notion archive</h3><p id="archiveStatus" class="archiveState" role="status"></p><a id="archiveLink" class="btn sm hidden" target="_blank" rel="noopener noreferrer">Open Notion page ↗</a><label for="archiveUrl">Notion page link</label><input id="archiveUrl" type="url" maxlength="2000" placeholder="https://www.notion.so/…"><p class="muted">After saving the scene in Notion, paste its page link here. This records the link; it does not upload or verify the page.</p><div class="buttons"><button id="saveArchiveLink" class="btn primary" type="button">Save Notion link</button><button id="concludedBack" class="btn" type="button">← Rooms</button></div></article></section>
+<section id="archiveReview" class="scroll chronicleReview hidden" aria-label="Shared Chronicle review">
+  <article class="card">
+    <div class="row"><h2>📖 Chronicle Review</h2><button id="archiveReviewBack" class="btn sm" type="button">← Room</button></div>
+    <p id="archiveReviewState" class="muted" role="status">Loading approved session draft…</p>
+    <p>This is the complete stored Chronicle draft for player review. The Jade Emperor edits it in the HUD. All players must approve the same saved revision before the session can end.</p>
+    <pre id="archiveReviewText" aria-label="Complete Chronicle text"></pre>
+    <h3>Participant approvals</h3><div id="archiveReviewVotes" class="chronicleVotes"></div>
+    <div class="buttons"><button id="archiveReviewRefresh" class="btn" type="button">Refresh draft</button><button id="archiveReviewApprove" class="btn primary" type="button">Approve this revision</button></div>
+  </article>
+</section>
 <section id="chat" class="hidden" style="flex:1;min-height:0;display:flex;flex-direction:column">
-<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div><div class="chatJumpControls" role="group" aria-label="Jump within loaded chat history"><button id="chatJumpTop" class="btn sm" type="button" title="Jump to oldest loaded message" aria-label="Jump to oldest loaded message">↑</button><button id="chatJumpBottom" class="btn sm" type="button" title="Jump to newest message" aria-label="Jump to newest message">↓</button></div></div>
+<div class="roombar"><button id="back" class="btn sm hidden" aria-hidden="true" tabindex="-1">← Rooms</button><strong id="roomTitle" class="roomTitle" tabindex="0" aria-label="Room title; scroll sideways for full name">Shared room</strong><div id="networkStatus" class="muted" role="status" aria-live="polite"></div><button id="openArchiveReview" class="btn sm" type="button" title="Read and approve the shared Chronicle">Review Chronicle</button><div class="chatJumpControls" role="group" aria-label="Jump within loaded chat history"><button id="chatJumpTop" class="btn sm" type="button" title="Jump to oldest loaded message" aria-label="Jump to oldest loaded message">↑</button><button id="chatJumpBottom" class="btn sm" type="button" title="Jump to newest message" aria-label="Jump to newest message">↓</button></div></div>
 <div id="selectionBar" class="selectionBar hidden" role="toolbar" aria-label="Selected messages">
 <span id="selectionCount" class="count">0 selected</span>
 <button id="selectionMode" class="btn sm" type="button">OOC</button>
@@ -322,7 +339,7 @@ const busy=v=>{working=v;for(const id of ['guest','introEnter','google','guestTr
 const show=where=>{
   if(where==='intro'&&!invitePreview)where='welcome';
   if(where!=='chat'){webTyping.stop();closeChatPanel();}
-  for(const x of ['welcome','identityGate','intro','lobby','chat','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
+  for(const x of ['welcome','identityGate','intro','lobby','chat','archiveReview','tools','composer','administration','adminPlayers','concludedRoom'])$(x).classList.add('hidden');
   $(where).classList.remove('hidden');
   if(where==='chat')$('composer').classList.remove('hidden');
   document.querySelector('.app').classList.toggle('inChat',where==='chat');
@@ -484,6 +501,47 @@ let roomConnection='CONNECTING',narratorPreparing=false,roomTyping=[];
 const webTyping=createTypingNotifier(body=>db.rpc('set_room_typing',body),()=>({room,enabled:currentView==='chat',text:$('msg').value,character:chatMode==='player'?activeCharacter:null}));
 $('chatJumpTop').onclick=()=>{$('feed').scrollTop=0;};
 $('chatJumpBottom').onclick=()=>{$('feed').scrollTop=$('feed').scrollHeight;};
+let archiveReviewSnapshot=null,archiveReviewRoom=null;
+function displayWebChronicle(data){
+  archiveReviewSnapshot=data;
+  if(!data?.exists){
+    $('archiveReviewState').textContent='The owner has not started a Chronicle review yet.';
+    $('archiveReviewText').textContent='';
+    $('archiveReviewVotes').replaceChildren();
+    $('archiveReviewApprove').disabled=true;
+    return;
+  }
+  const votes=data.approvals||[];
+  $('archiveReviewState').textContent='Revision '+data.revision+' · '+
+    votes.filter(v=>v.approved).length+'/'+votes.length+' approvals'+
+    (data.source_changed?' · Room history changed: owner must restart review.':'');
+  $('archiveReviewText').textContent=data.draft;
+  $('archiveReviewVotes').replaceChildren();
+  for(const v of votes){
+    const row=document.createElement('div');
+    row.textContent=(v.approved?'✓ ':'○ ')+(v.name||'Player')+': '+(v.approved?'Approved':'Not approved');
+    $('archiveReviewVotes').append(row);
+  }
+  $('archiveReviewApprove').disabled=data.status!=='review'||!!data.source_changed;
+}
+async function refreshWebChronicle(){
+  if(!room||!user)throw Error('Enter a room first.');
+  const id=room,{data,error}=await db.rpc('chronicle_status',{p_room:id});
+  if(error)throw error;if(room!==id)return;
+  archiveReviewRoom=id;displayWebChronicle(data);
+}
+$('openArchiveReview').onclick=()=>safe(async()=>{
+  show('archiveReview');await refreshWebChronicle();
+});
+$('archiveReviewBack').onclick=()=>{if(room)show('chat');else returnToStart();};
+$('archiveReviewRefresh').onclick=()=>safe(refreshWebChronicle);
+$('archiveReviewApprove').onclick=()=>safe(async()=>{
+  if(!archiveReviewSnapshot?.exists||archiveReviewRoom!==room)throw Error('Refresh the Chronicle first.');
+  if(!confirm('Approve the complete saved Chronicle revision '+archiveReviewSnapshot.revision+'? If the owner edits it, your approval resets.'))return;
+  const {data,error}=await db.rpc('chronicle_vote',{p_room:room,p_revision:archiveReviewSnapshot.revision});
+  if(error)throw error;displayWebChronicle(data);
+  notice('✓ Your approval was recorded for this exact revision.','good');
+});
 function renderRoomStatus(){const connected=roomConnection==='SUBSCRIBED',writing=connected&&narratorPreparing,host=$('networkStatus');host.textContent=writing?'Narrator is writing...':connected&&roomTyping.length===1?roomTyping[0]+' is typing...':connected&&roomTyping.length>1?'Several players are typing...':connected?'● Live':roomConnection==='CHANNEL_ERROR'||roomConnection==='TIMED_OUT'?'⚠ Reconnecting':'○ Connecting';host.classList.toggle('isWriting',writing);host.title=writing?'The GM has requested narration; waiting for publication.':'Chat connection status';}
 async function refreshNarrationActivity(id){const {data,error}=await db.rpc('room_activity_status',{p_room:id});if(room!==id)return;narratorPreparing=!error&&data?.narrating===true;roomTyping=!error&&Array.isArray(data?.typing)?data.typing:[];renderRoomStatus();}
 async function fetchMessages(){
@@ -511,7 +569,7 @@ async function fetchMessages(){
   updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
- closeChatPanel();endLive();narratorPreparing=false;roomTyping=[];roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();archiveReviewSnapshot=null;archiveReviewRoom=null;narratorPreparing=false;roomTyping=[];roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
  activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
