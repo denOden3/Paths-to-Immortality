@@ -1098,10 +1098,10 @@ function createTypingNotifier(send,context){
   async function setNarrationActivity(active){if(!selectedRoom||!paired)throw new Error('A paired owner HUD is required.');const id=selectedRoom.id;const saved=await authed('POST','/rest/v1/rpc/set_narration_activity',{body:{p_room:id,p_active:active}});if(saved!==true)throw new Error('Could not confirm narration indicator.');await refreshNarrationActivity(id);}
   let hudWorkspaceView='',hudWorkspaceRequest=0,hudWorkspaceNarration='';
   function visibleNarration(body){return body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim();}
-  function closeHudWorkspace(){$('feed-refresh').classList.remove('pm-hide');hudWorkspaceView='';++hudWorkspaceRequest;$('workspace').classList.add('pm-hide');$('feed-messages').classList.remove('pm-hide');for(const id of ['session-info','scene-view','inventory-view'])$(id).setAttribute('aria-pressed','false');}
+  function closeHudWorkspace(){$('feed-refresh').classList.remove('pm-hide');hudWorkspaceView='';++hudWorkspaceRequest;$('workspace').classList.add('pm-hide');$('feed-messages').classList.remove('pm-hide');for(const id of ['session-info','scene-view','inventory-view'])$(id).setAttribute('aria-pressed','false');updateChatScrollbar();}
   async function toggleHudWorkspace(view){if(!selectedRoom)return;if(hudWorkspaceView===view){closeHudWorkspace();return;}hudWorkspaceView=view;const select=$('workspace-character'),prior=select.value;select.replaceChildren();const seen=new Set();for(const member of members)for(const name of member.allowed_characters?.length?member.allowed_characters:[member.character_name]){if(!name||seen.has(name))continue;seen.add(name);const option=document.createElement('option');option.value=name;option.textContent=name;select.append(option);}select.value=seen.has(prior)?prior:members.find(member=>member.role==='owner')?.character_name||select.options[0]?.value||'';
     $('workspace-character').classList.toggle('pm-hide',view==='session');$('workspace-character').previousElementSibling.classList.toggle('pm-hide',view==='session');$('feed-refresh').classList.toggle('pm-hide',view==='session');
-    $('workspace').classList.remove('pm-hide');$('feed-messages').classList.add('pm-hide');for(const [key,id] of [['session','session-info'],['scene','scene-view'],['inventory','inventory-view']])$(id).setAttribute('aria-pressed',String(key===view));await refreshHudWorkspace();resizeHudBody();}
+    $('workspace').classList.remove('pm-hide');$('feed-messages').classList.add('pm-hide');updateChatScrollbar();for(const [key,id] of [['session','session-info'],['scene','scene-view'],['inventory','inventory-view']])$(id).setAttribute('aria-pressed',String(key===view));await refreshHudWorkspace();resizeHudBody();}
   async function refreshHudWorkspace(){
     if(!hudWorkspaceView||!selectedRoom)return;const id=selectedRoom.id,character=$('workspace-character').value,view=hudWorkspaceView,request=++hudWorkspaceRequest,host=$('workspace-content');host.textContent='Loading…';
     const data=await authed('POST','/rest/v1/rpc/room_player_panel',{body:{p_room:id,p_character:character}});if(request!==hudWorkspaceRequest||selectedRoom?.id!==id||$('workspace-character').value!==character)return;
@@ -1125,11 +1125,15 @@ function createTypingNotifier(send,context){
     const myId = paired ? members.find(member => member.role === 'owner')?.user_id : account?.user_id;
     return msg.sender_id && myId && msg.sender_id === myId ? 'pm-own' : 'pm-other';
   }
+  let chatScrollRenderedRoom=null;
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
-    const el=$('feed-messages');el.replaceChildren();
-    if (!selectedRoom) {el.textContent='Connect to a room to see its messages.';return;}
-    if (!messages.some(msg=>!msg.deleted_at)) {el.textContent='The hall is quiet. Nothing posted yet.';updateMessageSelection();return;}
+    const feed=$('feed'),el=$('feed-messages');
+    const room=selectedRoom?.id||null,sameRoom=!!room&&chatScrollRenderedRoom===room;
+    const prevTop=feed.scrollTop,nearBottom=feed.scrollHeight-feed.clientHeight-prevTop<70;
+    el.replaceChildren();chatScrollRenderedRoom=room;
+    if (!selectedRoom) {el.textContent='Connect to a room to see its messages.';updateChatScrollbar();return;}
+    if (!messages.some(msg=>!msg.deleted_at)) {el.textContent='The hall is quiet. Nothing posted yet.';updateMessageSelection();updateChatScrollbar();return;}
     for (const msg of messages) {
       if(msg.deleted_at)continue;
       const bubble=document.createElement('div');
@@ -1145,10 +1149,94 @@ function createTypingNotifier(send,context){
       const content=document.createElement('div');content.className='pm-bubble-copy';content.textContent=msg.kind==='narrator'?visibleNarration(msg.body):msg.body;
       bubble.append(heading,content);installMessageLongPress(bubble,msg);el.append(bubble);
     }
-    updateMessageSelection();el.scrollTop=el.scrollHeight;
+    updateMessageSelection();
+    // Preserve the reader's place when messages are refreshed. Auto-follow
+    // the latest only if they were already near the bottom, or entered a room.
+    feed.scrollTop=!sameRoom||nearBottom?feed.scrollHeight:prevTop;
+    updateChatScrollbar();
   }
-  $('jump-top').onclick=()=>{$('feed').scrollTop=0;};
-  $('jump-bottom').onclick=()=>{$('feed').scrollTop=$('feed').scrollHeight;};
+  function closeChatJumpMenu(){$('chat-jump-menu').classList.add('pm-hide');}
+  function updateChatScrollbar(){
+    const feed=$('feed'),track=$('chat-scroll-track'),thumb=$('chat-scroll-thumb'),rail=$('chat-rail');
+    const visible=!!selectedRoom&&!root.classList.contains('pm-admin')&&
+      !feed.classList.contains('pm-hide')&&!$('feed-messages').classList.contains('pm-hide')&&
+      feed.scrollHeight-feed.clientHeight>8;
+    rail.classList.toggle('pm-hide',!visible);
+    if(!visible){closeChatJumpMenu();return;}
+    const travel=Math.max(0,feed.scrollHeight-feed.clientHeight),h=Math.max(1,track.clientHeight);
+    const thumbH=Math.min(h,Math.max(38,h*feed.clientHeight/Math.max(1,feed.scrollHeight)));
+    const progress=travel?Math.min(1,Math.max(0,feed.scrollTop/travel)):0;
+    thumb.style.height=Math.round(thumbH)+'px';
+    thumb.style.top=Math.round(progress*(h-thumbH))+'px';
+    track.setAttribute('aria-valuenow',String(Math.round(progress*100)));
+    track.setAttribute('aria-valuetext',Math.round(progress*100)+'% through loaded messages');
+  }
+  function openChatJumpMenu(clientY){
+    const rect=$('chat-scroll-track').getBoundingClientRect(),menu=$('chat-jump-menu');
+    menu.style.top=Math.min(Math.max(6,clientY-rect.top-24),Math.max(6,rect.height-100))+'px';
+    menu.classList.remove('pm-hide');
+  }
+  const chatRailTrack=$('chat-scroll-track');
+  let chatRailHoldTimer=null,chatRailPointer=null;
+  function clearChatRailHold(){clearTimeout(chatRailHoldTimer);chatRailHoldTimer=null;}
+  function chatRailSetScroll(clientY){
+    const feed=$('feed'),rect=chatRailTrack.getBoundingClientRect();
+    const h=$('chat-scroll-thumb').offsetHeight||38;
+    const percent=Math.max(0,Math.min(1,(clientY-rect.top-h/2)/Math.max(1,rect.height-h)));
+    feed.scrollTop=percent*Math.max(0,feed.scrollHeight-feed.clientHeight);
+  }
+  chatRailTrack.addEventListener('pointerdown',event=>{
+    if(event.pointerType==='mouse'&&event.button!==0)return;
+    event.preventDefault();closeChatJumpMenu();clearChatRailHold();
+    const thumbRect=$('chat-scroll-thumb').getBoundingClientRect();
+    chatRailPointer={id:event.pointerId,startY:event.clientY,startScroll:$('feed').scrollTop,
+      fromThumb:event.clientY>=thumbRect.top-5&&event.clientY<=thumbRect.bottom+5,
+      moved:false,held:false};
+    if(chatRailTrack.setPointerCapture)chatRailTrack.setPointerCapture(event.pointerId);
+    const pointY=event.clientY,pointerId=event.pointerId;
+    chatRailHoldTimer=setTimeout(()=>{
+      if(chatRailPointer?.id!==pointerId||chatRailPointer.moved)return;
+      chatRailPointer.held=true;openChatJumpMenu(pointY);
+    },520);
+  });
+  chatRailTrack.addEventListener('pointermove',event=>{
+    const p=chatRailPointer;if(!p||p.id!==event.pointerId||p.held)return;
+    const dy=event.clientY-p.startY;
+    if(Math.abs(dy)>5){p.moved=true;clearChatRailHold();}
+    if(!p.moved)return;
+    if(p.fromThumb){
+      const trackTravel=Math.max(1,chatRailTrack.clientHeight-$('chat-scroll-thumb').offsetHeight);
+      $('feed').scrollTop=p.startScroll+dy/trackTravel*Math.max(0,$('feed').scrollHeight-$('feed').clientHeight);
+    }else chatRailSetScroll(event.clientY);
+  });
+  chatRailTrack.addEventListener('pointerup',event=>{
+    const p=chatRailPointer;if(!p||p.id!==event.pointerId)return;
+    clearChatRailHold();chatRailPointer=null;
+    if(!p.moved&&!p.held&&!p.fromThumb)chatRailSetScroll(event.clientY);
+  });
+  for(const type of ['pointercancel','lostpointercapture'])
+    chatRailTrack.addEventListener(type,()=>{clearChatRailHold();chatRailPointer=null;});
+  chatRailTrack.addEventListener('contextmenu',event=>{
+    event.preventDefault();openChatJumpMenu(event.clientY);
+  });
+  chatRailTrack.addEventListener('keydown',event=>{
+    const feed=$('feed'),step=Math.max(80,feed.clientHeight*0.8);
+    if(event.key==='ArrowUp')feed.scrollTop-=80;
+    else if(event.key==='ArrowDown')feed.scrollTop+=80;
+    else if(event.key==='PageUp')feed.scrollTop-=step;
+    else if(event.key==='PageDown')feed.scrollTop+=step;
+    else if(event.key==='Home')feed.scrollTop=0;
+    else if(event.key==='End')feed.scrollTop=feed.scrollHeight;
+    else if(event.key==='Enter'||event.key===' ')openChatJumpMenu(chatRailTrack.getBoundingClientRect().top+40);
+    else return;
+    event.preventDefault();
+  });
+  $('feed').addEventListener('scroll',updateChatScrollbar,{passive:true});
+  document.addEventListener('pointerdown',event=>{
+    if(!$('chat-rail').contains(event.target))closeChatJumpMenu();
+  },true);
+  $('jump-top').onclick=()=>{$('feed').scrollTop=0;closeChatJumpMenu();updateChatScrollbar();};
+  $('jump-bottom').onclick=()=>{$('feed').scrollTop=$('feed').scrollHeight;closeChatJumpMenu();updateChatScrollbar();};
   function canManageMessage(message){return !!message&&!message.deleted_at&&!!account&&(paired||(['player','ooc'].includes(message.kind)&&message.sender_id===account.user_id));}
   function selectedMessages(){return messages.filter(message=>selectedMessageIds.has(message.id)&&canManageMessage(message));}
   function clearMessageSelection(){selectedMessageIds.clear();messageSelectionRoom=null;updateMessageSelection();}
@@ -1462,7 +1550,7 @@ function createTypingNotifier(send,context){
     $('logo-toggle').setAttribute('aria-expanded',String(visible||isDesktopLayout()));
     $('logo-toggle').setAttribute('aria-label',visible?'Close information panel':'Open information panel');
     showFeed=!visible;$('feed').classList.toggle('pm-hide',visible);
-    resizeHudBody();syncActiveNavigation();
+    closeChatJumpMenu();resizeHudBody();updateChatScrollbar();syncActiveNavigation();
   }
   function toggleInformation(){
     if(isDesktopLayout()){root.classList.remove('pm-info-overlay');root.classList.toggle('pm-info-dismissed');syncDesktopLayout();resizeHudBody();return;}
@@ -1793,10 +1881,11 @@ function createTypingNotifier(send,context){
     else if(!showSidebar)toggleSidebar();
     else if(!$('picker-menu').classList.contains('pm-hide'))closePickerMenu();
   });
-  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();resizeHudBody();syncDesktopLayout();});
-  const bodyLayoutObserver=new ResizeObserver(resizeHudBody);
+  window.addEventListener('resize',()=>{resizeNativeInset();autoGrowAction();resizeHudBody();syncDesktopLayout();updateChatScrollbar();});
+  const bodyLayoutObserver=new ResizeObserver(()=>{resizeHudBody();updateChatScrollbar();});
   bodyLayoutObserver.observe(root.querySelector('.pm-hbar'));
   bodyLayoutObserver.observe($('compose'));
+  bodyLayoutObserver.observe($('feed-messages'));
   window.addEventListener('beforeunload',()=>{hudTyping.stop();saveDraft();});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')hudTyping.stop();});
   if(typeof GM_registerMenuCommand==='function') {
