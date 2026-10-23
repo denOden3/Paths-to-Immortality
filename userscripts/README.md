@@ -1,3 +1,9 @@
+## HUD v0.8.28 — symmetric Heavenly Voice margins
+
+- Retains the spacious `105ch` maximum-width narrator bubble from v0.8.26 but centers it within the chat message area with equal side margins on desktop. Keeps the message's internal padding and line spacing unchanged. On narrow/mobile displays the bubble expands to 100% of available message width.
+- Does not modify game clocks, scenes, narration RPCs, state deltas or archiving. The current shared session date/time remains room-level; per-character scene descriptions can record individually verified time positions but there is not yet a separately enforced per-character fictional clock in the HUD/backend. The Narration Rules permit independent personal pacing and synchronized shared anchors, which must be managed narratively until a dedicated time tracker exists.
+- Update [the Tampermonkey userscript](https://raw.githubusercontent.com/denOden3/Paths-to-Immortality/main/userscripts/Paths-Monkey-GM.user.js) then reload the same ChatGPT page.
+
 ## Chronicle Review & End Session — HUD v0.8.27 / Paths Web v0.8.14
 
 **New safe End Session workflow:** Both End Session controls in the owner-paired HUD now open a **Chronicle Review** page instead of ending the room. Supabase constructs a full chronological, non-deleted message transcript directly from the database (not the HUD's 24-message viewport), including all visible player actions, OOC messages and Heavenly Voice turns. The complete source is placed in a persistent, editable draft per room/session generation. Its first version is a *faithful transcript*, **not** a magically generated novel chapter. The owner can edit it, export the full text as a TXT, or use **Prepare literary draft in ChatGPT** and then paste a reviewed literary adaptation back into the HUD. If a prompt is too large, the HUD exports the full source instead of silently truncating.
