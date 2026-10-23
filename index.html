@@ -157,6 +157,10 @@ body.authOpen{overflow:hidden}
     <p>This is the complete stored Chronicle draft for player review. The Jade Emperor edits it in the HUD. All players must approve the same saved revision before the session can end.</p>
     <pre id="archiveReviewText" aria-label="Complete Chronicle text"></pre>
     <h3>Participant approvals</h3><div id="archiveReviewVotes" class="chronicleVotes"></div>
+    <h3>Suggestions for the Jade Emperor</h3><div id="archiveReviewNotes" class="chronicleVotes"></div>
+    <label for="archiveReviewComment">Propose a factual correction (doesn't alter the room transcript)</label>
+    <textarea id="archiveReviewComment" rows="3" maxlength="2000" placeholder="What should be corrected before approval?"></textarea>
+    <div class="buttons"><button id="archiveReviewCommentSend" class="btn" type="button">Send suggestion</button></div>
     <div class="buttons"><button id="archiveReviewRefresh" class="btn" type="button">Refresh draft</button><button id="archiveReviewApprove" class="btn primary" type="button">Approve this revision</button></div>
   </article>
 </section>
@@ -508,6 +512,7 @@ function displayWebChronicle(data){
     $('archiveReviewState').textContent='The owner has not started a Chronicle review yet.';
     $('archiveReviewText').textContent='';
     $('archiveReviewVotes').replaceChildren();
+    $('archiveReviewNotes').replaceChildren();
     $('archiveReviewApprove').disabled=true;
     return;
   }
@@ -522,6 +527,10 @@ function displayWebChronicle(data){
     row.textContent=(v.approved?'✓ ':'○ ')+(v.name||'Player')+': '+(v.approved?'Approved':'Not approved');
     $('archiveReviewVotes').append(row);
   }
+  $('archiveReviewNotes').replaceChildren();
+  for(const note of data.notes||[]){const row=document.createElement('div');
+    row.textContent=(note.name||'Player')+': '+note.comment;
+    $('archiveReviewNotes').append(row);}
   $('archiveReviewApprove').disabled=data.status!=='review'||!!data.source_changed;
 }
 async function refreshWebChronicle(){
@@ -535,6 +544,17 @@ $('openArchiveReview').onclick=()=>safe(async()=>{
 });
 $('archiveReviewBack').onclick=()=>{if(room)show('chat');else returnToStart();};
 $('archiveReviewRefresh').onclick=()=>safe(refreshWebChronicle);
+$('archiveReviewCommentSend').onclick=()=>safe(async()=>{
+  if(!archiveReviewSnapshot?.exists||archiveReviewRoom!==room)throw Error('Refresh Chronicle review first.');
+  const comment=$('archiveReviewComment').value.trim();
+  if(!comment)throw Error('Write your suggested correction first.');
+  const {data,error}=await db.rpc('chronicle_comment',{
+    p_room:room,p_revision:archiveReviewSnapshot.revision,p_comment:comment
+  });
+  if(error)throw error;
+  $('archiveReviewComment').value='';displayWebChronicle(data);
+  notice('Your suggestion was saved for the Jade Emperor.','good');
+});
 $('archiveReviewApprove').onclick=()=>safe(async()=>{
   if(!archiveReviewSnapshot?.exists||archiveReviewRoom!==room)throw Error('Refresh the Chronicle first.');
   if(!confirm('Approve the complete saved Chronicle revision '+archiveReviewSnapshot.revision+'? If the owner edits it, your approval resets.'))return;
