@@ -100,9 +100,54 @@ body.authOpen{overflow:hidden}
 <style>
 /* Public solo entrance */
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
-</style><link rel="stylesheet" href="public-shell.css"></head><body>
+</style><link rel="stylesheet" href="public-shell.css"><style>
+/* Cloudveil Compact: mobile multiplayer presentation only. */
+@media(max-width:650px){
+  .inChat .head{gap:8px;padding:7px 10px;min-height:52px}
+  .inChat .head h1{display:none}
+  .inChat .head .state{display:none}
+  .inChat .head .ptiNavToggle{display:none}
+  .inChat .head .sig{width:36px;height:36px;min-width:36px;border-radius:50%;font-size:22px}
+  .ptiMobileRoomName{display:none}
+  .inChat .ptiMobileRoomName{display:block;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:700;color:var(--text)}
+  .inChat .content{padding:5px 9px 0}
+  .inChat .roombar{padding:2px 3px 5px;gap:6px;min-height:22px}
+  .inChat .roombar .roomTitle{position:absolute!important;width:1px!important;height:1px!important;clip-path:inset(50%);overflow:hidden}
+  .inChat .roombar #openArchiveReview{font-size:11px;padding:4px 8px;min-height:30px;margin-left:auto}
+  .inChat .roombar .chatJumpControls{display:none}
+  .inChat .feed{gap:8px;padding:7px 2px 12px}
+  .inChat .bubble{padding:10px 11px;max-width:90%;border-radius:12px}
+  .inChat .bubble.narrator{max-width:100%;border:0;border-left:3px solid var(--gold);border-radius:4px 12px 12px 4px;background:linear-gradient(110deg,#383027,#29242b)}
+  .inChat .bubble.ooc{border-style:dashed}
+  .inChat .by{gap:9px}
+  .inChat .body{font-size:15px;line-height:1.6}
+  .inChat .compose{padding:6px 8px calc(7px + env(safe-area-inset-bottom));overflow:visible;max-height:45dvh}
+  .inChat .compose .send{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:end}
+  .inChat .compose textarea{height:44px;min-height:44px;max-height:120px;min-width:0;padding:10px 11px;font-size:16px;line-height:1.35}
+  .inChat .sendControls{display:contents}
+  .inChat .sendControls .speakerToggle{grid-column:1 / -1;min-height:37px;max-width:100%;width:100%;font-size:13px;text-align:left;background:#44303a;border:1px solid #9c777f}
+  .inChat .sendControls #send{grid-column:2;grid-row:2;min-width:55px;min-height:44px;padding:8px 10px}
+  .inChat .chatPanelButtons{display:flex!important;gap:6px;align-items:center;min-width:0;overflow-x:auto;flex:1;scrollbar-width:none;white-space:nowrap;flex-wrap:nowrap;margin:0}
+  .inChat .chatPanelButtons::-webkit-scrollbar{display:none}
+  .inChat .chatPanelButtons .btn{flex:0 0 auto;min-width:0;min-height:36px;padding:6px 10px;font-size:12px}
+  .ptiToolShelf{display:none}
+  .inChat .ptiToolShelf{display:flex;align-items:center;gap:5px;margin:0 0 5px;min-width:0}
+  .ptiCustomizeButton{min-width:37px;min-height:37px;flex-shrink:0;padding:4px!important;font-size:21px!important}
+  .ptiToolChoices{display:none;position:absolute;bottom:calc(110px + env(safe-area-inset-bottom));right:10px;z-index:35;background:#2d2630;border:1px solid #a17a83;border-radius:12px;padding:12px;width:min(280px,calc(100vw - 20px));box-shadow:0 12px 32px #000a}
+  .ptiToolChoices.open{display:grid;gap:8px}
+  .ptiToolChoices label{display:flex;align-items:center;gap:9px;margin:0;min-height:31px;font-size:13px}
+  .ptiToolChoices input{width:18px;height:18px;accent-color:var(--gold)}
+  .ptiToolChoices h3{margin:0 0 4px;font-size:14px;color:var(--gold)}
+  .inChat .compose{position:relative}
+  .inChat .chatPanelButtons .ptiToolUnpinned{display:none}
+}
+@media(min-width:651px){.ptiMobileRoomName,.ptiToolShelf,.ptiToolChoices{display:none!important}}
+@media(prefers-reduced-motion:no-preference){
+  .inChat .bubble{transition:border-color .15s ease,background-color .15s ease}
+}
+</style></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.16</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><span id="ptiMobileRoomName" class="ptiMobileRoomName" aria-live="off"></span><div id="status" class="state">Web v0.8.16</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -196,7 +241,7 @@ body.authOpen{overflow:hidden}
 </section>
 </div>
 <div id="composer" class="compose hidden">
-<div class="chatPanelButtons" role="group" aria-label="Chat information"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button><button id="personalTime" class="btn sm" type="button" aria-pressed="false">Personal Time</button></div>
+<div class="ptiToolShelf"><div id="ptiPinnedTools" class="chatPanelButtons" role="group" aria-label="Personalized chat tools"><button id="sessionInfo" class="btn sm" type="button" aria-pressed="false">Session Info</button><button id="currentScene" class="btn sm" type="button" aria-pressed="false">Scene</button><button id="inventoryPanel" class="btn sm" type="button" aria-pressed="false">Inventory</button><button id="personalTime" class="btn sm" type="button" aria-pressed="false">Personal Time</button></div><button id="ptiCustomizeTools" class="btn sm ptiCustomizeButton" type="button" aria-label="Customize chat shortcuts" aria-expanded="false" aria-controls="ptiToolChoices">⋯</button><div id="ptiToolChoices" class="ptiToolChoices" role="group" aria-label="Choose chat toolbar shortcuts"><h3>Show above composer</h3></div></div>
 <div class="send"><textarea id="msg" rows="2" maxlength="8000" placeholder="What does your character do?" aria-label="Compose character action or player chat"></textarea><div class="sendControls"><button id="modeSpeaker" class="speakerToggle" type="button" aria-pressed="true" aria-label="Switch speaker">Switch character</button><button id="send" class="btn primary">Send</button></div></div></div>
 </div>
 <div id="webSpeakerMenu" class="webSpeakerMenu hidden" role="menu" aria-label="Choose speaking character or OOC"></div>
@@ -1107,6 +1152,40 @@ q('pti-browse').onclick=()=>{mode='browse';render()};q('pti-offline').onclick=()
 q('pti-copy').onclick=async()=>{try{await navigator.clipboard.writeText(q('pti-prompt').value);q('pti-copy-status').textContent='Copied — ready to paste.'}catch{q('pti-prompt').focus();q('pti-prompt').select();q('pti-prompt').setSelectionRange(0,q('pti-prompt').value.length);q('pti-copy-status').textContent='Select Copy from your device’s text menu.'}};
 q('pti-expand').onclick=()=>{const expanded=q('pti-expand').getAttribute('aria-expanded')!=='true';q('pti-expand').setAttribute('aria-expanded',expanded);q('pti-prompt').rows=expanded?24:8;q('pti-expand').textContent=expanded?'Collapse preview':'Expand preview'};
 render();
+})();
+</script>
+
+<script>
+/* Cloudveil Compact enhancement. Existing game handlers and state remain authoritative. */
+(function(){
+  const byId=id=>document.getElementById(id);
+  const name=byId('roomTitle'),mobile=byId('ptiMobileRoomName');
+  if(name&&mobile){
+    const sync=()=>{mobile.textContent=name.textContent||'Shared room';mobile.title=mobile.textContent};
+    sync();new MutationObserver(sync).observe(name,{childList:true,characterData:true,subtree:true});
+  }
+  const choice=byId('ptiToolChoices'),toggle=byId('ptiCustomizeTools'),shelf=byId('ptiPinnedTools');
+  if(!choice||!toggle||!shelf)return;
+  const tools=[['sessionInfo','Session Info'],['currentScene','Scene'],['inventoryPanel','Inventory'],['personalTime','Personal Time']];
+  const storageKey='pti-web-mobile-shortcuts-v1';
+  let saved=null;
+  try{const value=JSON.parse(localStorage.getItem(storageKey));if(Array.isArray(value))saved=value.filter(x=>tools.some(t=>t[0]===x))}catch(e){}
+  let selected=saved||['currentScene','inventoryPanel'];
+  function render(){
+    for(const [id] of tools){const el=byId(id);if(el)el.classList.toggle('ptiToolUnpinned',!selected.includes(id))}
+    for(const checkbox of choice.querySelectorAll('input[data-shortcut]'))checkbox.checked=selected.includes(checkbox.dataset.shortcut);
+    try{localStorage.setItem(storageKey,JSON.stringify(selected))}catch(e){}
+  }
+  for(const [id,label] of tools){
+    const line=document.createElement('label'),input=document.createElement('input');
+    input.type='checkbox';input.dataset.shortcut=id;input.checked=selected.includes(id);
+    input.addEventListener('change',()=>{selected=input.checked?[...selected,id]:selected.filter(x=>x!==id);render()});
+    line.append(input,document.createTextNode(label));choice.append(line);
+  }
+  toggle.addEventListener('click',()=>{const open=choice.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open))});
+  document.addEventListener('pointerdown',event=>{if(!choice.contains(event.target)&&!toggle.contains(event.target)){choice.classList.remove('open');toggle.setAttribute('aria-expanded','false')}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){choice.classList.remove('open');toggle.setAttribute('aria-expanded','false')}});
+  render();
 })();
 </script>
 </body></html>
