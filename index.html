@@ -145,6 +145,21 @@ body.authOpen{overflow:hidden}
 @media(prefers-reduced-motion:no-preference){
   .inChat .bubble{transition:border-color .15s ease,background-color .15s ease}
 }
+</style><style>
+/* Cloudveil Compact follow-up: protect desktop tools and mobile composer order. */
+@media(min-width:651px){
+  .ptiToolShelf{display:block}
+  .ptiToolShelf .chatPanelButtons{display:flex;gap:7px;flex-wrap:wrap}
+  .ptiToolShelf .ptiCustomizeButton,.ptiToolChoices{display:none!important}
+}
+@media(max-width:650px){
+  .inChat .compose .send textarea{grid-column:1;grid-row:2}
+  .inChat .compose .sendControls .speakerToggle{grid-column:1 / -1;grid-row:1}
+  .inChat .compose .sendControls #send{grid-column:2;grid-row:2}
+  .inChat .compose .sendControls{display:contents!important}
+  .inChat .compose .send{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:end!important}
+  .inChat .ptiToolShelf{display:flex}
+}
 </style></head><body>
 <div class="app publicView">
 <header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><span id="ptiMobileRoomName" class="ptiMobileRoomName" aria-live="off"></span><div id="status" class="state">Web v0.8.16</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div><a href="codex/examiner.html">Elder Shen</a></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
