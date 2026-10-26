@@ -55,6 +55,7 @@ if(root){
       portraitHint.textContent=illustrations.length?
         'No active portrait selected':'No portrait yet · Illustrations will appear below';
     }
+    portraitButton.classList.toggle('isReadOnly',!canUpload);
     portraitButton.setAttribute('aria-label',(canUpload?'Choose':'View')+' '+character+"'s portrait from saved illustrations");
     portraitButton.title=canUpload?'Choose your chat avatar from saved illustrations':'View available character portraits';
   }
