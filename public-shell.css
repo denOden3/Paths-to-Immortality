@@ -63,37 +63,116 @@
 .ptiPublicCharacterPage .snapshot{color:#dac4bb;font-size:13px}
 
 
-/* Character Illustrations: public gallery, owner-only upload controls. */
-.ptiPublicCharacterPage .ptiArtSection{margin:26px 0 30px}
-.ptiPublicCharacterPage .ptiArtSection h3{margin-bottom:11px}
-.ptiArtGallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:15px}
-.ptiArtEmpty{min-height:200px;border:2px dashed #997d8c;border-radius:13px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  text-align:center;background:#2b242d;padding:20px;color:#f4dbce}
-.ptiArtEmptyIcon{font-size:34px;margin-bottom:12px}
-.ptiArtEmpty p{margin:5px 0!important;color:#e3c4b5;font-size:13px!important}
-.ptiArtCard{margin:0;min-width:0;border:1px solid #9b7682;border-radius:13px;
-  background:#29222c;overflow:hidden}
-.ptiArtImage{display:block;width:100%;height:clamp(230px,26vw,370px);object-fit:contain;
-  background:#1b1720}
-.ptiArtCard figcaption{display:grid;gap:6px;padding:13px;color:#f6e5d8}
-.ptiArtCard figcaption strong{overflow-wrap:anywhere}
-.ptiArtCaption{font-size:13px!important;color:#dec7bb;margin:0!important}
-.ptiArtActive{font-size:12px;color:#ffdc99;font-weight:700}
-.ptiArtUseAvatar,.ptiArtUpload,.ptiArtPick{border:1px solid #d6a47c;border-radius:9px;
-  padding:9px 12px;min-height:40px;background:#68323f;color:#fff2e6;cursor:pointer;
-  font-weight:700;text-align:center}
-.ptiArtUseAvatar:disabled,.ptiArtUpload:disabled{opacity:.6;cursor:wait}
-.ptiArtControls{margin-top:18px;padding:16px;border:1px solid #856776;border-radius:12px;
-  background:#29222d}
-.ptiArtControls[hidden]{display:none}
-.ptiArtControls label{display:block;font-size:13px;font-weight:700;margin-top:10px;color:#f0d8cd}
-.ptiArtControls input:not([type=file]),.ptiArtControls textarea{display:block;width:100%;
-  margin:6px 0;padding:10px;background:#16141c;color:#fff0e2;border:1px solid #9b7b88;border-radius:8px}
-.ptiArtDrop{border:2px dashed #a17d83;padding:16px;border-radius:12px;display:flex;
-  flex-wrap:wrap;gap:9px;align-items:center}
+/* Profile-first design: an editable portrait silhouette with the biography. */
+.ptiPublicCharacterPage .ptiIdentityLayout{display:grid;
+  grid-template-columns:164px minmax(0,1fr);align-items:center;gap:26px;
+  margin:22px 0 23px}
+.ptiIdentityDetails{min-width:0}
+.ptiIdentityDetails .ptiProfileSub{margin:0 0 14px;gap:8px}
+.ptiIdentityDetails .codexLead{margin:0 0 8px!important}
+.ptiIdentityDetails .ptiAvatarHint{margin:8px 0 0!important;
+  color:#dec6b6;font-size:13px;line-height:1.5}
+.ptiAvatarPortrait{width:164px;height:164px;display:block;position:relative;
+  border:3px solid #dfb889;border-radius:50%;overflow:hidden;
+  background:radial-gradient(circle at 50% 28%,#74565d,#43303c 68%,#32272f);
+  cursor:pointer;box-shadow:0 0 0 5px #2b222a,0 5px 21px #0008}
+.ptiAvatarPortrait:hover{border-color:#ffda9d;box-shadow:0 0 0 5px #533840,0 6px 24px #0009}
+.ptiAvatarPortrait:focus-visible,.ptiArtImageLink:focus-visible,
+.ptiAvatarChoice:focus-visible{outline:3px solid #f8c98d;outline-offset:4px}
+.ptiAvatarPreview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ptiAvatarPreview[hidden],.ptiAvatarSilhouette[hidden]{display:none!important}
+.ptiAvatarSilhouette{position:absolute;inset:0}
+.ptiAvatarSilhouette:before{content:'';position:absolute;left:34%;top:21%;
+  width:32%;height:32%;border-radius:50%;background:#b89ca0}
+.ptiAvatarSilhouette:after{content:'';position:absolute;left:12%;bottom:-12%;
+  width:76%;height:49%;border-radius:50% 50% 0 0;background:#b89ca0}
+.ptiAvatarPortraitCorner{position:absolute;right:8px;bottom:6px;width:30px;height:30px;
+  border:1px solid #f1c89e;border-radius:50%;display:grid;place-items:center;
+  background:#502a37;color:#fff1df;font-size:16px}
+
+/* Notion-inspired illustration record: illustration left, prose right. */
+.ptiPublicCharacterPage .ptiArtSection{margin:28px 0 37px}
+.ptiArtHeading{margin:0 0 12px}
+.ptiPublicCharacterPage .ptiArtHeading h3{margin:0}
+.ptiArtGallery{display:grid;gap:29px}
+.ptiPublicCharacterPage .ptiArtQuiet{margin:7px 0 14px;
+  color:#dfc7bc;font-size:14px;line-height:1.65}
+.ptiArtEntry{padding-bottom:25px;border-bottom:1px solid #665159}
+.ptiArtEntryTitle{font-size:18px;line-height:1.45;font-weight:700;
+  color:#fff0df;margin:4px 0 16px}
+.ptiArtEntryLayout{display:grid;grid-template-columns:minmax(165px,260px) minmax(0,1fr);
+  gap:28px;align-items:start}
+.ptiArtImageLink{display:block;min-width:0;text-decoration:none;border:1px solid #8e7480;
+  background:#2a222b;border-radius:4px;overflow:hidden}
+.ptiArtImageLink:hover{border-color:#efc38f}
+.ptiArtImage{width:100%;height:auto;max-height:420px;object-fit:contain;
+  display:block;background:#221b24}
+.ptiArtEntryNotes{min-width:0}
+.ptiPublicCharacterPage .ptiArtCaption{white-space:pre-wrap;color:#efddd2;
+  font-size:15px;line-height:1.75;margin:0 0 13px}
+.ptiPublicCharacterPage .ptiArtActive{font-size:13px;font-weight:750;color:#ffe0a4;margin:6px 0}
+.ptiPublicCharacterPage .ptiArtImageTip{font-size:12px;color:#bca9aa;margin:15px 0 0;line-height:1.5}
+
+/* Small, optional upload editor, collapsed until its character owner opens it. */
+.ptiArtControls{margin:16px 0 8px;padding:0;border:1px solid #806774;
+  border-radius:9px;background:#26202a}
+.ptiArtControls[hidden]{display:none!important}
+.ptiArtControls>summary{display:list-item;cursor:pointer;padding:12px 15px;
+  color:#ffd9a5;font-weight:700;list-style-position:inside}
+.ptiArtControls>summary:hover,.ptiArtControls>summary:focus-visible{background:#40303a}
+.ptiArtUploadPanel{padding:0 16px 17px;border-top:1px solid #665159}
+.ptiArtDrop{border:1px dashed #a28792;padding:12px;border-radius:9px;display:flex;
+  flex-wrap:wrap;gap:9px;align-items:center;margin:16px 0 12px}
 .ptiArtDrop.dragOver{background:#51404c;border-color:#ffca85}
 .ptiArtDrop input[type=file]{display:none}
-.ptiArtDrop p,.ptiArtGuest,.ptiArtStatus{font-size:13px!important;color:#efcfbb}
-.ptiArtStatus{min-height:21px}
-@media(max-width:550px){.ptiArtImage{height:300px}.ptiArtGallery{grid-template-columns:1fr}}
+.ptiArtDrop span{color:#dfc8bc;font-size:13px}
+.ptiArtControls label{display:block;font-size:13px;font-weight:700;margin:12px 0;color:#f0d8cd}
+.ptiArtControls input:not([type=file]),.ptiArtControls textarea{display:block;
+  width:100%;margin-top:5px;padding:11px;background:#16141c;color:#fff0e2;
+  border:1px solid #9b7b88;border-radius:8px;font:inherit}
+.ptiArtUpload,.ptiArtPick,.ptiAvatarJump{border:1px solid #d6a47c;
+  border-radius:8px;background:#68323f;color:#fff2e6;padding:9px 13px;
+  cursor:pointer;min-height:40px;font-weight:700}
+.ptiArtUpload:disabled,.ptiAvatarChoice:disabled{opacity:.6;cursor:wait}
+.ptiPublicCharacterPage .ptiArtStatus{min-height:18px;margin:8px 0 0;
+  color:#f4cc9f;font-size:13px;line-height:1.45}
+
+/* A focused, visual selector — the portrait is chosen here, not in a setup form. */
+.ptiAvatarDialog{background:#241e29;color:#fff0e1;border:1px solid #b48a85;
+  border-radius:15px;width:min(660px,calc(100vw - 30px));max-height:82dvh;
+  padding:18px 20px 23px;overflow:auto;box-shadow:0 24px 80px #000a}
+.ptiAvatarDialog::backdrop{background:#0a080bdc}
+.ptiAvatarDialogHeader{display:flex;gap:12px;justify-content:space-between;
+  align-items:center;border-bottom:1px solid #745a69;padding-bottom:10px}
+.ptiPublicCharacterPage .ptiAvatarDialogHeader h3{margin:0;font-size:19px}
+.ptiAvatarClose{width:38px;height:38px;min-width:38px;border:1px solid #a27a89;
+  border-radius:8px;color:#fff0e2;background:#48313e;cursor:pointer}
+.ptiPublicCharacterPage .ptiAvatarDialogHelp{font-size:14px;line-height:1.65;
+  color:#e7d0bf;margin:12px 0 18px}
+.ptiAvatarChoices{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));
+  gap:12px}
+.ptiAvatarChoice{border:2px solid #745969;border-radius:10px;background:#302631;
+  color:#fff0e2;display:grid;gap:6px;text-align:center;padding:8px;
+  align-content:start;cursor:pointer;min-width:0}
+.ptiAvatarChoices div.ptiAvatarChoice{cursor:default}
+.ptiAvatarChoice.isCurrent{border-color:#efbd75;background:#46313b}
+.ptiAvatarChoice:hover:is(button){border-color:#f4d09d}
+.ptiAvatarChoice img{width:100%;height:132px;object-fit:cover;border-radius:6px}
+.ptiAvatarChoiceName{font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.ptiAvatarChoice small{font-size:11px;color:#ffdbab;min-height:16px}
+.ptiAvatarJump{grid-column:1/-1}
+
+@media(max-width:700px){
+  .ptiPublicCharacterPage .ptiIdentityLayout{grid-template-columns:125px minmax(0,1fr);gap:19px}
+  .ptiAvatarPortrait{width:125px;height:125px}
+  .ptiArtEntryLayout{grid-template-columns:minmax(125px,40%) minmax(0,1fr);gap:16px}
+}
+@media(max-width:480px){
+  .ptiPublicCharacterPage .ptiIdentityLayout{display:flex;flex-direction:column;
+    align-items:flex-start;gap:15px}
+  .ptiAvatarPortrait{width:148px;height:148px}
+  .ptiArtEntryLayout{grid-template-columns:1fr}
+  .ptiArtImageLink{max-width:280px}
+  .ptiAvatarDialog{padding:14px}
+}
+
