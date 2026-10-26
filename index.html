@@ -104,9 +104,9 @@ body.authOpen{overflow:hidden}
 <style>
 /* Public solo entrance */
 #welcome{padding:0 0 30px;scroll-behavior:smooth}.ptiRibbon{display:flex;position:relative;z-index:2;border-bottom:1px solid var(--border);background:#241e27}.ptiRibbon>details{flex:1;min-width:0}.ptiRibbon summary{cursor:pointer;padding:13px 6px;text-align:center;font-size:13px;color:var(--gold);list-style:none}.ptiRibbon summary::after{content:' ▾';font-size:10px}.ptiRibbon details>div{position:absolute;left:0;right:0;display:grid;gap:4px;background:#302530;padding:12px;border:1px solid var(--border);box-shadow:0 15px 30px #0008}.ptiRibbon a{padding:10px;text-decoration:none;border-radius:5px}.ptiRibbon a:hover{background:#503540}.ptiLandscape{height:140px;background:linear-gradient(#29212d,#71545c);overflow:hidden}.ptiLandscape svg{width:100%;height:100%;display:block}.ptiBody{max-width:700px;margin:auto;padding:20px}.ptiBody h2{font-size:clamp(23px,5vw,30px);line-height:1.2;margin:0 0 12px}.ptiBody h3{font-size:21px;margin:8px 0 15px}.ptiBody p{line-height:1.65}.ptiIntro{color:var(--muted)}#pti-starter{margin-top:30px}.ptiEyebrow{color:var(--gold);font-size:11px;letter-spacing:2px}.ptiModes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}.ptiModes button{padding:15px 12px;text-align:left;white-space:normal}.ptiModes span{display:block;font-size:12px;font-weight:400;margin-top:5px}.ptiModes [aria-pressed=true]{background:#612a33;border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}#pti-options{padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:18px}#pti-options>label{display:block;margin-bottom:12px}#pti-options input:not([type=checkbox]),#pti-options select{display:block;width:100%;margin-top:6px;padding:10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit}#pti-options fieldset{border:1px solid var(--border);padding:12px}#pti-options fieldset label{display:flex;gap:9px;align-items:center;margin:8px 0}#pti-options input[type=checkbox]{width:18px;height:18px;accent-color:var(--crimson)}.ptiPromptHeader,.ptiPromptFooter{display:flex;align-items:center;justify-content:space-between;gap:12px}.ptiPromptHeader label{font-weight:700}#pti-prompt{width:100%;resize:vertical;min-height:180px;max-height:60vh;padding:14px;background:#100f14;color:var(--text);border:1px solid var(--border);border-radius:10px;font:13px/1.6 ui-monospace,monospace}.ptiPromptFooter{margin-top:8px;font-size:12px}.ptiMultiplayer{border-block:1px solid var(--border);padding:22px 0;margin:28px 0;display:flex;flex-wrap:wrap;align-items:center;gap:18px}.ptiMultiplayer h3{margin:0 0 5px}.ptiRef{border-bottom:1px solid var(--border);padding:12px 0}.ptiRef summary{cursor:pointer;color:var(--gold);padding:4px}.ptiRef pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.7 system-ui}.ptiBody :focus-visible,.ptiRibbon :focus-visible{outline:2px solid var(--gold);outline-offset:3px}.ptiBody .muted{font-size:13px;color:var(--muted)}@media(max-width:480px){.ptiBody{padding:18px 14px}.ptiModes{grid-template-columns:1fr}.ptiLandscape{height:105px}.ptiMultiplayer .btn{width:100%}.ptiRibbon summary{font-size:12px;padding:13px 3px}}
-</style><link rel="stylesheet" href="public-shell.css?v=20261026-characters"></head><body>
+</style><link rel="stylesheet" href="public-shell.css?v=20261026-header-signin"></head><body>
 <div class="app publicView">
-<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><div id="status" class="state">Web v0.8.17</div></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div class="ptiCharacterCategories"><details class="ptiCharacterTier" open><summary>Player Characters</summary><div class="ptiCharacterTierLinks"><a href="codex/xiao-lan.html">Xiao Lan</a><a href="codex/xu-yi.html">Xu Yi</a></div></details><details class="ptiCharacterTier" open><summary>NPCs</summary><div class="ptiCharacterTierLinks"><a href="codex/examiner.html">Elder Shen</a></div></details></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
+<header class="head"><button id="pti-nav-toggle" class="btn ptiNavToggle" aria-label="Toggle sidebar" aria-controls="pti-sidebar" aria-expanded="true">☰</button><button id="toolsOpen" class="sig" type="button" title="Open navigation" aria-label="Open navigation" aria-haspopup="dialog" aria-controls="headerMenu" aria-expanded="false">☯</button><div><h1>Paths to Immortality</h1></div><button id="ptiSignIn" class="ptiHeaderSignIn" type="button" aria-haspopup="dialog" aria-controls="authSheet">Sign In</button></header><aside id="pti-sidebar" class="ptiSidebar" aria-label="Site navigation"><div class="ptiSideTitle">THE JIANGHU</div><nav><a href="index.html" aria-current="page">Home</a><details open><summary>World Codex</summary><div><a href="codex/rules.html">Narration rules</a><a href="codex/recruitment.html">Recruitment · Day 1</a><a href="codex/courtyard.html">Courtyard reference</a><a href="codex/uniforms.html">Dress & uniforms</a></div></details><details open><summary>Characters</summary><div class="ptiCharacterCategories"><details class="ptiCharacterTier" open><summary>Player Characters</summary><div class="ptiCharacterTierLinks"><a href="codex/xiao-lan.html">Xiao Lan</a><a href="codex/xu-yi.html">Xu Yi</a></div></details><details class="ptiCharacterTier" open><summary>NPCs</summary><div class="ptiCharacterTierLinks"><a href="codex/examiner.html">Elder Shen</a></div></details></div></details><a href="index.html#pti-starter">Solo Adventure</a><a href="index.html#guest">Multiplayer Session Sign In</a></nav><div class="ptiSideFoot">Cloudveil Sect<br><span>One world. Many paths.</span><div id="status" class="ptiWebVersion">Web v0.8.17</div></div></aside><button class="ptiShade" id="pti-shade" aria-label="Close navigation" tabindex="-1" hidden></button>
 <div class="content">
 <div id="adminGreeting" class="portalHero adminGreeting hidden"><h2>Welcome, Jade Emperor.</h2><p>Oversee your Jianghu.</p></div>
 <nav id="portalNav" class="adminNav hidden" role="tablist" aria-label="Administration sections"><button id="navAdmin" class="btn" role="tab" aria-controls="administration" aria-selected="false" tabindex="-1">Administration</button><button id="navSessions" class="btn" role="tab" aria-controls="lobby" aria-selected="false" tabindex="-1">Rooms</button><button id="navPlayers" class="btn" role="tab" aria-controls="adminPlayers" aria-selected="false" tabindex="-1">Players</button></nav>
@@ -209,9 +209,16 @@ body.authOpen{overflow:hidden}
 <div id="authOverlay" class="authOverlay hidden" role="presentation">
 <section id="authSheet" class="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle" aria-describedby="authDescription" tabindex="-1">
 <div class="authMark" aria-hidden="true">☯</div>
-<h2 id="authTitle">The Jade Emperor</h2>
-<p id="authDescription">Sign in with the Jade Emperor’s authorised Google account.</p>
-<button id="google" class="authChoice primary" type="button"><span class="authIcon" aria-hidden="true">G</span><span class="authDetails"><strong>Continue with Google</strong><small>Return anytime with your Google account</small></span></button>
+<h2 id="authTitle">Sign in to Paths to Immortality</h2>
+<p id="authDescription">Sign in with a personal email or Google account. Your ChatGPT email is not required.</p>
+<button id="google" class="authChoice primary" type="button"><span class="authIcon" aria-hidden="true">G</span><span class="authDetails"><strong>Continue with Google</strong><small>Use a Google account of your choice</small></span></button>
+<form id="ptiEmailAuth" class="ptiEmailAuth">
+  <label for="ptiLoginEmail">Or use your email address</label>
+  <div class="ptiEmailRow"><input id="ptiLoginEmail" type="email" autocomplete="email" inputmode="email" required maxlength="254" placeholder="you@example.com"><button id="ptiSendEmail" type="submit" class="btn">Send sign-in link</button></div>
+  <p class="ptiEmailHelp">We'll email you a sign-in link. No ChatGPT account needed.</p>
+  <p id="ptiEmailNotice" class="ptiEmailNotice" role="status" aria-live="polite" hidden></p>
+</form>
+<div id="ptiAccountInfo" class="ptiAccountInfo" hidden><p id="ptiAccountLabel" class="ptiAccountLabel"></p><button id="ptiAccountSignout" class="authChoice" type="button">Sign Out</button></div>
 <button id="guestTrial" class="authChoice" type="button"><span class="authIcon" aria-hidden="true">☁</span><span class="authDetails"><strong>Continue as Guest</strong><small>Temporary trial on this browser</small></span></button>
 <div id="authError" class="authMessage hidden" role="alert"></div>
 <button id="authClose" class="authExit" type="button">Maybe later</button>
@@ -925,15 +932,73 @@ $('editSave').onclick=()=>safe(async()=>{
 });
 $('selectionDelete').onclick=()=>{if(!selectedIds.size||!room)return;if(confirm('Delete '+selectedIds.size+' selected message(s)? You can Undo. Inventory and Scene effects will stay unchanged.'))safe(()=>changeWebMessages('delete'));};
 
-function openAuthDialog(){$('authError').textContent='';$('authError').classList.add('hidden');$('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('google').focus();}
-function closeAuthDialog(){$('authOverlay').classList.add('hidden');document.body.classList.remove('authOpen');$('guest').focus();}
+let authDialogMode='admin',authDialogReturnFocus=null;
+function headerHasNamedAccount(){return !!(user&&!user.is_anonymous);}
+function syncHeaderAuth(){
+ const button=$('ptiSignIn');
+ if(!button)return;
+ button.textContent=headerHasNamedAccount()?'Account':'Sign In';
+ button.setAttribute('aria-label',headerHasNamedAccount()?'View account and sign out':'Sign in to Paths to Immortality');
+}
+function openAuthDialog(mode='admin'){
+ authDialogMode=mode;
+ authDialogReturnFocus=document.activeElement;
+ $('authError').textContent='';$('authError').classList.add('hidden');
+ $('ptiEmailNotice').textContent='';$('ptiEmailNotice').hidden=true;
+ const account=mode==='account',admin=mode==='admin';
+ $('authTitle').textContent=account?'Your account':admin?'The Jade Emperor':'Sign in to Paths to Immortality';
+ $('authDescription').textContent=account?'You are signed in to Paths to Immortality.':admin?
+  'Sign in with the Jade Emperor’s authorised Google account.':
+  'Use any personal email or Google account you prefer. Your ChatGPT email is not required.';
+ $('google').hidden=account;
+ $('ptiEmailAuth').hidden=account||admin;
+ $('ptiAccountInfo').hidden=!account;
+ $('ptiAccountLabel').textContent=account?(user.email||'Signed-in account'):'';
+ $('authOverlay').classList.remove('hidden');document.body.classList.add('authOpen');
+ (account?$('ptiAccountSignout'):$('google')).focus();
+}
+function closeAuthDialog(){
+ $('authOverlay').classList.add('hidden');
+ document.body.classList.remove('authOpen');
+ if(authDialogReturnFocus?.isConnected)authDialogReturnFocus.focus();
+ else $('ptiSignIn').focus();
+ authDialogReturnFocus=null;
+}
 async function loadInvitePreview(){return generateSession();}
+$('ptiSignIn').onclick=()=>{
+ if(!db){notice('The sign-in service is still loading. Please try again.','error');return;}
+ openAuthDialog(headerHasNamedAccount()?'account':'general');
+};
+$('ptiEmailAuth').addEventListener('submit',event=>{
+ event.preventDefault();
+ safe(async()=>{
+  const email=$('ptiLoginEmail').value.trim();
+  if(!email||!$('ptiLoginEmail').checkValidity())throw Error('Enter a valid email address.');
+  const redirectTo=window.location.origin+window.location.pathname;
+  const {error}=await db.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo,shouldCreateUser:true}});
+  if(error)throw Error('Could not send a sign-in email: '+error.message);
+  $('ptiEmailNotice').textContent='Check your inbox for a sign-in link. Open it on this device to finish signing in.';
+  $('ptiEmailNotice').hidden=false;
+ });
+});
+$('ptiAccountSignout').onclick=()=>safe(async()=>{
+ closeAuthDialog();
+ await portalSignout();
+ syncHeaderAuth();
+});
 $('guest').onclick=()=>safe(enterPortal);
 $('introEnter').onclick=()=>safe(beginJourney);
 $('authClose').onclick=closeAuthDialog;
 $('authOverlay').addEventListener('click',e=>{if(e.target===$('authOverlay'))closeAuthDialog();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('messageSpeakerOverlay').classList.contains('hidden'))closeWebMessageSpeaker();else if(e.key==='Escape'&&!$('headerMenuOverlay').classList.contains('hidden'))closeHeaderMenu();else if(e.key==='Escape'&&!$('codeOverlay').classList.contains('hidden'))returnToStart();else if(e.key==='Escape'&&!$('editOverlay').classList.contains('hidden'))closeEdit();else if(e.key==='Escape'&&selectedIds.size)clearSelection();else if(e.key==='Escape'&&!$('authOverlay').classList.contains('hidden'))closeAuthDialog();else if(e.key==='Escape'&&!$('narratorOverlay').classList.contains('hidden'))hideNarrator();});
-$('google').onclick=()=>safe(async()=>{sessionStorage.setItem('paths.adminAuth','1');const redirectTo=window.location.origin+window.location.pathname;const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo,queryParams:{prompt:'select_account'}}});if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');});
+$('google').onclick=()=>safe(async()=>{
+ if(authDialogMode==='admin')sessionStorage.setItem('paths.adminAuth','1');
+ else sessionStorage.removeItem('paths.adminAuth');
+ const redirectTo=window.location.origin+window.location.pathname;
+ const {data,error}=await db.auth.signInWithOAuth({provider:'google',options:{redirectTo,queryParams:{prompt:'select_account'}}});
+ if(error)throw Error('Google sign-in could not start. Check Google OAuth provider and Supabase redirect URLs. '+error.message);
+ if(!data?.url)throw Error('Google sign-in did not return an authorization URL.');
+});
 // Guests now enter only through one-use personal invitation links.
 $('guestTrial').classList.add('hidden');
 $('guestTrial').onclick=()=>notice('Ask your host for a personal scene invitation link.','error');
@@ -999,7 +1064,7 @@ async function chooseAdministrator(){
 }
 async function finishAdministratorSignIn(){
  if(user&&portalIdentity.is_admin){await openAdministration();return;}
- if(user)await db.auth.signOut({scope:'local'});user=null;portalIdentity={is_admin:false};returnToStart();
+ if(user)await db.auth.signOut({scope:'local'});user=null;syncHeaderAuth();portalIdentity={is_admin:false};returnToStart();
 }
 function parseInvitation(value){const s=value.trim();if(/^[0-9a-f]{48}$/i.test(s))return s.toLowerCase();try{const u=new URL(s);const v=u.searchParams.get('invite');if(u.origin==='https://denoden3.github.io'&&/^[0-9a-f]{48}$/i.test(v||''))return v.toLowerCase();}catch{}throw Error('Paste the complete invitation code or the private invitation link from your host.');}
 function invalidateScene(){++temporaryRequest;temporaryChoices=[];$('temporaryChoices').replaceChildren();$('temporaryStatus').textContent='';$('suggestTemporary').disabled=false;$('suggestTemporary').textContent='Suggest Temporary Characters';loadedInvitationCode='';invitePreview=null;sessionChoices=[];$('characterChoices').replaceChildren();updateGreeting();}
@@ -1038,7 +1103,7 @@ async function beginJourney(){
  const chars=[...$('characterChoices').querySelectorAll('input'),...$('temporaryChoices').querySelectorAll('input')].filter(x=>x.checked).map(x=>x.value);if(!chars.length)throw Error('Choose a character before beginning.');
  if(portalIdentity.is_admin){throw Error('Use a separate browser or private tab to join as a player.');}
  const validation=await db.rpc('preview_scene_invitation',{p_code:loadedInvitationCode});if(validation.error||!validation.data){returnToStart();return;}
- if(!user){const {data,error}=await db.auth.signInAnonymously();if(error)throw error;user=data.user;}
+ if(!user){const {data,error}=await db.auth.signInAnonymously();if(error)throw error;user=data.user;syncHeaderAuth();}
  const {data,error}=await db.rpc('portal_redeem',{p_code:loadedInvitationCode,p_characters:chars});if(error){returnToStart();return;}
  clearInviteAddress();$('sessionCode').value='';invalidateScene();await refreshPortalIdentity();await openRoom(data);
 }
@@ -1066,7 +1131,7 @@ $('menuBack').onclick=()=>safe(returnFromPage);
 $('menuSignout').onclick=()=>safe(async()=>{closeHeaderMenu(false);await portalSignout();});
 $('headerMenuOverlay').addEventListener('click',e=>{if(e.target===$('headerMenuOverlay'))closeHeaderMenu();});
 $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...$('headerMenu').querySelectorAll('button')].filter(x=>!x.disabled&&!x.classList.contains('hidden'));if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
-async function portalSignout(){endLive();++playerSessionsRequest;++sidebarRoomsRequest;sidebarRoomsLoadedFor=null;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;room=null;members=[];portalIdentity={is_admin:false};registry=[];sidebarRoomSignin();$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+async function portalSignout(){endLive();++playerSessionsRequest;++sidebarRoomsRequest;sidebarRoomsLoadedFor=null;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;syncHeaderAuth();room=null;members=[];portalIdentity={is_admin:false};registry=[];sidebarRoomSignin();$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
 $('navSessions').onclick=()=>safe(lobby);$('navAdmin').onclick=()=>safe(openAdministration);$('navPlayers').onclick=()=>safe(async()=>{if(!portalIdentity.is_admin)returnToStart();else{await refreshRegistry();show('adminPlayers');}});
@@ -1102,6 +1167,7 @@ async function boot(){try{
  db=mod.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  $('networkStatus').textContent='Ready';const {data,error}=await db.auth.getUser();
  if(error&&error.name!=='AuthSessionMissingError')console.warn(error);user=data?.user||null;
+ syncHeaderAuth();
  await loadPresentation();await refreshPortalIdentity();show('welcome');
  if(sessionStorage.getItem('paths.adminAuth')){
     sessionStorage.removeItem('paths.adminAuth');
