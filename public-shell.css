@@ -89,9 +89,11 @@
 .ptiAvatarSlot{position:relative;width:max-content;max-width:100%}
 .ptiAvatarPortraitCorner{position:absolute;right:-18px;bottom:6px;width:34px;height:34px;
   border:2px solid #f1c89e;border-radius:50%;display:none;place-items:center;
-  background:#502a37;color:#fff1df;font-size:17px;pointer-events:none;
+  background:#502a37;color:#fff1df;font-size:17px;cursor:pointer;
   box-shadow:0 3px 12px #0009}
 .ptiAvatarSlot.isEditableEmpty .ptiAvatarPortraitCorner{display:grid}
+.ptiAvatarPortraitCorner:hover{background:#73404f;border-color:#ffda9d}
+.ptiAvatarPortraitCorner:focus-visible{outline:3px solid #f8c98d;outline-offset:3px}
 
 /* Notion-inspired illustration record: illustration left, prose right. */
 .ptiPublicCharacterPage .ptiArtSection{margin:28px 0 37px}
