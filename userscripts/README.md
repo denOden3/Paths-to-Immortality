@@ -1,3 +1,19 @@
+## Character portraits / active chat avatars — Web v0.8.17, HUD v0.8.30
+
+**User-facing flow:** Public character pages for Xiao Lan, Xu Yi, and Elder Shen display an **empty Illustrations section** until a character owner uploads art. Signed-in registered owners see **Choose image / drag and drop**, a title/appearance note, and an **Upload illustration** control. Uploads are PNG/JPEG/WebP only, at most 3 MiB per image. Each character's first upload becomes their chat avatar automatically; later pictures are kept in the gallery, and **Use as chat avatar** swaps the active picture. Older images remain available for re-selection, rather than being overwritten.
+
+**Storage:** The images live in **Supabase Storage** public bucket `pti-character-art`, not GitHub or temporary Notion attachments. Public profile HTML never stores the image bytes. The private SQL gallery links the object path to a character, with one active avatar per character. Existing PC ownership from authenticated room membership was used to establish the initial published profile ownership for Xiao Lan and Xu Yi; Elder Shen is managed by the owner. The public image URLs are readable without sign-in; only the authenticated registered character owner may upload/register or select an avatar. Validated paths include that owner's user-id and the character's exact registered slug. Storage enforces JPEG/PNG/WebP and a 3 MiB bucket limit, and the private gallery is limited to 60 images per character. Do not upload unrevealed character traits or personal data unless they are intended to be publicly visible.
+
+**Both chat interfaces:** Paths Web `index.html` and the ChatGPT Tampermonkey HUD fetch the active avatars and display the current character portrait beside that character's **player** chat messages. Narrator and OOC messages remain distinct. Refresh the chat page or wait for normal avatar polling (roughly every 20 seconds while the room is updating) after changing an avatar.
+
+**Sign-in:** The public character pages are browsable anonymously. To upload, first sign in using Paths Web on the **same website origin and browser**, then return to the character's page and refresh. An unsigned or incorrectly signed-in viewer gets the empty/gallery view without editing controls. The website’s existing publishable Supabase key is used; no secret key was put into HTML.
+
+**Verification:** Backend RLS policy and privilege checks were performed, including transactional upload-registration simulations, the default-avatar behavior, switching back to alternative pictures and rejecting a different user's writes. These tests were rolled back; **no real artwork was uploaded**. Frontend JavaScript passed static syntax and markup reference checks. Real-device uploads should be verified on the user's own account before relying on the feature.
+
+- [Xiao Lan](https://denoden3.github.io/Paths-to-Immortality/codex/xiao-lan.html)
+- [Xu Yi](https://denoden3.github.io/Paths-to-Immortality/codex/xu-yi.html)
+- [Elder Shen](https://denoden3.github.io/Paths-to-Immortality/codex/examiner.html)
+
 ## Paths Web v0.8.16 — Rooms, one click from Home
 
 - New **Rooms** collapsible section directly below **Home** in the left sidebar. While logged into Paths Web, expanding it fetches **only the active rooms authorized for that account** and displays their titles as direct chatroom shortcuts. Jade Emperor room names come from the owner-gated `portal_room_log` RPC; ordinary players use their room membership and existing room-level permission checks. Clicking a title goes **straight to the chatroom** without opening the Rooms tab or choosing the same room twice.
