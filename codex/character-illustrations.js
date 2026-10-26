@@ -26,7 +26,7 @@ if(root){
     return n;
   };
   function publicImage(path){
-    if(typeof path!=='string'||!path.startsWith(''))return '';
+    if(typeof path!=='string'||!/^[0-9a-f-]{36}\/[a-z0-9-]{2,48}\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/.test(path))return '';
     return supabaseUrl+'/storage/v1/object/public/'+bucket+'/' +
       path.split('/').map(encodeURIComponent).join('/');
   }
