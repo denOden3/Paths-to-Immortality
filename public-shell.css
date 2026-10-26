@@ -21,6 +21,21 @@
 .ptiSidebar .ptiRoomsShelf[open]>summary{color:var(--gold)}
 .ptiSidebar .ptiRoomSignin{border:1px solid #a07883!important}
 
+/* Tiered Characters navigation: Characters → Player Characters / NPCs → names. */
+.ptiSidebar .ptiCharacterCategories{margin:3px 0 10px 12px;padding-left:8px;
+  border-left:1px solid #886774}
+.ptiSidebar .ptiCharacterTier{margin:3px 0 9px}
+.ptiSidebar .ptiCharacterTier>summary{padding:9px 10px;border-radius:7px;
+  color:#f0c389;font-size:13px;font-weight:700;line-height:1.4}
+.ptiSidebar .ptiCharacterTier>summary:hover{background:#42303a;color:#ffdcaa}
+.ptiSidebar .ptiCharacterTier>div.ptiCharacterTierLinks{
+  margin:2px 0 7px 9px;padding-left:9px;border-left:1px solid #735968}
+.ptiSidebar .ptiCharacterTierLinks>a{display:block;padding:9px 12px;
+  border-radius:7px;color:#eedbd4;font-size:13px;line-height:1.45}
+.ptiSidebar .ptiCharacterTierLinks>a:hover{color:#fff6ea;background:#403039}
+.ptiSidebar .ptiCharacterTierLinks>a[aria-current="page"]{
+  color:#fff3e9;background:#612a33;box-shadow:inset 3px 0 var(--gold)}
+
 /* Accessible high-contrast public character directory and biographies. */
 .codexArticle.ptiPublicCharacterPage{max-width:970px}
 .ptiPublicCharacterPage h3{font-size:clamp(17px,2vw,22px);color:var(--gold);margin:28px 0 8px}
