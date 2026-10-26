@@ -86,15 +86,22 @@
   width:32%;height:32%;border-radius:50%;background:#b89ca0}
 .ptiAvatarSilhouette:after{content:'';position:absolute;left:12%;bottom:-12%;
   width:76%;height:49%;border-radius:50% 50% 0 0;background:#b89ca0}
-.ptiAvatarPortrait.isReadOnly .ptiAvatarPortraitCorner{display:none}
-.ptiAvatarPortraitCorner{position:absolute;right:8px;bottom:6px;width:30px;height:30px;
-  border:1px solid #f1c89e;border-radius:50%;display:grid;place-items:center;
-  background:#502a37;color:#fff1df;font-size:16px}
+.ptiAvatarSlot{position:relative;width:max-content;max-width:100%}
+.ptiAvatarPortraitCorner{position:absolute;right:-18px;bottom:6px;width:34px;height:34px;
+  border:2px solid #f1c89e;border-radius:50%;display:none;place-items:center;
+  background:#502a37;color:#fff1df;font-size:17px;pointer-events:none;
+  box-shadow:0 3px 12px #0009}
+.ptiAvatarSlot.isEditableEmpty .ptiAvatarPortraitCorner{display:grid}
 
 /* Notion-inspired illustration record: illustration left, prose right. */
 .ptiPublicCharacterPage .ptiArtSection{margin:28px 0 37px}
-.ptiArtHeading{margin:0 0 12px}
+.ptiArtHeading{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:0 0 12px}
 .ptiPublicCharacterPage .ptiArtHeading h3{margin:0}
+.ptiArtAddButton{border:1px solid #b58c75;border-radius:7px;
+  background:#392934;color:#ffe0b4;cursor:pointer;padding:5px 10px;
+  font:700 12px/1.5 system-ui;min-height:31px}
+.ptiArtAddButton:hover,.ptiArtAddButton:focus-visible{background:#593744;border-color:#f1be7a}
+.ptiArtAddButton[hidden]{display:none!important}
 .ptiArtGallery{display:grid;gap:29px}
 .ptiPublicCharacterPage .ptiArtQuiet{margin:7px 0 14px;
   color:#dfc7bc;font-size:14px;line-height:1.65}
@@ -118,10 +125,7 @@
 .ptiArtControls{margin:16px 0 8px;padding:0;border:1px solid #806774;
   border-radius:9px;background:#26202a}
 .ptiArtControls[hidden]{display:none!important}
-.ptiArtControls>summary{display:list-item;cursor:pointer;padding:12px 15px;
-  color:#ffd9a5;font-weight:700;list-style-position:inside}
-.ptiArtControls>summary:hover,.ptiArtControls>summary:focus-visible{background:#40303a}
-.ptiArtUploadPanel{padding:0 16px 17px;border-top:1px solid #665159}
+.ptiArtUploadPanel{padding:0 16px 17px}
 .ptiArtDrop{border:1px dashed #a28792;padding:12px;border-radius:9px;display:flex;
   flex-wrap:wrap;gap:9px;align-items:center;margin:16px 0 12px}
 .ptiArtDrop.dragOver{background:#51404c;border-color:#ffca85}
