@@ -24,6 +24,7 @@ if(root){
   const noteInput=root.querySelector('.ptiArtNote');
   const portraitButton=document.querySelector('#pti-avatar-trigger');
   const portraitSlot=document.querySelector('.ptiAvatarSlot');
+  const editPortraitButton=document.querySelector('.ptiAvatarPortraitCorner');
   const portraitImage=document.querySelector('.ptiAvatarPreview');
   const portraitSilhouette=document.querySelector('.ptiAvatarSilhouette');
   const portraitHint=document.querySelector('.ptiAvatarHint');
@@ -166,11 +167,13 @@ if(root){
     paintGallery();paintPortrait();
   }
 
-  portraitButton?.addEventListener('click',()=>{
+  const openPortraitPicker=()=>{
     paintPicker();
     if(typeof dialog.showModal==='function')dialog.showModal();
     else dialog.setAttribute('open','');
-  });
+  };
+  portraitButton?.addEventListener('click',openPortraitPicker);
+  editPortraitButton?.addEventListener('click',openPortraitPicker);
   dialog.querySelector('.ptiAvatarClose')?.addEventListener('click',()=>dialog.close());
   dialog.addEventListener('click',event=>{
     if(event.target===dialog)dialog.close();
