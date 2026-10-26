@@ -61,3 +61,39 @@
 .ptiProfilePill{background:#382c39;color:#f2d9d3;border:1px solid #977784;border-radius:100px;padding:3px 11px;font-size:13px;white-space:normal}
 .ptiPublicCharacterPage .ptiNote{padding:14px 16px;background:#28222c;border-left:3px solid var(--gold);border-radius:5px;color:#f2dfd2;font-size:14px;line-height:1.65}
 .ptiPublicCharacterPage .snapshot{color:#dac4bb;font-size:13px}
+
+
+/* Character Illustrations: public gallery, owner-only upload controls. */
+.ptiPublicCharacterPage .ptiArtSection{margin:26px 0 30px}
+.ptiPublicCharacterPage .ptiArtSection h3{margin-bottom:11px}
+.ptiArtGallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:15px}
+.ptiArtEmpty{min-height:200px;border:2px dashed #997d8c;border-radius:13px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;background:#2b242d;padding:20px;color:#f4dbce}
+.ptiArtEmptyIcon{font-size:34px;margin-bottom:12px}
+.ptiArtEmpty p{margin:5px 0!important;color:#e3c4b5;font-size:13px!important}
+.ptiArtCard{margin:0;min-width:0;border:1px solid #9b7682;border-radius:13px;
+  background:#29222c;overflow:hidden}
+.ptiArtImage{display:block;width:100%;height:clamp(230px,26vw,370px);object-fit:contain;
+  background:#1b1720}
+.ptiArtCard figcaption{display:grid;gap:6px;padding:13px;color:#f6e5d8}
+.ptiArtCard figcaption strong{overflow-wrap:anywhere}
+.ptiArtCaption{font-size:13px!important;color:#dec7bb;margin:0!important}
+.ptiArtActive{font-size:12px;color:#ffdc99;font-weight:700}
+.ptiArtUseAvatar,.ptiArtUpload,.ptiArtPick{border:1px solid #d6a47c;border-radius:9px;
+  padding:9px 12px;min-height:40px;background:#68323f;color:#fff2e6;cursor:pointer;
+  font-weight:700;text-align:center}
+.ptiArtUseAvatar:disabled,.ptiArtUpload:disabled{opacity:.6;cursor:wait}
+.ptiArtControls{margin-top:18px;padding:16px;border:1px solid #856776;border-radius:12px;
+  background:#29222d}
+.ptiArtControls[hidden]{display:none}
+.ptiArtControls label{display:block;font-size:13px;font-weight:700;margin-top:10px;color:#f0d8cd}
+.ptiArtControls input:not([type=file]),.ptiArtControls textarea{display:block;width:100%;
+  margin:6px 0;padding:10px;background:#16141c;color:#fff0e2;border:1px solid #9b7b88;border-radius:8px}
+.ptiArtDrop{border:2px dashed #a17d83;padding:16px;border-radius:12px;display:flex;
+  flex-wrap:wrap;gap:9px;align-items:center}
+.ptiArtDrop.dragOver{background:#51404c;border-color:#ffca85}
+.ptiArtDrop input[type=file]{display:none}
+.ptiArtDrop p,.ptiArtGuest,.ptiArtStatus{font-size:13px!important;color:#efcfbb}
+.ptiArtStatus{min-height:21px}
+@media(max-width:550px){.ptiArtImage{height:300px}.ptiArtGallery{grid-template-columns:1fr}}
