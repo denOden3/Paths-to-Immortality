@@ -36,6 +36,13 @@
 .ptiSidebar .ptiCharacterTierLinks>a[aria-current="page"]{
   color:#fff3e9;background:#612a33;box-shadow:inset 3px 0 var(--gold)}
 
+/* Character profile header: last updated instead of redundant badges beneath title. */
+.publicView>.head .ptiProfileUpdated{margin-left:auto;color:#f1c58f;
+  font-size:13px;letter-spacing:.01em;white-space:nowrap;text-align:right}
+.publicView>.head .ptiProfileUpdated em{font-style:italic;font-weight:450}
+@media(max-width:600px){.publicView>.head .ptiProfileUpdated{
+  font-size:11px;max-width:38%;white-space:normal;line-height:1.35}}
+
 /* Accessible high-contrast public character directory and biographies. */
 .codexArticle.ptiPublicCharacterPage{max-width:970px}
 .ptiPublicCharacterPage h3{font-size:clamp(17px,2vw,22px);color:var(--gold);margin:28px 0 8px}
