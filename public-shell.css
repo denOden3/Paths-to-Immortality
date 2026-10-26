@@ -57,7 +57,6 @@
 .ptiCharacterIntro{display:block;color:#eeddd2;font-size:14px;line-height:1.55}
 .ptiCharacterIcon{font-size:27px;line-height:1.4}
 .ptiProfileSub{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
-.ptiProfileSub>span:first-child{font-size:28px}
 .ptiProfilePill{background:#382c39;color:#f2d9d3;border:1px solid #977784;border-radius:100px;padding:3px 11px;font-size:13px;white-space:normal}
 .ptiPublicCharacterPage .ptiNote{padding:14px 16px;background:#28222c;border-left:3px solid var(--gold);border-radius:5px;color:#f2dfd2;font-size:14px;line-height:1.65}
 .ptiPublicCharacterPage .snapshot{color:#dac4bb;font-size:13px}
@@ -70,8 +69,7 @@
 .ptiIdentityDetails{min-width:0}
 .ptiIdentityDetails .ptiProfileSub{margin:0 0 14px;gap:8px}
 .ptiIdentityDetails .codexLead{margin:0 0 8px!important}
-.ptiIdentityDetails .ptiAvatarHint{margin:8px 0 0!important;
-  color:#dec6b6;font-size:13px;line-height:1.5}
+.ptiIdentityDetails .ptiAvatarHint{display:none!important}
 .ptiAvatarPortrait{width:164px;height:164px;display:block;position:relative;
   border:3px solid #dfb889;border-radius:50%;overflow:hidden;
   background:radial-gradient(circle at 50% 28%,#74565d,#43303c 68%,#32272f);
@@ -87,9 +85,9 @@
 .ptiAvatarSilhouette:after{content:'';position:absolute;left:12%;bottom:-12%;
   width:76%;height:49%;border-radius:50% 50% 0 0;background:#b89ca0}
 .ptiAvatarSlot{position:relative;width:max-content;max-width:100%}
-.ptiAvatarPortraitCorner{position:absolute;right:-18px;bottom:6px;width:34px;height:34px;
+.ptiAvatarPortraitCorner{position:absolute;right:-6px;bottom:10px;width:34px;height:34px;
   border:2px solid #f1c89e;border-radius:50%;display:none;place-items:center;
-  background:#502a37;color:#fff1df;font-size:17px;cursor:pointer;
+  background:#502a37;color:#fff1df;font-size:17px;cursor:pointer;transform:scaleX(-1);
   box-shadow:0 3px 12px #0009}
 .ptiAvatarSlot.isEditableEmpty .ptiAvatarPortraitCorner{display:grid}
 .ptiAvatarPortraitCorner:hover{background:#73404f;border-color:#ffda9d}
@@ -183,3 +181,30 @@
   .ptiAvatarDialog{padding:14px}
 }
 
+
+/* Public home: account entry at the far right, version details in the sidebar footer. */
+.publicView>.head .ptiHeaderSignIn{
+  margin-left:auto;flex-shrink:0;min-height:38px;padding:7px 15px;
+  color:#fff3e4;background:#65303e;border:1px solid #d3a27e;
+  border-radius:9px;font:700 13px/1.3 system-ui;cursor:pointer;
+}
+.publicView>.head .ptiHeaderSignIn:hover{background:#814151;border-color:#ffd59e}
+.publicView>.head .ptiHeaderSignIn:focus-visible{outline:3px solid #ffd59e;outline-offset:3px}
+.ptiSideFoot .ptiWebVersion{
+  margin-top:13px;padding-top:9px;border-top:1px solid #655159;
+  font-size:11px;letter-spacing:.025em;color:#c9b0ab;font-weight:400;
+}
+.authSheet [hidden]{display:none!important}
+.ptiEmailAuth{margin-top:16px;padding-top:12px;border-top:1px solid #806a78}
+.ptiEmailAuth>label{color:#ffe1bd;margin:0 0 7px}
+.ptiEmailRow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.ptiEmailRow input{flex:1 1 190px;min-width:0}
+.ptiEmailRow .btn{flex:0 0 auto;min-height:42px;background:#65303e;border-color:#d3a27e;color:#fff3e4}
+.ptiEmailAuth .ptiEmailHelp{margin:8px 0 0;font-size:12px;color:#e2c8bf}
+.ptiEmailAuth .ptiEmailNotice{margin:11px 0 0;padding:10px;border-left:3px solid #8fe3c6;
+  border-radius:7px;background:#283a35;color:#e9fff6;font-size:13px}
+.ptiAccountInfo .ptiAccountLabel{overflow-wrap:anywhere}
+@media(max-width:480px){
+ .publicView>.head .ptiHeaderSignIn{padding:7px 10px;min-height:36px;font-size:12px}
+ .ptiEmailRow .btn{width:100%}
+}
