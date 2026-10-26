@@ -1,16 +1,38 @@
 (()=>{
 const app=document.querySelector('.app'),toggle=document.getElementById('pti-nav-toggle'),side=document.getElementById('pti-sidebar'),shade=document.getElementById('pti-shade');if(!app||!toggle||!side)return;
-const shelf=[...side.querySelectorAll('details')].find(el=>el.querySelector('summary')?.textContent.trim()==='Characters');
+const shelf=[...side.querySelectorAll('nav > details')].find(el=>el.querySelector(':scope > summary')?.textContent.trim()==='Characters');
 if(shelf){
- const group=shelf.querySelector('div');
- if(group){
-  const prefix=location.pathname.includes('/codex/')?'':'codex/';
-  for(const [label,name] of [['Character directory','characters.html'],['Xiao Lan','xiao-lan.html'],['Xu Yi','xu-yi.html'],['Elder Shen','examiner.html']]){
-   if(![...group.querySelectorAll('a')].some(link=>link.href.endsWith('/codex/'+name))){
-    const link=document.createElement('a');link.href=prefix+name;link.textContent=label;group.append(link);
-   }
+  const host=shelf.querySelector(':scope > div');
+  // New pages ship with nested categories in the HTML. Rebuild older cached
+  // flat menus too, keeping the same hierarchy on every public page.
+  if(host&&!host.querySelector('.ptiCharacterCategories')){
+    const categories=document.createElement('div');
+    categories.className='ptiCharacterCategories';
+    const prefix=location.pathname.includes('/codex/')?'':'codex/';
+    const currentFile=location.pathname.split('/').pop();
+    for(const [category,entries] of [
+      ['Player Characters',[['Xiao Lan','xiao-lan.html'],['Xu Yi','xu-yi.html']]],
+      ['NPCs',[['Elder Shen','examiner.html']]]
+    ]){
+      const section=document.createElement('details');
+      section.className='ptiCharacterTier';
+      section.open=true;
+      const heading=document.createElement('summary');
+      heading.textContent=category;
+      const links=document.createElement('div');
+      links.className='ptiCharacterTierLinks';
+      for(const [label,filename] of entries){
+        const link=document.createElement('a');
+        link.href=prefix+filename;
+        link.textContent=label;
+        if(currentFile===filename)link.setAttribute('aria-current','page');
+        links.append(link);
+      }
+      section.append(heading,links);
+      categories.append(section);
+    }
+    host.replaceChildren(categories);
   }
- }
 }
 // Sidebar room shortcuts appear beneath Home throughout the public Codex.
 // Only the authenticated home app fetches room names; static Codex pages link
