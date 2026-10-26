@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.29
+// @version      0.8.30
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.29';
+  const VERSION = '0.8.30';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -206,6 +206,9 @@
     #paths-monkey-root .pm-message-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
     #paths-monkey-root .pm-edit-bubble{padding:2px 8px;min-height:28px;min-width:28px;font-size:13px}
     #paths-monkey-root .pm-bubble-copy{white-space:pre-wrap;overflow-wrap:anywhere}
+    #paths-monkey-root .pm-character-chat-avatar{width:34px;height:34px;flex:0 0 34px;
+      object-fit:cover;border-radius:50%;border:2px solid #d3a17c;vertical-align:middle;
+      margin-right:8px;background:#1e1821}
     #paths-monkey-root .pm-bubble.pm-selected{outline:2px solid var(--pm-gold);background:#493447}
     #paths-monkey-root .pm-bubble.pm-selectable{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
     #paths-monkey-root .pm-message-selection{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--pm-stroke)}
@@ -1187,7 +1190,8 @@
     renderKickPlayers();renderSessionInformation();
     messages=Array.isArray(m)?m.reverse():[];
     setConnectedState();
-    await refreshNarrationActivity(id);renderFeed();const latestNarration=[...messages].reverse().find(message=>message.kind==='narrator')?.id||'',newNarration=latestNarration!==hudWorkspaceNarration;hudWorkspaceNarration=latestNarration;if(hudWorkspaceView&&(hudWorkspaceView==='scene'||(hudWorkspaceView==='inventory'&&newNarration)))refreshHudWorkspace().catch(e=>feedback(e.message));
+    await Promise.all([refreshNarrationActivity(id),refreshChatAvatars()]);
+    renderFeed();const latestNarration=[...messages].reverse().find(message=>message.kind==='narrator')?.id||'',newNarration=latestNarration!==hudWorkspaceNarration;hudWorkspaceNarration=latestNarration;if(hudWorkspaceView&&(hudWorkspaceView==='scene'||(hudWorkspaceView==='inventory'&&newNarration)))refreshHudWorkspace().catch(e=>feedback(e.message));
   }
   function renderOngoingSessions(){updateCharacterSessionPicker(rooms.filter(x=>x.session_state==='active'));}
   let participantRequest=0;
@@ -1334,6 +1338,22 @@ function createTypingNotifier(send,context){
     const myId = paired ? members.find(member => member.role === 'owner')?.user_id : account?.user_id;
     return msg.sender_id && myId && msg.sender_id === myId ? 'pm-own' : 'pm-other';
   }
+
+  let hudAvatarMap=new Map(),hudAvatarLoadedAt=0;
+  function chatAvatarUrl(path){
+    if(typeof path!=='string'||!/^[0-9a-f-]{36}\/[a-z0-9-]{2,48}\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/.test(path))return '';
+    return SUPABASE+'/storage/v1/object/public/pti-character-art/'+path.split('/').map(encodeURIComponent).join('/');
+  }
+  async function refreshChatAvatars(force=false){
+    if(!account||(!force&&Date.now()-hudAvatarLoadedAt<20000))return;
+    try{
+      const rows=await authed('POST','/rest/v1/rpc/character_art_avatars',{body:{}});
+      hudAvatarMap=new Map((Array.isArray(rows)?rows:[]).map(a=>[a.owner_id+'|'+a.character,{
+        src:chatAvatarUrl(a.path),label:a.label
+      }]));
+      hudAvatarLoadedAt=Date.now();
+    }catch(error){console.warn('[Paths] Could not refresh avatars',error);}
+  }
   function renderFeed() {
     $('chat-title').textContent=selectedRoom?.title||'Chatroom';
     const feed=$('feed'),el=$('feed-messages');
@@ -1348,7 +1368,15 @@ function createTypingNotifier(send,context){
       bubble.className='pm-bubble '+messageAlignmentClass(msg)+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
-      by.textContent=msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character;
+      if(msg.kind==='player'){
+        const avatar=hudAvatarMap.get(msg.sender_id+'|'+character);
+        if(avatar?.src){
+          const img=document.createElement('img');img.className='pm-character-chat-avatar';
+          img.src=avatar.src;img.alt=character+' avatar';img.loading='lazy';
+          by.append(img);
+        }
+      }
+      by.append(document.createTextNode(msg.kind==='narrator'?'✦ Heavenly Voice':msg.kind==='ooc'?'💬 Player ('+character+') · OOC':character));
       if(msg.edited_at)by.append(document.createTextNode(' · edited'));
       const heading=document.createElement('div');heading.className='pm-message-head';
       const stamp=document.createElement('span');stamp.className='pm-message-time';
