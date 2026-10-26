@@ -16,12 +16,14 @@ if(root){
   const gallery=root.querySelector('.ptiArtGallery');
   const status=root.querySelector('.ptiArtStatus');
   const controls=root.querySelector('.ptiArtControls');
+  const addButton=root.querySelector('.ptiArtAddButton');
   const fileInput=root.querySelector('.ptiArtFile');
   const fileButton=root.querySelector('.ptiArtPick');
   const uploadButton=root.querySelector('.ptiArtUpload');
   const titleInput=root.querySelector('.ptiArtLabel');
   const noteInput=root.querySelector('.ptiArtNote');
   const portraitButton=document.querySelector('#pti-avatar-trigger');
+  const portraitSlot=document.querySelector('.ptiAvatarSlot');
   const portraitImage=document.querySelector('.ptiAvatarPreview');
   const portraitSilhouette=document.querySelector('.ptiAvatarSilhouette');
   const portraitHint=document.querySelector('.ptiAvatarHint');
@@ -40,6 +42,15 @@ if(root){
     supabaseUrl+'/storage/v1/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/'):'';
   let illustrations=[],canUpload=false,selected=null;
 
+  function setUploadPanel(open){
+    if(!canUpload)return;
+    controls.hidden=!open;
+    addButton.setAttribute('aria-expanded',String(open));
+    addButton.textContent=open?'− Hide form':'＋ Add illustration';
+  }
+
+  addButton?.addEventListener('click',()=>setUploadPanel(controls.hidden));
+
   function paintPortrait(){
     const current=illustrations.find(entry=>entry.is_avatar&&imageUrl(entry.path));
     if(current){
@@ -55,7 +66,7 @@ if(root){
       portraitHint.textContent=illustrations.length?
         'No active portrait selected':'No portrait yet · Illustrations will appear below';
     }
-    portraitButton.classList.toggle('isReadOnly',!canUpload);
+    portraitSlot?.classList.toggle('isEditableEmpty',!current&&canUpload);
     portraitButton.setAttribute('aria-label',(canUpload?'Choose':'View')+' '+character+"'s portrait from saved illustrations");
     portraitButton.title=canUpload?'Choose your chat avatar from saved illustrations':'View available character portraits';
   }
@@ -107,7 +118,7 @@ if(root){
         jump.type='button';
         jump.onclick=()=>{
           dialog.close();
-          controls.open=true;
+          setUploadPanel(true);
           controls.scrollIntoView({behavior:'smooth',block:'center'});
         };
         choices.append(jump);
@@ -219,7 +230,7 @@ if(root){
       });
       if(registerError)throw registerError;
       selected=null;fileInput.value='';titleInput.value='';noteInput.value='';
-      controls.open=false;
+      setUploadPanel(false);
       await refreshGallery();
       status.textContent=label+' has been added to Illustrations.'+
         (illustrations.length===1?' It is also the first chat avatar.':'');
@@ -238,7 +249,8 @@ if(root){
       const editor=await db.rpc('character_art_editor',{p_character:character});
       canUpload=!editor.error&&!!editor.data?.can_upload;
     }
-    controls.hidden=!canUpload;
+    addButton.hidden=!canUpload;
+    controls.hidden=true;
     await refreshGallery();
   }
   initialize().catch(error=>{
