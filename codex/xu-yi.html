@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Xu Yi (Ah Yi / Yiyi) · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261026-illustrations">
+<link rel="stylesheet" href="../public-shell.css?v=20261026-profile-layout">
 </head>
 <body>
 <div class="app publicView">
@@ -19,18 +19,49 @@
 <article class="codexArticle ptiPublicCharacterPage">
 <nav aria-label="Breadcrumb"><a href="../index.html">Home</a> / <a href="characters.html">Characters</a> / <a href="characters.html#player-characters">Player Characters</a> / <span aria-current="page">Xu Yi</span></nav>
 <h2>Xu Yi</h2>
-<p class="ptiProfileSub"><span>🌼</span> <strong>Xu Yi</strong> <span class="ptiProfilePill">14 at recruitment</span> <span class="ptiProfilePill">Female</span> <span class="ptiProfilePill">Cloudveil applicant</span></p>
-<p class="codexLead">A sociable, curious young traveler from a minor noble household, eager to see more of Jianghu and learn about the world.</p>
-<section id="pti-character-illustrations" class="ptiArtSection" data-character="Xu Yi" aria-label="Xu Yi illustrations">
-<h3>Illustrations</h3>
-<div class="ptiArtGallery" aria-live="polite"><div class="ptiArtEmpty"><span class="ptiArtEmptyIcon">🖼️</span><strong>No illustrations yet</strong><p>Upload a picture to fill this space.</p></div></div>
-<div class="ptiArtControls" hidden>
-  <div class="ptiArtDrop"><button class="ptiArtPick" type="button">Choose image</button><span>or drag a picture here (PNG, JPEG, WebP; up to 3 MiB)</span><input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose character illustration"></div>
-  <label>Illustration title <input class="ptiArtLabel" type="text" maxlength="90" placeholder="e.g. Recruitment Day 1 — Beggar Era"></label>
-  <label>Appearance description (optional) <textarea class="ptiArtNote" maxlength="500" rows="2" placeholder="Age, outfit, scene era, and other visible details"></textarea></label>
-  <button class="ptiArtUpload" type="button" disabled>Upload illustration</button>
+<div class="ptiIdentityLayout">
+  <button id="pti-avatar-trigger" class="ptiAvatarPortrait" type="button" aria-haspopup="dialog" aria-controls="pti-avatar-dialog" aria-label="View Xu Yi's available portraits">
+    <span class="ptiAvatarSilhouette" aria-hidden="true"></span>
+    <img class="ptiAvatarPreview" src="" alt="Current Xu Yi chat avatar" hidden>
+    <span class="ptiAvatarPortraitCorner" aria-hidden="true">✎</span>
+  </button>
+  <div class="ptiIdentityDetails">
+    <p class="ptiProfileSub"><span class="ptiProfilePill">14 at recruitment</span> <span class="ptiProfilePill">Female</span> <span class="ptiProfilePill">Cloudveil applicant</span></p>
+    <p class="codexLead">A sociable, curious young traveler from a minor noble household, eager to see more of Jianghu and learn about the world.</p>
+    <p class="ptiAvatarHint" aria-live="polite">Portrait not yet selected</p>
+  </div>
 </div>
-<p class="ptiArtStatus" role="status" aria-live="polite"></p>
+<section id="pti-character-illustrations" class="ptiArtSection" data-character="Xu Yi" aria-label="Xu Yi illustrations">
+  <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3></div>
+  <div class="ptiArtGallery" aria-live="polite">
+    <p class="ptiArtQuiet">No illustrations have been added yet.</p>
+  </div>
+  <details class="ptiArtControls" hidden>
+    <summary>＋ Add illustration</summary>
+    <div class="ptiArtUploadPanel">
+      <div class="ptiArtDrop">
+        <button class="ptiArtPick" type="button">Choose an image</button>
+        <span>or drop one here · PNG, JPEG or WebP · up to 3 MiB</span>
+        <input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Select character illustration">
+      </div>
+      <label>Appearance / scene title
+        <input class="ptiArtLabel" type="text" maxlength="90" placeholder="e.g. Recruitment Day 1 — Beggar Appearance">
+      </label>
+      <label>Age, circumstances &amp; appearance notes
+        <textarea class="ptiArtNote" maxlength="500" rows="4" placeholder="Describe what is actually shown, which scene it belongs to, and any public-safe details."></textarea>
+      </label>
+      <button class="ptiArtUpload" type="button" disabled>Upload illustration</button>
+    </div>
+  </details>
+  <p class="ptiArtStatus" role="status" aria-live="polite"></p>
+  <dialog id="pti-avatar-dialog" class="ptiAvatarDialog" aria-labelledby="pti-avatar-dialog-title">
+    <div class="ptiAvatarDialogHeader">
+      <h3 id="pti-avatar-dialog-title">Choose chat avatar</h3>
+      <button class="ptiAvatarClose" type="button" aria-label="Close portrait selection">✕</button>
+    </div>
+    <p class="ptiAvatarDialogHelp"></p>
+    <div class="ptiAvatarChoices"></div>
+  </dialog>
 </section>
 <h3>Background</h3><p>Xu Yi, sometimes called <strong>Ah Yi</strong> or <strong>Yiyi</strong>, is the adopted daughter of a minor noble household. She wishes to join Cloudveil to broaden her knowledge and horizons. The unwritten details of her family and history remain hers to establish through play.</p>
 <h3>Personality &amp; interests</h3><p>Friendly, kind and perceptive of social cues, she makes acquaintances easily and is affectionate with people she trusts. She can also overthink and become stressed. She loves reading, singing, cooking, traveling, and discovering interesting curiosities and old objects.</p>
@@ -43,6 +74,6 @@
 </main>
 </div>
 <script src="../public-shell.js?v=20261026-characters"></script>
-<script type="module" src="character-illustrations.js?v=20261026-illustrations"></script>
+<script type="module" src="character-illustrations.js?v=20261026-profile-layout"></script>
 </body>
 </html>
