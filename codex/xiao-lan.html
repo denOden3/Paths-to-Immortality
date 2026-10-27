@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Xiao Lan · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261027-edit-gallery">
+<link rel="stylesheet" href="../public-shell.css?v=20261027-inventory-groups">
 <style>
 /* Xiao Lan's adventure journal; intentionally scoped to this profile. */
 .ptiJourneyPage{--jade:#b6d9c4;--ink:#201b23}
@@ -48,7 +48,7 @@
 .ptiJourneyPage .ptiProfileSub .ptiProfilePill{font-size:13px;font-weight:400}
 @media(max-width:650px){.ptiJourneyPage .journeyOverview{grid-template-columns:1fr}.ptiJourneyPage .skillGrid{grid-template-columns:1fr}.ptiJourneyPage .compassCard svg{max-width:290px}.ptiJourneyPage .realmCard{padding:20px}}
 </style>
-<style>.ptiLiveInventory{list-style:none;padding:0;display:grid;gap:12px}.ptiLiveInventory li{padding:15px;border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow-wrap:anywhere}.ptiLiveInventory strong{color:var(--gold)}.ptiLiveInventory p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.6}#inventory .btn{min-height:44px;padding:8px 16px}#inventory [data-inventory-status]{font-size:14px;color:var(--muted)}</style>
+<style>#inventory .btn{min-height:44px;padding:8px 16px}#inventory [data-inventory-status]{font-size:14px;color:var(--muted)}</style>
 </head>
 <body>
 <div class="app publicView">
@@ -168,7 +168,7 @@
 <p>Current belongings, shared with the session Inventory tab.</p>
 <button class="btn" type="button" data-inventory-refresh>Refresh</button>
 <p data-inventory-status role="status">Open this tab to load belongings.</p>
-<ul class="ptiLiveInventory" data-inventory-items></ul>
+<div class="ptiLiveInventory" data-inventory-items></div>
 <p><a href="../index.html">Sign in or open your rooms</a></p>
 </section>
 <section id="pti-character-illustrations" class="ptiArtSection ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-illustrations" data-character="Xiao Lan" tabindex="0" hidden>
@@ -217,6 +217,6 @@
 </main>
 </div>
 <script src="../public-shell.js?v=20261027-scene-journal"></script>
-<script type="module" src="character-illustrations.js?v=20261027-shared-inventory"></script>
+<script type="module" src="character-illustrations.js?v=20261027-inventory-groups"></script>
 </body>
 </html>
