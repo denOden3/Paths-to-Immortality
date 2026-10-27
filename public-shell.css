@@ -238,3 +238,41 @@
  .ptiPublicCharacterPage .ptiProfileTabs{gap:6px;padding:8px 0 11px}
  .ptiPublicCharacterPage .ptiProfileTab{min-height:40px;font-size:12px;padding:7px 11px}
 }
+
+/* Dated scene journal: one expandable notebook entry per recorded in-world day. */
+.ptiPublicCharacterPage .ptiScenesPanel{padding-top:9px}
+.ptiPublicCharacterPage .ptiScenesTitle{margin:9px 0 5px;color:#f1be7a}
+.ptiSceneJournal{position:relative;margin:22px 0 36px;padding-left:22px;border-left:2px solid #856a70}
+.ptiSceneDay{position:relative;margin:0 0 19px;min-width:0}
+.ptiSceneDay::before{content:"";position:absolute;top:22px;left:-29px;width:12px;height:12px;border-radius:50%;background:#f1be7a;border:2px solid #261b26;box-shadow:0 0 0 2px #856a70}
+.ptiSceneDayTrigger{display:flex;align-items:center;flex-wrap:wrap;gap:5px 12px;list-style:none;cursor:pointer;min-height:66px;
+ border:1px solid #80656e;border-radius:12px;padding:12px 17px;background:#2b222b;color:#f9e3d3}
+.ptiSceneDayTrigger::-webkit-details-marker{display:none}
+.ptiSceneDate{font-size:17px;font-weight:730;line-height:1.4;color:#f8d0a0}
+.ptiSceneName{font-size:13px;color:#e7cfc5}
+.ptiSceneChevron{margin-left:auto;width:10px;height:10px;flex:0 0 10px;transform:rotate(45deg);
+ border-right:2px solid #f1be7a;border-bottom:2px solid #f1be7a;transition:transform .15s ease}
+.ptiSceneDay[open]>.ptiSceneDayTrigger{border-color:#d4a47f;border-radius:12px 12px 0 0;background:#3e2c36}
+.ptiSceneDay[open]>.ptiSceneDayTrigger .ptiSceneChevron{transform:rotate(225deg)}
+.ptiSceneDayTrigger:hover{background:#40303a;border-color:#f1be7a}
+.ptiSceneDayTrigger:focus-visible{outline:3px solid #ffd79e;outline-offset:3px}
+.ptiSceneEntry{border:1px solid #80656e;border-top:0;border-radius:0 0 14px 14px;overflow:hidden;background:#241f28}
+.ptiSceneEntryBody{padding:20px 22px 7px}
+.ptiPublicCharacterPage .ptiSceneEntryBody h4{font-size:19px;color:#fff0db;margin:10px 0 18px}
+.ptiSceneDayEnd{background:#32272f;border-top:1px solid #866978;padding:17px 21px 21px}
+.ptiPublicCharacterPage .ptiSceneDayEnd h4{font-size:17px;color:#f4d19f;margin:0 0 9px}
+.ptiPublicCharacterPage .ptiSceneDayEnd h5{color:#f4d19f;font-size:13px;margin:17px 0 8px}
+.ptiSceneStats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:15px 0 8px}
+.ptiSceneStats>div{border:1px solid #6f5661;background:#241e28;border-radius:9px;padding:10px 12px}
+.ptiSceneStats dt{color:#d8b9ab;font-size:12px;margin:0 0 3px}
+.ptiSceneStats dd{margin:0;color:#fff0dc;font-size:13px;font-weight:620}
+.ptiSceneDayEnd .journalSource{margin:19px 0 0;padding-top:14px}
+@media(max-width:600px){
+ .ptiSceneJournal{padding-left:15px}
+ .ptiSceneDay::before{left:-22px}
+ .ptiSceneDayTrigger{padding:11px 12px;gap:3px 10px}
+ .ptiSceneDate{font-size:15px}
+ .ptiSceneName{width:calc(100% - 23px)}
+ .ptiSceneEntryBody{padding:15px 15px 5px}
+ .ptiSceneDayEnd{padding:15px}
+}
