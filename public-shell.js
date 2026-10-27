@@ -54,6 +54,58 @@ if(home&&!side.querySelector('#pti-rooms-shelf')){
  rooms.addEventListener('toggle',()=>{if(rooms.open)document.dispatchEvent(new CustomEvent('pti:rooms-open'));});
  if(location.hash==='#rooms'){rooms.open=true;if(document.getElementById('roomList'))history.replaceState(null,'',location.pathname+location.search);}
 }
+
+// Character dossier tabs — content stays directly beneath the buttons.
+const profileNav=document.querySelector('.ptiProfileTabs[role="tablist"]');
+if(profileNav){
+ const tabs=[...profileNav.querySelectorAll('button[role="tab"][data-panel]')];
+ const panels=new Map(tabs.map(tab=>[tab.dataset.panel,document.getElementById(tab.dataset.panel)]));
+ if(tabs.length&&tabs.every(tab=>panels.get(tab.dataset.panel))){
+  const main=document.querySelector('.codexContent');
+  function showProfilePanel(id,{record=false}={}){
+   const selected=panels.has(id)?id:null;
+   for(const tab of tabs){
+    const active=tab.dataset.panel===selected;
+    tab.setAttribute('aria-selected',String(active));
+    tab.tabIndex=active?0:-1;
+    panels.get(tab.dataset.panel).hidden=!active;
+   }
+   if(!selected)tabs[0].tabIndex=0;
+   if(record){
+    const next=selected?'#'+encodeURIComponent(selected):location.pathname+location.search;
+    if(location.hash!==(selected?'#'+encodeURIComponent(selected):''))history.pushState(null,'',next);
+    // A sticky tab can be clicked while reading far down a long previous panel.
+    // Return to the tab bar so the newly chosen panel starts directly below it.
+    if(main&&main.scrollTop>0)profileNav.scrollIntoView({block:'start',behavior:'instant'});
+   }
+  }
+  const fromLocation=()=>{
+   let key='';
+   try{key=decodeURIComponent(location.hash.slice(1));}catch{}
+   showProfilePanel(key);
+  };
+  profileNav.addEventListener('click',event=>{
+   const tab=event.target.closest('button[role="tab"][data-panel]');
+   if(!tab||!profileNav.contains(tab))return;
+   showProfilePanel(tab.dataset.panel,{record:true});
+  });
+  profileNav.addEventListener('keydown',event=>{
+   if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+   const tab=event.target.closest('button[role="tab"][data-panel]');
+   if(!tab)return;
+   event.preventDefault();
+   const current=tabs.indexOf(tab);
+   const target=event.key==='Home'?0:event.key==='End'?tabs.length-1:
+    (current+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+   tabs[target].focus();
+   showProfilePanel(tabs[target].dataset.panel,{record:true});
+  });
+  window.addEventListener('hashchange',fromLocation);
+  window.addEventListener('popstate',fromLocation);
+  fromLocation();
+ }
+}
+
 const mobile=window.matchMedia('(max-width:760px)');
 function sync(){const open=mobile.matches?app.classList.contains('sidebarOpen'):!app.classList.contains('sidebarClosed');toggle.setAttribute('aria-expanded',String(open));shade.hidden=!(mobile.matches&&open);}
 function close(){app.classList.remove('sidebarOpen');sync();}
