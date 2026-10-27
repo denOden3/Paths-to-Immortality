@@ -397,3 +397,24 @@
 .ptiArtEntryHeading .ptiArtEditAction[hidden]{display:none!important}
 .ptiArtEntryHeading .ptiArtEditAction svg{width:16px;height:16px;display:block}
 .ptiArtEntryHeading .ptiArtEditAction:hover{background:#694052;border-color:#f1be7a}
+
+/* Character profile header: concise updated date and a stable one-line title.
+   The header stays in the persistent grid row while only the content scrolls. */
+.publicView>.head .ptiSiteTitle{flex:1 1 auto;min-width:0;max-width:100%;margin:0;font-size:clamp(15px,1.65vw,24px);line-height:1.2}
+.publicView>.head .ptiSiteTitle a{display:flex;align-items:center;gap:6px;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-decoration:none}
+.publicView>.head .ptiSiteTitleMark{flex:0 0 auto;font-size:1em}
+.publicView>.head .ptiSiteTitleText{display:block;flex:0 1 auto;min-width:0;white-space:nowrap}
+.publicView>.head .ptiProfileUpdated{display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;
+ margin-left:auto;text-align:right;font-style:italic;white-space:nowrap;font-size:12px;line-height:1.3;max-width:none}
+.publicView>.head .ptiUpdatedLabel,.publicView>.head .ptiUpdatedDate{display:block;white-space:nowrap}
+@media(max-width:760px){
+ .publicView>.head:has(.ptiSiteTitle){gap:8px;padding:10px 11px}
+ .publicView>.head .ptiSiteTitle{font-size:clamp(13px,3.6vw,17px);line-height:1.2}
+ .publicView>.head .ptiSiteTitle a{gap:4px}
+ .publicView>.head .ptiProfileUpdated{font-size:11px;line-height:1.28;max-width:none;white-space:nowrap}
+}
+@media(max-width:370px){
+ .publicView>.head:has(.ptiSiteTitle){gap:6px;padding:9px 8px}
+ .publicView>.head .ptiSiteTitle{font-size:12.5px}
+ .publicView>.head .ptiProfileUpdated{font-size:10px}
+}
