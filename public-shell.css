@@ -210,3 +210,31 @@
  .publicView>.head .ptiHeaderSignIn{padding:7px 9px;min-height:36px;font-size:12px}
  .ptiEmailRow .btn{width:100%}
 }
+
+/* Character dossier tabs: one in-place panel at a time; no anchor jumps. */
+.ptiPublicCharacterPage .ptiProfileTabs{
+  position:sticky;top:0;z-index:4;display:flex;flex-wrap:wrap;gap:8px;
+  margin:18px 0 15px;padding:9px 0 12px;background:#161319;
+  border-bottom:1px solid #4c3c47;
+}
+.ptiPublicCharacterPage .ptiProfileTab{
+  appearance:none;border:1px solid #79636a;border-radius:30px;
+  min-height:42px;padding:8px 14px;background:#211b23;
+  color:#f1be7a;font:600 13px/1.4 system-ui;cursor:pointer;
+}
+.ptiPublicCharacterPage .ptiProfileTab:hover{background:#49323c;border-color:#dca879}
+.ptiPublicCharacterPage .ptiProfileTab[aria-selected="true"]{
+  background:#65303e;color:#fff2e6;border-color:#f1be7a;
+  box-shadow:inset 0 -2px 0 #f1be7a;
+}
+.ptiPublicCharacterPage .ptiProfileTab:focus-visible{
+  outline:3px solid #ffd79e;outline-offset:2px;
+}
+.ptiPublicCharacterPage .ptiProfilePanel[hidden]{display:none!important}
+.ptiPublicCharacterPage .ptiProfilePanel{min-width:0;padding-top:4px}
+.ptiPublicCharacterPage .ptiProfilePanel:focus-visible{outline:2px solid #f1be7a;outline-offset:3px}
+.ptiPublicCharacterPage .ptiProfilePanel .journeyOverview{margin-top:10px}
+@media(max-width:650px){
+ .ptiPublicCharacterPage .ptiProfileTabs{gap:6px;padding:8px 0 11px}
+ .ptiPublicCharacterPage .ptiProfileTab{min-height:40px;font-size:12px;padding:7px 11px}
+}
