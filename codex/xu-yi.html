@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Xu Yi (Ah Yi / Yiyi) · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261027-scene-journal">
+<link rel="stylesheet" href="../public-shell.css?v=20261027-edit-gallery">
 </head>
 <body>
 <div class="app publicView">
@@ -47,16 +47,21 @@
     <div class="ptiArtUploadPanel">
       <div class="ptiArtDrop">
         <button class="ptiArtPick" type="button">Choose an image</button>
-        <span>or drop one here · PNG, JPEG or WebP · up to 3 MiB</span>
-        <input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Select character illustration">
+        <span>or drop several here · PNG, JPEG or WebP · up to 3 MiB each</span>
+        <input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" multiple aria-label="Select character illustrations">
       </div>
       <label>Appearance / scene title
         <input class="ptiArtLabel" type="text" maxlength="90" placeholder="e.g. Recruitment Day 1 — Beggar Appearance">
       </label>
       <label>Age, circumstances &amp; appearance notes
-        <textarea class="ptiArtNote" maxlength="500" rows="4" placeholder="Describe what is actually shown, which scene it belongs to, and any public-safe details."></textarea>
+        <span class="ptiArtFormatHint">Select words, then use <strong>B</strong> or <em>I</em> to format them.</span>
+        <div class="ptiArtFormatToolbar" role="toolbar" aria-label="Format illustration description">
+          <button type="button" class="ptiArtBold" aria-label="Bold selected text"><strong>B</strong></button>
+          <button type="button" class="ptiArtItalic" aria-label="Italicize selected text"><em>I</em></button>
+        </div>
+        <textarea class="ptiArtNote" maxlength="2000" rows="5" placeholder="Describe this appearance or scene. Select words and use Bold or Italic to format them."></textarea>
       </label>
-      <button class="ptiArtUpload" type="button" disabled>Upload illustration</button>
+      <button class="ptiArtUpload" type="button" disabled>Upload illustration(s)</button>
     </div>
   </div>
   <div class="ptiArtGallery" aria-live="polite">
@@ -84,6 +89,6 @@
 </main>
 </div>
 <script src="../public-shell.js?v=20261027-scene-journal"></script>
-<script type="module" src="character-illustrations.js?v=20261026-profile-illustrations-v3"></script>
+<script type="module" src="character-illustrations.js?v=20261027-edit-gallery"></script>
 </body>
 </html>
