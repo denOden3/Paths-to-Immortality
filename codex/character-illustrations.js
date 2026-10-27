@@ -1,4 +1,5 @@
 import { mountInventory } from './character-inventory.js?v=20261027-inventory-groups';
+import { mountRelationships } from './character-relationships.js?v=20261027-relationship-cards';
 // Character profiles: Notion-style illustration list + simple portrait picker.
 // Stored artwork is hosted in the public Supabase Storage bucket; only its
 // registered character owner may upload or change the active chat avatar.
@@ -15,6 +16,7 @@ if(root){
     auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
   });
   mountInventory(db);
+  mountRelationships(db);
   const gallery=root.querySelector('.ptiArtGallery');
   const status=root.querySelector('.ptiArtStatus');
   const controls=root.querySelector('.ptiArtControls');
