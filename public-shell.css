@@ -317,3 +317,32 @@
  .ptiArtEntryMedia{gap:8px}
  .ptiArtEditor{padding:13px}
 }
+
+/* Character inventory: Notion-inspired expandable categories and compact items. */
+.ptiPublicCharacterPage .ptiLiveInventory{display:grid;gap:10px;margin:16px 0 26px;padding:0}
+.ptiInventoryCategory{border:1px solid #715760;background:#241e27;border-radius:11px;min-width:0;overflow:hidden}
+.ptiInventoryCategorySummary{display:flex;gap:12px;align-items:center;cursor:pointer;padding:14px 15px;list-style:none;color:#f1be7a;min-height:48px;font-size:16px;font-weight:700}
+.ptiInventoryCategorySummary::-webkit-details-marker,.ptiInventoryItemSummary::-webkit-details-marker{display:none}
+.ptiInventoryCategorySummary::before{content:'';width:8px;height:8px;flex-shrink:0;border-bottom:2px solid #f1be7a;border-right:2px solid #f1be7a;transform:rotate(-45deg);transition:transform .15s}
+.ptiInventoryCategory[open]>.ptiInventoryCategorySummary::before{transform:rotate(45deg)}
+.ptiInventoryCategorySummary:hover,.ptiInventoryItemSummary:hover{background:#3f3038}
+.ptiInventoryCategorySummary:focus-visible,.ptiInventoryItemSummary:focus-visible{outline:2px solid #f1be7a;outline-offset:-3px}
+.ptiInventoryCategoryCount{margin-left:auto;border:1px solid #7e606b;border-radius:18px;padding:2px 9px;color:#d8c0b6;font-size:12px;font-weight:500;line-height:1.5}
+.ptiInventoryCategoryBody{display:grid;gap:8px;padding:0 12px 12px 26px}
+.ptiInventoryItem{border:1px solid #64505b;border-radius:9px;background:#1b171f;min-width:0;overflow:hidden}
+.ptiInventoryItemSummary{list-style:none;cursor:pointer;display:flex;gap:11px;align-items:center;min-height:43px;padding:10px 13px;color:#f1d0a6;font-size:14px}
+.ptiInventoryItemSummary::before{content:'';width:7px;height:7px;flex:0 0 7px;border-right:2px solid #c9b1ad;border-bottom:2px solid #c9b1ad;transform:rotate(-45deg);transition:transform .15s}
+.ptiInventoryItem[open]>.ptiInventoryItemSummary::before{transform:rotate(45deg)}
+.ptiInventoryItemName{flex:1;overflow-wrap:anywhere;font-weight:650}
+.ptiInventoryItemQuantity{white-space:nowrap;color:#f0c08f;font-size:13px}
+.ptiInventoryItemDetails{display:grid;gap:12px;padding:13px 18px 16px;border-top:1px solid #64505b;background:#292129}
+.ptiInventoryItemDetail{min-width:0}
+.ptiInventoryDetailLabel{font-size:12px;color:#f1be7a;font-weight:700}
+.ptiPublicCharacterPage .ptiInventoryItemDetail p{font-size:13px;color:#e1ccc4;line-height:1.6;margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.ptiInventoryEmpty{font-size:13px;color:#ddc3b6;margin:9px 0 12px}
+@media(max-width:620px){
+ .ptiInventoryCategorySummary{font-size:15px;padding:12px 11px}
+ .ptiInventoryCategoryBody{padding:0 9px 9px 13px}
+ .ptiInventoryItemSummary{font-size:13px;padding:10px 11px}
+ .ptiInventoryItemDetails{padding:11px 13px 15px}
+}
