@@ -480,3 +480,43 @@
  .ptiPublicCharacterPage .ptiRelationTitle h4{font-size:17px}
  .ptiRelationEditor{padding:11px}
 }
+
+/* Character encounter dossiers */
+.ptiRelationsHeader{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:10px 0}
+.ptiRelationsHeader h3{margin:0;color:#f1be7a}
+.ptiRelationsAdd,.ptiRelationPencil,.ptiRelationEditActions button{border:1px solid #a17a86;border-radius:8px;background:#382b36;color:#f9d5ae;cursor:pointer;padding:7px 11px}
+.ptiRelationsAdd[hidden]{display:none!important}
+.ptiRelationsIntro,.ptiRelationsStatus,.ptiRelationQuiet{color:#d8beb6;font-size:13px;line-height:1.55}
+.ptiRelationsList{display:grid;gap:18px;margin:17px 0 24px}
+.ptiRelationGroup{border:1px solid #7c626d;border-radius:12px;background:#241d27;overflow:hidden}
+.ptiRelationGroupSummary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:12px 15px;color:#f1be7a;font-weight:720}
+.ptiRelationGroupCount{font-size:12px;color:#debfaf;border:1px solid #8a6e78;border-radius:14px;padding:1px 8px}
+.ptiRelationGroupBody{display:grid;gap:9px;padding:0 12px 12px}
+.ptiRelationPerson{border:1px solid #67525d;background:#1b171f;border-radius:9px;overflow:hidden}
+.ptiRelationPersonSummary{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:66px;padding:9px 12px;list-style:none}
+.ptiRelationPersonSummary::-webkit-details-marker{display:none}
+.ptiRelationPersonSummary:hover,.ptiRelationGroupSummary:hover{background:#48323d}
+.ptiRelationSummaryText{display:grid;gap:2px;min-width:0;flex:1}
+.ptiRelationSummaryText strong{color:#ffe1b5;font-size:15px}
+.ptiRelationSummaryText small{color:#d5c0b9;font-size:12px;overflow-wrap:anywhere}
+.ptiRelationArrow{color:#f1be7a;font-size:19px}
+.ptiRelationPerson[open] .ptiRelationArrow{transform:rotate(180deg)}
+.ptiRelationPortrait{width:44px;height:44px;border:1px solid #d0aa82;border-radius:50%;display:grid;place-items:center;background:#493340;color:#f9d9af;overflow:hidden;flex:0 0 auto}
+.ptiRelationPortrait.large{width:84px;height:84px;font-size:26px}
+.ptiRelationPortrait img{width:100%;height:100%;object-fit:cover}
+.ptiRelationDetails{border-top:1px solid #67525d;padding:14px 16px 17px;background:#2e232d}
+.ptiRelationCardHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ptiRelationTitle{flex:1;min-width:100px}
+.ptiRelationTitle h4{margin:0 0 2px;font-size:17px;color:#ffe3bf}
+.ptiRelationTitle span{color:#d7bfb6;font-size:12px}
+.ptiRelationPencil{border-radius:50%;width:32px;height:32px;padding:4px}
+.ptiRelationMet,.ptiRelationDiscovery{font-size:13px;line-height:1.7;color:#ead5c9;white-space:pre-wrap;overflow-wrap:anywhere}
+.ptiRelationLink{display:inline-block;margin:8px 0;color:#f1be7a}
+.ptiRelationEditor{border-top:1px solid #80616d;margin-top:15px;padding-top:12px;display:grid;gap:10px}
+.ptiRelationField{display:grid;gap:5px;font-size:12px;color:#f1be7a}
+.ptiRelationField input,.ptiRelationField select,.ptiRelationField textarea{width:100%;font:inherit;padding:9px 11px;border:1px solid #937581;border-radius:8px;background:#18151c;color:#fff0de;min-width:0}
+.ptiRelationEditActions{display:flex;gap:10px;flex-wrap:wrap}
+.ptiRelationFormStatus,.ptiRelationHint{font-size:12px;color:#d8bfb6}
+.ptiRelationNew{border:1px solid #8d6c78;border-radius:12px;padding:15px}
+.ptiRelationsList summary:focus-visible,.ptiRelationsList button:focus-visible{outline:2px solid #f1be7a;outline-offset:2px}
+@media(max-width:600px){.ptiRelationGroupBody{padding:0 8px 8px}.ptiRelationPersonSummary{gap:8px;padding:9px}.ptiRelationDetails{padding:12px}}
