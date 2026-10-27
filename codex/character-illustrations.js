@@ -111,7 +111,10 @@ if(root){
         p_character:character,p_path:path,p_label:group.label,
         p_description:group.description,p_group:group.id
       });
-      if(error)throw error;
+      if(error){
+        await db.storage.from(bucket).remove([path]).catch(()=>{});
+        throw error;
+      }
     }
   }
 
@@ -148,6 +151,9 @@ if(root){
         if(!chosen)return;
         const bad=validate(chosen);
         if(bad){message.textContent=bad;return;}
+        if(title.value.trim()!==group.label||desc.value.trim()!==group.description.trim()){
+          message.textContent='Save your title and description changes before replacing a picture.';return;
+        }
         change.disabled=true;save.disabled=true;add.disabled=true;
         message.textContent='Replacing picture…';
         try{
@@ -155,7 +161,10 @@ if(root){
           const {data,error}=await db.rpc('character_art_replace_photo',{
             p_character:character,p_id:image.id,p_path:path
           });
-          if(error)throw error;
+          if(error){
+            await db.storage.from(bucket).remove([path]).catch(()=>{});
+            throw error;
+          }
           const old=data?.old_path;
           if(old){
             const removal=await db.storage.from(bucket).remove([old]);
@@ -180,6 +189,9 @@ if(root){
       if(files.length>limitImages){message.textContent='Choose up to '+limitImages+' pictures at once.';return;}
       const issue=files.map(validate).find(Boolean);
       if(issue){message.textContent=issue;return;}
+      if(title.value.trim()!==group.label||desc.value.trim()!==group.description.trim()){
+        message.textContent='Save your title and description changes before adding pictures.';return;
+      }
       save.disabled=true;add.disabled=true;
       message.textContent='Adding pictures…';
       try{
@@ -381,9 +393,12 @@ if(root){
   function selectFiles(files){
     const selected=[...files||[]];
     if(!selected.length)return;
-    if(selected.length>limitImages){setStatus('Choose up to '+limitImages+' pictures at once.');return;}
+    if(selected.length>limitImages){
+      selectedFiles=[];uploadButton.disabled=true;
+      setStatus('Choose up to '+limitImages+' pictures at once.');return;
+    }
     const issue=selected.map(validate).find(Boolean);
-    if(issue){setStatus(issue);return;}
+    if(issue){selectedFiles=[];uploadButton.disabled=true;setStatus(issue);return;}
     selectedFiles=selected;
     uploadButton.disabled=false;
     setStatus('Selected '+selected.length+' picture'+(selected.length===1?'':'s')+'.');
@@ -418,7 +433,10 @@ if(root){
           p_character:character,p_path:path,p_label:label,
           p_description:description,p_group:groupId
         });
-        if(error)throw error;
+        if(error){
+          await db.storage.from(bucket).remove([path]).catch(()=>{});
+          throw error;
+        }
         groupId=data?.group_id;
         if(!groupId)throw Error('The new illustration record could not be confirmed.');
         uploaded++;
