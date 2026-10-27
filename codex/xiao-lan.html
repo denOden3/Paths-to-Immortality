@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Xiao Lan · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261026-header-signin">
+<link rel="stylesheet" href="../public-shell.css?v=20261027-profile-tabs">
 <style>
 /* Xiao Lan's adventure journal; intentionally scoped to this profile. */
 .ptiJourneyPage{--jade:#b6d9c4;--ink:#201b23}
@@ -79,7 +79,7 @@
   <button id="pti-tab-illustrations" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="pti-character-illustrations" data-panel="pti-character-illustrations">Illustrations</button>
   <button id="pti-tab-about-xiao-lan" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="about-xiao-lan" data-panel="about-xiao-lan">About</button>
 </nav>
-<section id="cultivation" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-cultivation" hidden>
+<section id="cultivation" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-cultivation" tabindex="0" hidden>
 <div class="journeyOverview">
 <div class="realmCard" aria-labelledby="cultivation-title">
 <p class="journalKicker">His path has only just begun</p>
@@ -104,7 +104,7 @@
 </figure>
 </div>
 </section>
-<section id="skills" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-skills" hidden>
+<section id="skills" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-skills" tabindex="0" hidden>
 <p class="journalKicker">Things the journey teaches him</p>
 <h3 id="skills-title">Skills &amp; little discoveries</h3>
 <p class="sectionIntro">Every ability has a story. Open a category to see what Xiao Lan can do, and where he began learning it.</p>
@@ -123,7 +123,7 @@
 <details class="skillGroup"><summary>Cultivation &amp; Spiritual Arts<span class="groupNote">A path still waiting to open</span></summary><p class="skillEmpty">No qi technique demonstrated on Day 1. Spiritual roots and affinities await examination.</p></details>
 <p class="quiet">“Demonstrated” records what happened; it is not a mastery rank. New learning can deepen through later adventures.</p>
 </section>
-<section id="day-one" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-day-one" hidden>
+<section id="day-one" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-day-one" tabindex="0" hidden>
 <p class="journalKicker">The first page of his adventure</p><h3 id="day-one-title">A roof beneath the clouds</h3>
 <ol class="dayTrail">
 <li><strong>A name to remember</strong><p>Elder Shen supplied the characters 萧岚. Examination token 137 marked the start of his trials.</p></li>
@@ -136,7 +136,7 @@
 <p class="quiet">Clean, fed, and asleep in his provisional room. No confirmed injuries or cultivation breakthrough.</p>
 <p class="journalSource">Chapter source: <a href="https://app.notion.com/p/3fcb0ac52efe81e7b23bcc944ae25905" target="_blank" rel="noopener noreferrer">Beneath the Cloudveil Gate &amp; A Roof Beneath the Clouds ↗</a><br>Recorded through Year 312 · Early Spring, 1st. Skills are descriptive summaries of the completed chapter, not numerical ratings.</p>
 </section>
-<section id="pti-character-illustrations" class="ptiArtSection ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-illustrations" data-character="Xiao Lan" hidden>
+<section id="pti-character-illustrations" class="ptiArtSection ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-illustrations" data-character="Xiao Lan" tabindex="0" hidden>
   <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3><button class="ptiArtAddButton" type="button" aria-controls="pti-art-controls" aria-expanded="false" hidden>＋ Add illustration</button></div>
   <div id="pti-art-controls" class="ptiArtControls" hidden>
     <div class="ptiArtUploadPanel">
@@ -167,7 +167,7 @@
     <div class="ptiAvatarChoices"></div>
   </dialog>
 </section>
-<section id="about-xiao-lan" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-about-xiao-lan" hidden><h3>Background</h3><p>Raised on the road by his late father, a beggar, Xiao Lan hopes that life in a cultivation sect might offer shelter, food and a chance to live comfortably. He does not begin his journey with a grand claim to greatness or a promised destiny.</p>
+<section id="about-xiao-lan" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-about-xiao-lan" tabindex="0" hidden><h3>Background</h3><p>Raised on the road by his late father, a beggar, Xiao Lan hopes that life in a cultivation sect might offer shelter, food and a chance to live comfortably. He does not begin his journey with a grand claim to greatness or a promised destiny.</p>
 <h3>Personality &amp; interests</h3><p>Laid-back, candid and resourceful, he enjoys fishing, gardening, farming, growing things and good meals. Life on the streets has taught him agility, stealth, pickpocketing and practical survival—ordinary learned skills, <em>not</em> automatic cultivation abilities.</p>
 <h3>Traits &amp; interests</h3><p>Resourceful, candid, and curious. Fishing and growing things remain interests; no fishing or farming proficiency was tested in this chapter. His background includes stealth and pickpocketing, but neither was assessed during Day 1.</p>
 <p><a href="characters.html#player-characters">← Back to Player Characters</a></p></section>
