@@ -78,7 +78,7 @@ if(profileNav){
   const fromLocation=()=>{
    let key='';
    try{key=decodeURIComponent(location.hash.slice(1));}catch{}
-   showProfilePanel(key);
+   showProfilePanel(key==='day-one'?'scenes':key);
   };
   profileNav.addEventListener('click',event=>{
    const tab=event.target.closest('button[role="tab"][data-panel]');
