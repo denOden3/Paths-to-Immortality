@@ -12,10 +12,6 @@
 <style>
 /* Xiao Lan's adventure journal; intentionally scoped to this profile. */
 .ptiJourneyPage{--jade:#b6d9c4;--ink:#201b23}
-.ptiJourneyPage .journeyNav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 28px}
-.ptiJourneyPage .journeyNav a{padding:8px 13px;border:1px solid #79636a;border-radius:30px;text-decoration:none;font-size:13px;min-height:40px}
-.ptiJourneyPage .journeyNav a:hover{background:#49323c}
-.ptiJourneyPage section[id]{scroll-margin-top:20px}
 .ptiJourneyPage .journeyOverview{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,.85fr);gap:20px;margin:20px 0 32px}
 .ptiJourneyPage .realmCard,.ptiJourneyPage .compassCard{border:1px solid #7d626b;background:linear-gradient(145deg,#30242c,#211e27);border-radius:18px;padding:22px;min-width:0}
 .ptiJourneyPage .realmCard h3{margin:8px 0;font-size:27px;color:#fff2e6}
@@ -49,7 +45,7 @@
 .ptiJourneyPage .journalSource{font-size:12px;border-top:1px solid #665158;padding-top:16px;margin-top:28px}
 .ptiJourneyPage :is(summary,a):focus-visible{outline:2px solid #ffd79e;outline-offset:4px}
 .ptiJourneyPage .ptiProfileSub .ptiProfilePill{font-size:13px;font-weight:400}
-@media(max-width:650px){.ptiJourneyPage .journeyOverview{grid-template-columns:1fr}.ptiJourneyPage .skillGrid{grid-template-columns:1fr}.ptiJourneyPage .compassCard svg{max-width:290px}.ptiJourneyPage .realmCard{padding:20px}.ptiJourneyPage .journeyNav{gap:6px}.ptiJourneyPage .journeyNav a{font-size:12px;padding:8px 11px}}
+@media(max-width:650px){.ptiJourneyPage .journeyOverview{grid-template-columns:1fr}.ptiJourneyPage .skillGrid{grid-template-columns:1fr}.ptiJourneyPage .compassCard svg{max-width:290px}.ptiJourneyPage .realmCard{padding:20px}}
 </style>
 </head>
 <body>
@@ -76,15 +72,22 @@
   </div>
 </div>
 
-<nav class="journeyNav" aria-label="Xiao Lan profile sections"><a href="#cultivation">Cultivation</a><a href="#skills">Skills</a><a href="#day-one">Day 1</a><a href="#pti-character-illustrations">Illustrations</a><a href="#about-xiao-lan">About</a></nav>
+<nav class="ptiProfileTabs" role="tablist" aria-label="Xiao Lan profile sections">
+  <button id="pti-tab-cultivation" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="0" aria-controls="cultivation" data-panel="cultivation">Cultivation</button>
+  <button id="pti-tab-skills" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="skills" data-panel="skills">Skills</button>
+  <button id="pti-tab-day-one" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="day-one" data-panel="day-one">Day 1</button>
+  <button id="pti-tab-illustrations" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="pti-character-illustrations" data-panel="pti-character-illustrations">Illustrations</button>
+  <button id="pti-tab-about-xiao-lan" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="about-xiao-lan" data-panel="about-xiao-lan">About</button>
+</nav>
+<section id="cultivation" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-cultivation" hidden>
 <div class="journeyOverview">
-<section class="realmCard" id="cultivation" aria-labelledby="cultivation-title">
+<div class="realmCard" aria-labelledby="cultivation-title">
 <p class="journalKicker">His path has only just begun</p>
 <h3 id="cultivation-title">Mortal / Unawakened</h3>
 <p class="quiet">A full stomach. A borrowed robe. A place to sleep beneath the clouds.</p>
 <dl><dt>Sect standing</dt><dd>Provisional applicant</dd><dt>Spiritual roots</dt><dd>Unexamined</dd><dt>Peak</dt><dd>Not yet assigned</dd><dt>Next step</dt><dd>Day 2 aptitude examination</dd></dl>
 <div class="chapterStamp">Day 1 complete · Year 312, Early Spring, 1st</div>
-</section>
+</div>
 <figure class="compassCard">
 <p class="journalKicker">Journey compass</p>
 <svg viewBox="0 0 320 280" role="img" aria-labelledby="compass-title compass-desc">
@@ -100,7 +103,8 @@
 <figcaption>Jade · demonstrated &nbsp; Gold · learning<br>Hollow · unexamined<br>Experiences, not power scores.</figcaption>
 </figure>
 </div>
-<section id="skills" aria-labelledby="skills-title">
+</section>
+<section id="skills" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-skills" hidden>
 <p class="journalKicker">Things the journey teaches him</p>
 <h3 id="skills-title">Skills &amp; little discoveries</h3>
 <p class="sectionIntro">Every ability has a story. Open a category to see what Xiao Lan can do, and where he began learning it.</p>
@@ -119,7 +123,7 @@
 <details class="skillGroup"><summary>Cultivation &amp; Spiritual Arts<span class="groupNote">A path still waiting to open</span></summary><p class="skillEmpty">No qi technique demonstrated on Day 1. Spiritual roots and affinities await examination.</p></details>
 <p class="quiet">“Demonstrated” records what happened; it is not a mastery rank. New learning can deepen through later adventures.</p>
 </section>
-<section id="day-one" aria-labelledby="day-one-title">
+<section id="day-one" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-day-one" hidden>
 <p class="journalKicker">The first page of his adventure</p><h3 id="day-one-title">A roof beneath the clouds</h3>
 <ol class="dayTrail">
 <li><strong>A name to remember</strong><p>Elder Shen supplied the characters 萧岚. Examination token 137 marked the start of his trials.</p></li>
@@ -130,8 +134,9 @@
 <h4>At the close of Day 1</h4>
 <ul class="belongings"><li>Token 137</li><li>Temporary lodging slip</li><li>Needle &amp; thread · gift</li><li>Plain cotton robe · borrowed</li><li>Original clothes · drying at bathhouse</li></ul>
 <p class="quiet">Clean, fed, and asleep in his provisional room. No confirmed injuries or cultivation breakthrough.</p>
+<p class="journalSource">Chapter source: <a href="https://app.notion.com/p/3fcb0ac52efe81e7b23bcc944ae25905" target="_blank" rel="noopener noreferrer">Beneath the Cloudveil Gate &amp; A Roof Beneath the Clouds ↗</a><br>Recorded through Year 312 · Early Spring, 1st. Skills are descriptive summaries of the completed chapter, not numerical ratings.</p>
 </section>
-<section id="pti-character-illustrations" class="ptiArtSection" data-character="Xiao Lan" aria-label="Xiao Lan illustrations">
+<section id="pti-character-illustrations" class="ptiArtSection ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-illustrations" data-character="Xiao Lan" hidden>
   <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3><button class="ptiArtAddButton" type="button" aria-controls="pti-art-controls" aria-expanded="false" hidden>＋ Add illustration</button></div>
   <div id="pti-art-controls" class="ptiArtControls" hidden>
     <div class="ptiArtUploadPanel">
@@ -162,15 +167,16 @@
     <div class="ptiAvatarChoices"></div>
   </dialog>
 </section>
-<section id="about-xiao-lan" aria-label="About Xiao Lan"><h3>Background</h3><p>Raised on the road by his late father, a beggar, Xiao Lan hopes that life in a cultivation sect might offer shelter, food and a chance to live comfortably. He does not begin his journey with a grand claim to greatness or a promised destiny.</p>
+<section id="about-xiao-lan" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-about-xiao-lan" hidden><h3>Background</h3><p>Raised on the road by his late father, a beggar, Xiao Lan hopes that life in a cultivation sect might offer shelter, food and a chance to live comfortably. He does not begin his journey with a grand claim to greatness or a promised destiny.</p>
 <h3>Personality &amp; interests</h3><p>Laid-back, candid and resourceful, he enjoys fishing, gardening, farming, growing things and good meals. Life on the streets has taught him agility, stealth, pickpocketing and practical survival—ordinary learned skills, <em>not</em> automatic cultivation abilities.</p>
-<h3>Traits &amp; interests</h3><p>Resourceful, candid, and curious. Fishing and growing things remain interests; no fishing or farming proficiency was tested in this chapter. His background includes stealth and pickpocketing, but neither was assessed during Day 1.</p></section>
-<p class="journalSource">Chapter source: <a href="https://app.notion.com/p/3fcb0ac52efe81e7b23bcc944ae25905" target="_blank" rel="noopener noreferrer">Beneath the Cloudveil Gate &amp; A Roof Beneath the Clouds ↗</a><br>Recorded through Year 312 · Early Spring, 1st. Skills are descriptive summaries of the completed chapter, not numerical ratings.</p>
-<p><a href="characters.html#player-characters">← Back to Player Characters</a></p>
+<h3>Traits &amp; interests</h3><p>Resourceful, candid, and curious. Fishing and growing things remain interests; no fishing or farming proficiency was tested in this chapter. His background includes stealth and pickpocketing, but neither was assessed during Day 1.</p>
+<p><a href="characters.html#player-characters">← Back to Player Characters</a></p></section>
+
+
 </article>
 </main>
 </div>
-<script src="../public-shell.js?v=20261026-characters"></script>
+<script src="../public-shell.js?v=20261027-profile-tabs"></script>
 <script type="module" src="character-illustrations.js?v=20261026-profile-illustrations-v3"></script>
 </body>
 </html>
