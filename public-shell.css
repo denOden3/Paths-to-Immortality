@@ -408,13 +408,14 @@
  margin-left:auto;text-align:right;font-style:italic;white-space:nowrap;font-size:12px;line-height:1.3;max-width:none}
 .publicView>.head .ptiUpdatedLabel,.publicView>.head .ptiUpdatedDate{display:block;white-space:nowrap}
 @media(max-width:760px){
- .publicView>.head:has(.ptiSiteTitle){gap:8px;padding:10px 11px}
- .publicView>.head .ptiSiteTitle{font-size:clamp(13px,3.6vw,17px);line-height:1.2}
+ .publicView>.head:has(.ptiSiteTitle){gap:7px;padding:9px 10px}
+ .publicView>.head .ptiNavToggle{width:44px;min-width:44px;height:44px;min-height:44px;padding:5px;font-size:18px;flex-shrink:0}
+ .publicView>.head .ptiSiteTitle{font-size:clamp(16px,4.6vw,20px);font-weight:750;letter-spacing:-.025em;line-height:1.2}
  .publicView>.head .ptiSiteTitle a{gap:4px}
  .publicView>.head .ptiProfileUpdated{font-size:11px;line-height:1.28;max-width:none;white-space:nowrap}
 }
 @media(max-width:370px){
  .publicView>.head:has(.ptiSiteTitle){gap:6px;padding:9px 8px}
- .publicView>.head .ptiSiteTitle{font-size:12.5px}
+ .publicView>.head .ptiSiteTitle{font-size:clamp(13.5px,4.35vw,16px)}
  .publicView>.head .ptiProfileUpdated{font-size:10px}
 }
