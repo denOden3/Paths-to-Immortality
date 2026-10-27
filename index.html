@@ -213,12 +213,11 @@ body.authOpen{overflow:hidden}
 <section id="authSheet" class="authSheet" role="dialog" aria-modal="true" aria-labelledby="authTitle" aria-describedby="authDescription" tabindex="-1">
 <div class="authMark" aria-hidden="true">☯</div>
 <h2 id="authTitle">Sign in to Paths to Immortality</h2>
-<p id="authDescription">Sign in with a personal email or Google account. Your ChatGPT email is not required.</p>
+<p id="authDescription" hidden></p>
 <button id="google" class="authChoice primary" type="button"><span class="authIcon" aria-hidden="true">G</span><span class="authDetails"><strong>Continue with Google</strong><small>Use a Google account of your choice</small></span></button>
 <form id="ptiEmailAuth" class="ptiEmailAuth">
   <label for="ptiLoginEmail">Or use your email address</label>
   <div class="ptiEmailRow"><input id="ptiLoginEmail" type="email" autocomplete="email" inputmode="email" required maxlength="254" placeholder="you@example.com"><button id="ptiSendEmail" type="submit" class="btn">Send sign-in link</button></div>
-  <p class="ptiEmailHelp">We'll email you a sign-in link. No ChatGPT account needed.</p>
   <p id="ptiEmailNotice" class="ptiEmailNotice" role="status" aria-live="polite" hidden></p>
 </form>
 <div id="ptiAccountInfo" class="ptiAccountInfo" hidden><p id="ptiAccountLabel" class="ptiAccountLabel"></p><button id="ptiAccountSignout" class="authChoice" type="button">Sign Out</button></div>
@@ -953,8 +952,10 @@ function openAuthDialog(mode='admin'){
  const account=mode==='account',admin=mode==='admin';
  $('authTitle').textContent=account?'Your account':admin?'The Jade Emperor':'Sign in to Paths to Immortality';
  $('authDescription').textContent=account?'You are signed in to Paths to Immortality.':admin?
-  'Sign in with the Jade Emperor’s authorised Google account.':
-  'Use any personal email or Google account you prefer. Your ChatGPT email is not required.';
+  'Sign in with the Jade Emperor’s authorised Google account.':'';
+ $('authDescription').hidden=!account&&!admin;
+ if(account||admin)$('authSheet').setAttribute('aria-describedby','authDescription');
+ else $('authSheet').removeAttribute('aria-describedby');
  $('google').hidden=account;
  $('ptiEmailAuth').hidden=account||admin;
  $('ptiAccountInfo').hidden=!account;
