@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Elder Shen Yizhen · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261026-profile-layout">
+<link rel="stylesheet" href="../public-shell.css?v=20261027-relationship-cards">
 </head>
 <body>
 <div class="app publicView">
@@ -20,11 +20,13 @@
 <nav aria-label="Breadcrumb"><a href="../index.html">Home</a> / <a href="characters.html">Characters</a> / <a href="characters.html#npcs">NPCs</a> / <span aria-current="page">Elder Shen</span></nav>
 <h2>Elder Shen Yizhen</h2>
 <div class="ptiIdentityLayout">
-  <button id="pti-avatar-trigger" class="ptiAvatarPortrait" type="button" aria-haspopup="dialog" aria-controls="pti-avatar-dialog" aria-label="View Elder Shen's available portraits">
+  <div class="ptiAvatarSlot">
+    <button id="pti-avatar-trigger" class="ptiAvatarPortrait" type="button" aria-haspopup="dialog" aria-controls="pti-avatar-dialog" aria-label="View Elder Shen's available portraits">
     <span class="ptiAvatarSilhouette" aria-hidden="true"></span>
     <img class="ptiAvatarPreview" src="" alt="Current Elder Shen chat avatar" hidden>
-    <span class="ptiAvatarPortraitCorner" aria-hidden="true">✎</span>
   </button>
+  <button class="ptiAvatarPortraitCorner" type="button" aria-label="Choose Elder Shen chat avatar">✎</button>
+  </div>
   <div class="ptiIdentityDetails">
     <p class="ptiProfileSub"><span class="ptiProfilePill">Senior Elder</span> <span class="ptiProfilePill">Core NPC</span></p>
     <p class="codexLead">A stern and attentive supervisor of the annual entrance examination, known for his exacting questions and regard for procedure.</p>
@@ -32,27 +34,31 @@
   </div>
 </div>
 <section id="pti-character-illustrations" class="ptiArtSection" data-character="Elder Shen" aria-label="Elder Shen illustrations">
-  <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3></div>
-  <div class="ptiArtGallery" aria-live="polite">
-    <p class="ptiArtQuiet">No illustrations have been added yet.</p>
-  </div>
-  <details class="ptiArtControls" hidden>
-    <summary>＋ Add illustration</summary>
+  <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3><button class="ptiArtAddButton" type="button" aria-controls="pti-art-controls" aria-expanded="false" hidden>＋ Add illustration</button></div>
+  <div id="pti-art-controls" class="ptiArtControls" hidden>
     <div class="ptiArtUploadPanel">
       <div class="ptiArtDrop">
         <button class="ptiArtPick" type="button">Choose an image</button>
-        <span>or drop one here · PNG, JPEG or WebP · up to 3 MiB</span>
-        <input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Select character illustration">
+        <span>or drop several here · PNG, JPEG or WebP · up to 3 MiB each</span>
+        <input class="ptiArtFile" type="file" accept="image/png,image/jpeg,image/webp" multiple aria-label="Select character illustrations">
       </div>
       <label>Appearance / scene title
-        <input class="ptiArtLabel" type="text" maxlength="90" placeholder="e.g. Recruitment Day 1 — Beggar Appearance">
+        <input class="ptiArtLabel" type="text" maxlength="90" placeholder="e.g. Recruitment Day 1 — Examiner">
       </label>
       <label>Age, circumstances &amp; appearance notes
-        <textarea class="ptiArtNote" maxlength="500" rows="4" placeholder="Describe what is actually shown, which scene it belongs to, and any public-safe details."></textarea>
+        <span class="ptiArtFormatHint">Select words, then use <strong>B</strong> or <em>I</em> to format them.</span>
+        <div class="ptiArtFormatToolbar" role="toolbar" aria-label="Format illustration description">
+          <button type="button" class="ptiArtBold" aria-label="Bold selected text"><strong>B</strong></button>
+          <button type="button" class="ptiArtItalic" aria-label="Italicize selected text"><em>I</em></button>
+        </div>
+        <textarea class="ptiArtNote" maxlength="2000" rows="5" placeholder="Describe this appearance or scene. Select words and use Bold or Italic to format them."></textarea>
       </label>
-      <button class="ptiArtUpload" type="button" disabled>Upload illustration</button>
+      <button class="ptiArtUpload" type="button" disabled>Upload illustration(s)</button>
     </div>
-  </details>
+  </div>
+  <div class="ptiArtGallery" aria-live="polite">
+    <p class="ptiArtQuiet">No illustrations have been added yet.</p>
+  </div>
   <p class="ptiArtStatus" role="status" aria-live="polite"></p>
   <dialog id="pti-avatar-dialog" class="ptiAvatarDialog" aria-labelledby="pti-avatar-dialog-title">
     <div class="ptiAvatarDialogHeader">
@@ -62,6 +68,8 @@
     <p class="ptiAvatarDialogHelp"></p>
     <div class="ptiAvatarChoices"></div>
   </dialog>
+<h3>Appearance — recruitment introduction</h3><p><strong>Age &amp; circumstance:</strong> Fourteen, prior to any confirmed formal admission.</p><p>Short and chubby, Xu Yi has rounded cheeks, expressive dark eyes, a small pouty mouth and a teardrop-shaped mole beneath her <strong>right eye</strong>. Her straight, dark, medium-length hair is often worn half-tied or in a bun with a soft yellow ribbon. Comfortable <strong>butter-yellow robes</strong> are her preferred style, and she wears a teardrop-shaped jade pendant necklace.</p>
+<p class="ptiNote"><strong>Belongings:</strong> The jade pendant is an ordinary established accessory; no magical properties are confirmed. Ornamental jade hairpins are a wish, not something she necessarily owns. Her clothing can change as scenes unfold.</p>
 </section>
 <h3>Appearance</h3><p>Tall and slightly spare, he dresses in <strong>slate-blue robes</strong> with discreet silver-thread cuffs. Dark hair is held in place by a plain wooden hairpin. He frequently carries a narrow bamboo writing tablet.</p>
 <h3>Role &amp; reputation</h3><p>Elder Shen oversees registration and the examination process at Cloudveil's Mountain Gate. He has a reputation for being <strong>strict, observant and consistent</strong>. Applicants may be nervous of his incisive questions, although an official's reputation is not a complete description of his private views.</p>
@@ -72,6 +80,6 @@
 </main>
 </div>
 <script src="../public-shell.js?v=20261026-characters"></script>
-<script type="module" src="character-illustrations.js?v=20261026-profile-layout"></script>
+<script type="module" src="character-illustrations.js?v=20261027-relationship-cards"></script>
 </body>
 </html>
