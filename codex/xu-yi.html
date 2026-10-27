@@ -8,7 +8,7 @@
 <meta name="description" content="Player-safe public character profiles from Paths to Immortality.">
 <title>Xu Yi (Ah Yi / Yiyi) · Paths to Immortality</title>
 <style>:root{color-scheme:dark;--bg:#161319;--panel:#241e27;--border:#665158;--text:#fff2e6;--muted:#dac4bb;--gold:#f1be7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui}.head{display:flex;align-items:center;background:#211b23;border-bottom:1px solid var(--border)}.head a{color:var(--text);text-decoration:none}.btn{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer}.state{color:var(--gold)}.content{min-height:0}</style>
-<link rel="stylesheet" href="../public-shell.css?v=20261027-balanced-header-v3">
+<link rel="stylesheet" href="../public-shell.css?v=20261027-relationship-cards">
 <style>
 /* Shared character adventure journal layout for Xu Yi, matching Xiao Lan. */
 .ptiJourneyPage{--jade:#b6d9c4;--ink:#201b23}
@@ -75,12 +75,19 @@
 </div>
 <nav class="ptiProfileTabs" role="tablist" aria-orientation="horizontal" aria-label="Xu Yi profile sections">
   <button id="pti-tab-about-xu-yi" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="0" aria-controls="about-xu-yi" data-panel="about-xu-yi">About</button>
+  <button id="pti-tab-relationships" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="relationships" data-panel="relationships">Relationships</button>
   <button id="pti-tab-cultivation" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="cultivation" data-panel="cultivation">Cultivation</button>
   <button id="pti-tab-skills" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="skills" data-panel="skills">Skills</button>
   <button id="pti-tab-scenes" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="scenes" data-panel="scenes">Scenes</button>
   <button id="pti-tab-inventory" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="inventory" data-panel="inventory">Inventory</button>
   <button id="pti-tab-illustrations" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="pti-character-illustrations" data-panel="pti-character-illustrations">Illustrations</button>
 </nav>
+<section id="relationships" class="ptiProfilePanel ptiRelationshipsPanel" role="tabpanel" aria-labelledby="pti-tab-relationships" data-character="Xu Yi" tabindex="0" hidden>
+  <div class="ptiRelationsHeader"><h3>Relationships</h3><button class="ptiRelationsAdd" type="button" data-relations-add hidden>＋ Add relationship</button></div>
+  <p class="ptiRelationsIntro">People encountered through play. Open a name to see what Xu Yi has learned about them.</p>
+  <p class="ptiRelationsStatus" data-relations-status role="status" aria-live="polite"></p>
+  <div class="ptiRelationsList" data-relations-list></div>
+</section>
 <section id="cultivation" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-cultivation" tabindex="0" hidden>
   <div class="journeyOverview">
     <div class="realmCard">
@@ -229,22 +236,12 @@
 <p>Xu Yi, also called <strong>Ah Yi</strong> or <strong>Yiyi</strong>, is from <strong>Fengzhou</strong>, the adopted daughter of a minor noble, scholarly household. She came to Cloudveil Sect to learn and broaden her horizons. The unwritten details of her family and history remain hers to establish through play.</p>
 <h3>Personality &amp; interests</h3>
 <p>Amiable, kind and attentive to social cues, Xu Yi gets along easily with different people and can be affectionate with those she trusts. She sometimes overthinks and becomes stressed. She enjoys reading, singing, cooking, travel, and exploring interesting curiosities and ancient objects.</p>
-<h3>People met on Day 1</h3>
-<ul>
-<li><strong>Luo Meifen:</strong> Talkative physician's daughter, interested in herbal medicine and afraid of heights. A friend and roommate; Xu Yi helped her on the mountain stairs.</li>
-<li><strong>Han Dazhu:</strong> Enthusiastic, food-minded applicant from a family that repairs agricultural tools. Trial companion and friend; assigned West Hall Room 4.</li>
-<li><strong>Qin Ruo:</strong> Practical, observant girl raised by the river, with dry humor. Friend and roommate in East Hall Room 6.</li>
-<li><strong>Elder Shen Yizhen:</strong> Registered Xu Yi and issued her applicant token.</li>
-<li><strong>Instructor Lin:</strong> Supervised the practical teamwork assessment.</li>
-</ul>
-<p class="quiet">These are confirmed Day 1 encounters. No romance, sworn bond or unplayed personal history is implied.</p>
-<p>Xu Yi remains an independent player character. Only her player determines her dialogue, private feelings, choices and ambitions.</p>
 <p><a href="characters.html#player-characters">← Back to Player Characters</a></p>
 </section>
 </article>
 </main>
 </div>
 <script src="../public-shell.js?v=20261027-inventory-tabs-row"></script>
-<script type="module" src="character-illustrations.js?v=20261027-compact-header-v2"></script>
+<script type="module" src="character-illustrations.js?v=20261027-relationship-cards"></script>
 </body>
 </html>
