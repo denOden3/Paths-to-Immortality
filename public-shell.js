@@ -61,7 +61,6 @@ if(profileNav){
  const tabs=[...profileNav.querySelectorAll('button[role="tab"][data-panel]')];
  const panels=new Map(tabs.map(tab=>[tab.dataset.panel,document.getElementById(tab.dataset.panel)]));
  if(tabs.length&&tabs.every(tab=>panels.get(tab.dataset.panel))){
-  const main=document.querySelector('.codexContent');
   function showProfilePanel(id,{record=false}={}){
    const selected=panels.has(id)?id:null;
    for(const tab of tabs){
@@ -74,9 +73,6 @@ if(profileNav){
    if(record){
     const next=selected?'#'+encodeURIComponent(selected):location.pathname+location.search;
     if(location.hash!==(selected?'#'+encodeURIComponent(selected):''))history.pushState(null,'',next);
-    // A sticky tab can be clicked while reading far down a long previous panel.
-    // Return to the tab bar so the newly chosen panel starts directly below it.
-    if(main&&main.scrollTop>0)profileNav.scrollIntoView({block:'start',behavior:'instant'});
    }
   }
   const fromLocation=()=>{
