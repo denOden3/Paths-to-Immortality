@@ -383,3 +383,17 @@
  .ptiPublicCharacterPage .ptiInventoryHeading h3{font-size:21px}
  .ptiInventoryRefresh{flex-basis:32px;width:32px;height:32px;padding:6px}
 }
+
+/* Illustration controls: tapping a title reveals an owner-only pencil inline. */
+.ptiArtEntryHeading{justify-content:flex-start;align-items:center;flex-wrap:wrap;gap:8px}
+.ptiArtEntryHeading .ptiArtEntryTitle{min-width:0;flex:0 1 auto;margin:0;overflow-wrap:anywhere}
+.ptiArtTitleToggle{appearance:none;background:none;border:0;color:inherit;font:inherit;
+  line-height:inherit;text-align:left;padding:3px 0;cursor:pointer;overflow-wrap:anywhere}
+.ptiArtTitleToggle:hover{color:#f4c999}
+.ptiArtTitleToggle:focus-visible{outline:2px solid #f1be7a;outline-offset:3px;border-radius:3px}
+.ptiArtEntryHeading .ptiArtEditAction{display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 30px;width:30px;height:30px;min-height:30px;padding:5px;border-radius:50%;
+  background:#3a2935;border:1px solid #ad8190;color:#ffdcad;cursor:pointer;white-space:nowrap}
+.ptiArtEntryHeading .ptiArtEditAction[hidden]{display:none!important}
+.ptiArtEntryHeading .ptiArtEditAction svg{width:16px;height:16px;display:block}
+.ptiArtEntryHeading .ptiArtEditAction:hover{background:#694052;border-color:#f1be7a}
