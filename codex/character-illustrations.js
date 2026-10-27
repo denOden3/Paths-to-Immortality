@@ -43,7 +43,7 @@ if(root){
     /^[0-9a-f-]{36}\/[a-z0-9-]{2,48}\/[0-9a-f-]{36}\.(png|jpg|jpeg|webp)$/.test(path);
   const imageUrl=path=>validImagePath(path)?
     supabaseUrl+'/storage/v1/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/'):'';
-  let illustrations=[],canUpload=false,selectedFiles=[],openEditorGroup=null;
+  let illustrations=[],canUpload=false,selectedFiles=[],openEditorGroup=null,revealedEditGroup=null;
   const limitImages=8;
   const setStatus=(text)=>{status.textContent=text;};
 
@@ -221,6 +221,7 @@ if(root){
         });
         if(error)throw error;
         openEditorGroup=null;
+        revealedEditGroup=null;
         await refreshGallery();
         setStatus('Illustration details saved.');
       }catch(err){message.textContent='Unable to save: '+err.message;
@@ -273,16 +274,43 @@ if(root){
     for(const group of groups){
       const section=make('section','ptiArtEntry');
       const headingRow=make('div','ptiArtEntryHeading');
-      const heading=make('h4','ptiArtEntryTitle',group.label);
-      headingRow.append(heading);
+      headingRow.dataset.illustrationGroup=group.id;
+      const heading=make('h4','ptiArtEntryTitle');
       if(canUpload){
-        const action=make('button','ptiArtEditAction',openEditorGroup===group.id?'Close edit':'Edit');
-        action.type='button';action.setAttribute('aria-expanded',String(openEditorGroup===group.id));
-        action.onclick=()=>{
+        // Keep the edit action hidden until the character owner taps this title.
+        const titleButton=make('button','ptiArtTitleToggle',group.label);
+        titleButton.type='button';
+        titleButton.setAttribute('aria-label','Show edit pencil for '+group.label);
+        titleButton.setAttribute('aria-expanded',String(revealedEditGroup===group.id));
+        const pencil=make('button','ptiArtEditAction');
+        pencil.type='button';
+        pencil.hidden=revealedEditGroup!==group.id;
+        pencil.setAttribute('aria-label',(openEditorGroup===group.id?'Close editor for ':'Edit ')+group.label);
+        pencil.setAttribute('title',openEditorGroup===group.id?'Close editor':'Edit illustration');
+        pencil.setAttribute('aria-expanded',String(openEditorGroup===group.id));
+        pencil.innerHTML='<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+        titleButton.onclick=()=>{
+          // Don't discard changes to an editor that is already open.
+          if(openEditorGroup!==null)return;
+          revealedEditGroup=revealedEditGroup===group.id?null:group.id;
+          for(const row of gallery.querySelectorAll('.ptiArtEntryHeading')){
+            const visible=row.dataset.illustrationGroup===revealedEditGroup;
+            const edit=row.querySelector('.ptiArtEditAction');
+            const title=row.querySelector('.ptiArtTitleToggle');
+            if(edit)edit.hidden=!visible;
+            if(title)title.setAttribute('aria-expanded',String(visible));
+          }
+        };
+        pencil.onclick=()=>{
           openEditorGroup=openEditorGroup===group.id?null:group.id;
+          revealedEditGroup=group.id;
           paintGallery();
         };
-        headingRow.append(action);
+        heading.append(titleButton);
+        headingRow.append(heading,pencil);
+      }else{
+        heading.textContent=group.label;
+        headingRow.append(heading);
       }
       const layout=make('div','ptiArtEntryLayout');
       const media=make('div','ptiArtEntryMedia');
