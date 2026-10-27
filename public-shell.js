@@ -70,6 +70,13 @@ if(profileNav){
     panels.get(tab.dataset.panel).hidden=!active;
    }
    if(!selected)tabs[0].tabIndex=0;
+   const activeTab=tabs.find(tab=>tab.dataset.panel===selected);
+   if(activeTab){
+    const view=profileNav.getBoundingClientRect();
+    const rect=activeTab.getBoundingClientRect();
+    if(rect.left<view.left)profileNav.scrollLeft-=view.left-rect.left+8;
+    else if(rect.right>view.right)profileNav.scrollLeft+=rect.right-view.right+8;
+   }
    if(record){
     const next=selected?'#'+encodeURIComponent(selected):location.pathname+location.search;
     if(location.hash!==(selected?'#'+encodeURIComponent(selected):''))history.pushState(null,'',next);
