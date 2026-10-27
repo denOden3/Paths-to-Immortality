@@ -130,8 +130,9 @@ export function mountRelationships(db){
   render();status.textContent='';
  }
  add.onclick=()=>{if(canEdit){adding=!adding;editing=null;render()}};
- new MutationObserver(()=>{if(!root.hidden&&(!loaded||!records.length))void refresh()})
-  .observe(root,{attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(()=>{
+  if(!root.hidden&&!adding&&editing===null)void refresh();
+ }).observe(root,{attributes:true,attributeFilter:['hidden']});
  db.auth.onAuthStateChange(()=>setTimeout(()=>{if(!root.hidden)void refresh()},0));
  void refresh();
 }
