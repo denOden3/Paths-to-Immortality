@@ -48,6 +48,7 @@
 .ptiJourneyPage .ptiProfileSub .ptiProfilePill{font-size:13px;font-weight:400}
 @media(max-width:650px){.ptiJourneyPage .journeyOverview{grid-template-columns:1fr}.ptiJourneyPage .skillGrid{grid-template-columns:1fr}.ptiJourneyPage .compassCard svg{max-width:290px}.ptiJourneyPage .realmCard{padding:20px}}
 </style>
+<style>.ptiLiveInventory{list-style:none;padding:0;display:grid;gap:12px}.ptiLiveInventory li{padding:15px;border:1px solid var(--border);border-radius:10px;background:var(--panel);overflow-wrap:anywhere}.ptiLiveInventory strong{color:var(--gold)}.ptiLiveInventory p{margin:7px 0 0;color:var(--muted);font-size:14px;line-height:1.6}#inventory .btn{min-height:44px;padding:8px 16px}#inventory [data-inventory-status]{font-size:14px;color:var(--muted)}</style>
 </head>
 <body>
 <div class="app publicView">
@@ -78,6 +79,7 @@
   <button id="pti-tab-cultivation" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="cultivation" data-panel="cultivation">Cultivation</button>
   <button id="pti-tab-skills" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="skills" data-panel="skills">Skills</button>
   <button id="pti-tab-scenes" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="scenes" data-panel="scenes">Scenes</button>
+  <button id="pti-tab-inventory" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="inventory" data-panel="inventory">Inventory</button>
   <button id="pti-tab-illustrations" class="ptiProfileTab" type="button" role="tab" aria-selected="false" tabindex="-1" aria-controls="pti-character-illustrations" data-panel="pti-character-illustrations">Illustrations</button>
 </nav>
 <section id="cultivation" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-cultivation" tabindex="0" hidden>
@@ -161,6 +163,14 @@
     </details>
   </div>
 </section>
+<section id="inventory" class="ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-inventory" data-character-key="dc8b9565-2f04-49d4-b671-fd3f9ca6fcd2" tabindex="0" hidden>
+<h3>Possessions &amp; wealth</h3>
+<p>Current belongings, shared with the session Inventory tab.</p>
+<button class="btn" type="button" data-inventory-refresh>Refresh</button>
+<p data-inventory-status role="status">Open this tab to load belongings.</p>
+<ul class="ptiLiveInventory" data-inventory-items></ul>
+<p><a href="../index.html">Sign in or open your rooms</a></p>
+</section>
 <section id="pti-character-illustrations" class="ptiArtSection ptiProfilePanel" role="tabpanel" aria-labelledby="pti-tab-illustrations" data-character="Xiao Lan" tabindex="0" hidden>
   <div class="ptiArtHeading"><h3>Appearance &amp; Illustrations</h3><button class="ptiArtAddButton" type="button" aria-controls="pti-art-controls" aria-expanded="false" hidden>＋ Add illustration</button></div>
   <div id="pti-art-controls" class="ptiArtControls" hidden>
@@ -207,6 +217,6 @@
 </main>
 </div>
 <script src="../public-shell.js?v=20261027-scene-journal"></script>
-<script type="module" src="character-illustrations.js?v=20261027-edit-gallery"></script>
+<script type="module" src="character-illustrations.js?v=20261027-shared-inventory"></script>
 </body>
 </html>
