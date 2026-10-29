@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paths to Immortality — Gate HUD Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#17131a;--panel:#211a24;--muted:#b9a1aa;--line:#604b58;--gold:#edbe82;--ink:#fff1e5;--left:286px;--right:268px}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+button,textarea,input{font:inherit}button{cursor:pointer;color:inherit}button:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{height:100dvh;min-height:520px;display:flex;flex-direction:column;overflow:hidden}
+.header{flex:0 0 44px;background:#29202b;border-bottom:1px solid #865f6c;display:flex;align-items:center;gap:10px;padding:0 12px;font-size:14px;font-weight:750}
+.logo{display:grid;place-items:center;background:#6b2d41;border:1px solid #9e6172;border-radius:6px;width:29px;height:29px;font-size:19px}.grow{flex:1}.preview-tag{font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--gold);border:1px solid #85606a;border-radius:15px;padding:3px 10px;white-space:nowrap}
+.ranges{display:flex;align-items:center;gap:5px;font-size:11px;color:#c8b0b6;font-weight:400}.ranges input{width:70px;accent-color:#d6a274}
+.gate{flex:1;min-height:0;display:grid;grid-template-columns:minmax(180px,var(--left)) minmax(0,1fr) minmax(180px,var(--right))}
+.wing{position:relative;min-height:0;display:flex;background:linear-gradient(145deg,#251e29,#1b171e);overflow:visible}
+.left{border-right:2px solid #755462}.right{border-left:2px solid #755462}
+.wing-content{flex:1;min-width:0;overflow-y:auto;padding:15px 13px}.wing-title{font-size:15px;font-weight:750}.wing-sub{margin-top:3px;color:var(--gold);font-size:11px}.wing-rule{height:1px;background:#59424f;margin:14px 0}
+.placeholder{border:1px dashed #65515e;border-radius:9px;color:#aa929e;min-height:175px;padding:20px 10px;display:grid;place-items:center;text-align:center;font-size:12px;line-height:1.6}
+.placeholder .symbol{font-size:35px;opacity:.7;display:block}
+.tabs{flex:0 0 40px;display:flex;flex-direction:column;align-items:center;gap:7px;background:#1b161f;padding:12px 5px}
+.left .tabs{border-left:1px solid #584250}.right .tabs{border-right:1px solid #584250}
+.tab{background:transparent;border:1px solid transparent;border-radius:6px;width:29px;height:42px;color:#b9a2ac;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;line-height:1;padding:3px}
+.tab small{font-size:8px;margin-top:3px}.tab[aria-pressed=true]{border-color:#916a76;background:#553142;color:#ffe0b7;box-shadow:inset 2px 0 var(--gold)}
+.grip{position:absolute;z-index:4;top:48%;height:75px;width:9px;background:#674b5c;border:1px solid #ab7d8b;border-radius:9px;cursor:ew-resize}
+.left .grip{right:-6px}.right .grip{left:-6px}.grip:after{content:'⋮';display:block;text-align:center;margin-top:24px;color:#f5c396;line-height:1}
+.stage{min-width:0;min-height:0;display:flex;flex-direction:column}
+.room-head{flex:0 0 47px;display:flex;gap:8px;align-items:center;padding:0 17px;border-bottom:1px solid #503c48;font-size:14px}.room-head strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live{font-size:11px;color:var(--gold);white-space:nowrap}.live:before{content:'● ';font-size:10px}
+.mobile-open{display:none;background:#3d2b39;border:1px solid #73515f;border-radius:5px;padding:5px 8px}
+.chat{flex:1;min-height:0;overflow-y:auto;padding:18px 19px 24px;scrollbar-color:#967182 #241c27}
+.bubble{font-size:15px;line-height:1.65;border-radius:11px;padding:16px 19px;margin:16px auto;overflow-wrap:anywhere}
+.bubble.narrator{max-width:690px;background:#252027;border:1px solid #8f704f;border-left:3px solid var(--gold)}
+.bubble.player{max-width:min(610px,83%);margin-right:0;margin-left:auto;background:#49303c;border:1px solid #9c6c7b}
+.bubble-head{display:flex;gap:8px;align-items:center;margin-bottom:9px;color:var(--gold);font-size:13px;font-weight:750}
+.bubble-head img{display:block;width:33px;height:33px;border-radius:50%;border:2px solid #cf9f78;object-fit:cover}.timestamp{margin-left:auto;color:#d3b9bc;font-weight:400;font-size:11px}
+.bottom{flex:0 0 auto;background:#241c27;border-top:1px solid #785564}
+.hud-compose{padding:6px 11px 8px}.tools{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;white-space:nowrap;border-bottom:1px solid #614954;padding-bottom:6px;margin-bottom:6px}.tools button{flex:0 0 auto;font-size:12px;padding:5px 9px;background:transparent;border:0;border-radius:5px}.tools .selected{background:#1e466d;border:1px solid #6c9cbd}.tools .end{background:#2e4b30;border:1px solid #789d79}
+.entry{display:flex;gap:6px;align-items:stretch}.entry textarea{min-width:0;flex:1;min-height:47px;resize:none;background:#17131a;border:1px solid #8e7080;border-radius:6px;padding:11px;color:var(--ink);font-size:13px}.entry textarea::placeholder{color:#d0adb6}
+.identity{font-size:12px;white-space:nowrap;border:1px solid #816575;border-radius:6px;background:#3b2d3a;padding:0 10px}.send{font-size:12px;font-weight:750;border:1px solid #ce6971;border-radius:6px;background:#aa3040;padding:0 15px}
+.native-compose{padding:8px 12px 12px;background:#19151e;border-top:1px solid #51404d}
+.native-input{display:flex;align-items:center;gap:11px;background:#29252b;border:1px solid #5e4c57;border-radius:27px;padding:9px 13px;color:#bdb1b7;font-size:13px}.native-input .grow{flex:1}.native-input .round{border:none;border-radius:50%;background:#fbf9f8;color:#161216;width:29px;height:29px;font-size:20px;line-height:1}
+.switcher,.shade{display:none}.note{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);pointer-events:none;opacity:0}
+@media(max-width:1050px){.ranges{display:none}.gate{grid-template-columns:minmax(156px,var(--left)) minmax(0,1fr) minmax(156px,var(--right))}.wing-content{padding:11px 9px}.bubble{font-size:14px;padding:13px}}
+@media(max-width:740px){.app{min-height:0}.header{flex-basis:42px;padding:0 9px;font-size:13px}.preview-tag{font-size:9px;letter-spacing:0}.gate{display:block;position:relative}.wing{position:absolute;top:0;bottom:0;width:min(290px,84vw);z-index:5;box-shadow:0 0 24px #000a;transition:transform .2s ease}.left{left:0;transform:translateX(-105%)}.right{right:0;transform:translateX(105%)}.app.open-left .left,.app.open-right .right{transform:none}.grip{display:none}.shade{position:absolute;inset:0;background:#08040a99;z-index:4}.app.open-left .shade,.app.open-right .shade{display:block}.stage{height:100%}.room-head{padding:0 8px;gap:6px;font-size:12px;flex-basis:44px}.mobile-open{display:inline-block}.chat{padding:9px}.bubble{font-size:13px;padding:12px 13px;margin:12px auto}.bubble.player{max-width:87%}.hud-compose{padding:5px 7px 7px}.native-compose{display:none}.app.mobile-native .hud-compose{display:none}.app.mobile-native .native-compose{display:block}.switcher{display:flex;justify-content:center;align-items:center;gap:8px;background:#1d1721;border-top:1px solid #513b49;padding:5px;font-size:11px;color:#c5a8b7}.switcher button{background:#422f3d;border:1px solid #825e6d;border-radius:13px;padding:3px 9px;font-size:11px}.identity{font-size:11px;padding:0 5px}.send{padding:0 9px}.tools button{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="header"><span class="logo">☯</span><span>Paths to Immortality</span><span class="grow"></span><div class="ranges"><label for="leftWidth">Left width</label><input id="leftWidth" type="range" min="185" max="385" value="286"><label for="rightWidth">Right width</label><input id="rightWidth" type="range" min="185" max="385" value="268"></div><span class="preview-tag">GATE LAYOUT · PREVIEW</span></header>
+<div class="gate">
+<aside class="wing left" aria-label="Left panel">
+<div class="wing-content"><div class="wing-title" id="left-title">Characters</div><div class="wing-sub" id="left-sub">Current session</div><div class="wing-rule"></div><div class="placeholder"><div><span class="symbol">♟</span>Space reserved for your chosen panel</div></div></div>
+<nav class="tabs" aria-label="Left panel tabs"><button class="tab" data-side="left" data-title="Characters" data-sub="Current session" aria-pressed="true">♟<small>PC</small></button><button class="tab" data-side="left" data-title="Inventory" data-sub="Shared and personal items" aria-pressed="false">▤<small>Bag</small></button><button class="tab" data-side="left" data-title="Administration" data-sub="Owner controls" aria-pressed="false">⚙<small>Admin</small></button></nav>
+<div class="grip" data-side="left" role="separator" aria-label="Resize left panel" title="Drag to resize left panel"></div></aside>
+<main class="stage">
+<div class="room-head"><button class="mobile-open" id="open-left" aria-label="Open left drawer">☷</button><strong>2nd Day Recruitment Trials</strong><span class="live">Live</span><span class="grow"></span><button class="mobile-open" id="open-right" aria-label="Open right drawer">◧</button></div>
+<div class="chat"><article class="bubble narrator">A few applicants were already eating at nearby tables. From farther up the mountain came another measured peal of the bell. There was still time for breakfast, but the morning’s examination was drawing closer.<p>The auntie held out her hand for the slip, an empty bowl waiting beside her ladle.</p></article>
+<article class="bubble player"><div class="bubble-head"><img alt="Illustrative Xiao Lan avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Crect width='60' height='60' fill='%23795857'/%3E%3Ccircle cx='30' cy='23' r='12' fill='%23e7c7a6'/%3E%3Cpath d='M7 59 Q8 37 30 37 Q52 37 53 59' fill='%233e2c35'/%3E%3Cpath d='M15 23 Q14 3 30 5 Q45 4 46 23 Q42 11 30 15 Q22 10 15 23' fill='%23221b24'/%3E%3C/svg%3E"><span>Xiao Lan</span><span class="timestamp">02:57 PM</span></div>“Good morning, pretty sister!” Xiao Lan offered his slip before eagerly accepting his breakfast. After an energetic thanks, he brought his meal to an empty table and began to savor his breakfast.</article></div>
+<div class="bottom" id="footer"><div class="hud-compose"><div class="tools"><button class="selected">Narrate</button><button>Session tools</button><button>Session Info</button><button>Scene</button><button>Inventory</button><button>Personal Time</button><button class="end">End session</button></div><div class="entry"><textarea aria-label="HUD preview composer" placeholder="What does Xiao Lan do?"></textarea><button class="identity">♟ Xiao Lan</button><button class="send" title="Preview only; no live message sent">Send</button></div></div>
+<div class="native-compose"><div class="native-input"><span>＋</span><span class="grow">Ask ChatGPT</span><span>♩</span><button class="round" aria-label="ChatGPT send preview">↑</button></div></div>
+<div class="switcher"><span id="composer-name">HUD composer</span><button id="switch-composer" type="button">↔ Switch composer</button><span>Swipe here</span></div></div>
+</main>
+<aside class="wing right" aria-label="Right panel"><div class="grip" data-side="right" role="separator" aria-label="Resize right panel" title="Drag to resize right panel"></div><nav class="tabs" aria-label="Right panel tabs"><button class="tab" data-side="right" data-title="World" data-sub="Location and atmosphere" aria-pressed="true">◈<small>World</small></button><button class="tab" data-side="right" data-title="Scene" data-sub="Current location" aria-pressed="false">⌖<small>Scene</small></button><button class="tab" data-side="right" data-title="Calendar" data-sub="Heavenly chronology" aria-pressed="false">◷<small>Time</small></button></nav><div class="wing-content"><div class="wing-title" id="right-title">World</div><div class="wing-sub" id="right-sub">Location and atmosphere</div><div class="wing-rule"></div><div class="placeholder"><div><span class="symbol">◈</span>Space reserved for your chosen panel</div></div></div></aside>
+<div id="shade" class="shade"></div></div></div>
+<script>
+const app=document.getElementById('app');
+const byId=id=>document.getElementById(id);
+for(const side of ['left','right']){const range=byId(side+'Width');range.addEventListener('input',()=>document.documentElement.style.setProperty('--'+side,range.value+'px'))}
+document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{const side=button.dataset.side;document.querySelectorAll('.tab[data-side="'+side+'"]').forEach(b=>b.setAttribute('aria-pressed',b===button?'true':'false'));byId(side+'-title').textContent=button.dataset.title;byId(side+'-sub').textContent=button.dataset.sub}));
+const closeDrawers=()=>app.classList.remove('open-left','open-right');
+byId('open-left').addEventListener('click',()=>{app.classList.toggle('open-left');app.classList.remove('open-right')});
+byId('open-right').addEventListener('click',()=>{app.classList.toggle('open-right');app.classList.remove('open-left')});
+byId('shade').addEventListener('click',closeDrawers);
+const swap=()=>{app.classList.toggle('mobile-native');byId('composer-name').textContent=app.classList.contains('mobile-native')?'ChatGPT composer':'HUD composer'};
+byId('switch-composer').addEventListener('click',swap);
+let start=null;byId('footer').addEventListener('touchstart',event=>{const t=event.changedTouches[0];start={x:t.clientX,y:t.clientY}},{passive:true});
+byId('footer').addEventListener('touchend',event=>{if(!start)return;const t=event.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;if(Math.abs(dx)>60&&Math.abs(dx)>1.3*Math.abs(dy))swap();start=null},{passive:true});
+document.querySelectorAll('.grip').forEach(grip=>{const side=grip.dataset.side;let origin=null;const range=byId(side+'Width');grip.addEventListener('pointerdown',e=>{origin={x:e.clientX,width:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--'+side))};grip.setPointerCapture(e.pointerId);e.preventDefault()});grip.addEventListener('pointermove',e=>{if(!origin)return;const d=(e.clientX-origin.x)*(side==='left'?1:-1);const width=Math.max(185,Math.min(385,origin.width+d));document.documentElement.style.setProperty('--'+side,width+'px');range.value=width});grip.addEventListener('pointerup',()=>origin=null);grip.addEventListener('pointercancel',()=>origin=null)});
+document.querySelectorAll('.send,.identity,.native-input button,.tools button').forEach(button=>button.addEventListener('click',()=>{button.title='Visual preview only — no live action'}));
+</script></body></html>
