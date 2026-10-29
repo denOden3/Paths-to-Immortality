@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.30
+// @version      0.8.31
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.30';
+  const VERSION = '0.8.31';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -400,7 +400,11 @@
     #paths-monkey-root .pm-bubble.pm-own.pm-selected{background:#634153}
     @media(max-width:600px){#paths-monkey-root .pm-bubble:not(.pm-narrator){max-width:92%}}
     #paths-monkey-root .pm-by{font-size:14px;line-height:1.4;margin-bottom:6px}
-    #paths-monkey-root .pm-message-head{align-items:baseline;gap:12px}
+    #paths-monkey-root .pm-message-head{align-items:center;gap:12px}
+    /* Use an explicit row: ChatGPT's global img{display:block} must not stack
+       the avatar above the character name in the HUD. */
+    #paths-monkey-root .pm-message-head .pm-by{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:nowrap;margin-bottom:0}
+    #paths-monkey-root .pm-message-head .pm-character-chat-avatar{display:block;margin-right:0;flex-shrink:0}
     #paths-monkey-root .pm-message-time{color:var(--pm-muted);font-size:12px;font-weight:400;white-space:nowrap;margin-left:auto}
     #paths-monkey-root .pm-chat-jump{display:flex;gap:4px;flex:0 0 auto}
     #paths-monkey-root .pm-chat-jump>.pm-btn{min-width:32px;min-height:32px;padding:3px 6px;font-size:18px;line-height:1;border-radius:6px}
