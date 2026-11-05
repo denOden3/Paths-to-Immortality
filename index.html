@@ -259,6 +259,13 @@ let db,user=null,room=null,members=[],subscription=null,poll=null,working=false,
 let editOriginal=null,webDeletedMessages=null;
 let roomMessages=[],selectedIds=new Set(),editId=null,chatMode='player',pendingMode=null,pendingText=null,pendingCharacter=null,currentView='welcome',toolsReturnView='welcome';
 let inviteCode=(new URLSearchParams(location.search)).get('invite')||'',invitePreview=null,activeCharacter='';
+const requestedRoomId=(new URLSearchParams(location.search)).get('room')||'';
+function setRoomAddress(id){
+ const params=new URLSearchParams(location.search);
+ if(id)params.set('room',id);else params.delete('room');
+ const query=params.toString();
+ history.replaceState(null,'',location.pathname+(query?'?'+query:'')+(location.hash||''));
+}
 const ownMember=()=>members.find(m=>m.user_id===user?.id);
 const ownCharacters=()=>{const m=ownMember();return (m?.allowed_characters?.length?m.allowed_characters:[m?.character_name]).filter(Boolean);};
 const clearInviteAddress=()=>{inviteCode='';try{history.replaceState(null,'',location.pathname+location.hash);}catch{}};
@@ -505,7 +512,7 @@ function renderRoomLog(items){
 }
 async function selectLoggedRoom(item){if(item.session_state==='ended')await openConcludedRoom(item.id);else await openRoom(item.id);}
 async function lobby(){
- endLive();room=null;show('lobby');$('networkStatus').textContent='Signed in';
+ endLive();room=null;setRoomAddress(null);show('lobby');$('networkStatus').textContent='Signed in';
  if(portalIdentity.is_admin){const {data,error}=await db.rpc('portal_room_log');if(error)throw error;renderRoomLog(data||[]);}
  else{const {data,error}=await db.from('rooms').select('id,title,session_state').order('created_at',{ascending:false});if(error)throw error;renderRoomLog(data||[]);}
 }
@@ -718,7 +725,12 @@ async function fetchMessages(){
   try{await refreshCharacterAvatars();}catch(e){console.warn('Avatar refresh:',e);}
   if(room!==active)return;
   refreshNarrationActivity(active).catch(console.warn);
-  const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;roomMessages=(data||[]).slice().reverse();if(chatPanelView==='inventory'&&previousNarration!==[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id)refreshChatPanel().catch(console.warn);
+  const previousLive=roomMessages.filter(message=>!message.deleted_at);
+  const previousNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator')?.id;
+  roomMessages=(data||[]).slice().reverse();
+  const newestNarration=[...roomMessages].reverse().find(message=>message.kind==='narrator'&&!message.deleted_at)?.id;
+  const newNarration=!!newestNarration&&newestNarration!==previousNarration;
+  if(chatPanelView==='inventory'&&previousNarration!==newestNarration)refreshChatPanel().catch(console.warn);
   const el=$('feed'),previousScroll=el.scrollTop,nearBottom=el.scrollHeight-el.clientHeight-el.scrollTop<135;
   el.replaceChildren();
   if(!roomMessages.some(m=>!m.deleted_at)){
@@ -726,7 +738,7 @@ async function fetchMessages(){
   }
   for(const m of roomMessages){
     if(m.deleted_at)continue;
-    const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'')+(m.kind==='ooc'?' ooc':'');
+    const box=document.createElement('div');box.className='bubble'+(m.sender_id===user.id?' mine':'')+(m.kind==='narrator'?' narrator':'')+(m.kind==='ooc'?' ooc':'');box.dataset.messageId=m.id;
     const by=document.createElement('div');by.className='by';
     const name=document.createElement('span');name.textContent=m.kind==='narrator'?'Narrator':m.kind==='ooc'?'💬 '+playerNameFor(m.sender_id):(m.character_name||characterNameFor(m.sender_id));
     const date=document.createElement('span');date.className='time';date.textContent=new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+(m.edited_at?' · edited':'');
@@ -745,12 +757,24 @@ async function fetchMessages(){
     const body=document.createElement('div');body.className='body';body.textContent=m.kind==='narrator'?m.body.replace(/\[PATHS_STATE\][\s\S]*?\[\/PATHS_STATE\]\s*$/,'').trim():m.body;
     box.append(by,body);installLongPress(box,m);el.append(box);
   }
-  updateSelection();if(nearBottom)el.scrollTop=el.scrollHeight;else el.scrollTop=previousScroll;
+  updateSelection();
+  // Long narrations should open at their beginning, never their last paragraph.
+  // A fresh page/room opens at the latest bubble's beginning. Ordinary polling
+  // preserves the reader's position unless they were already following chat.
+  const freshRoom=previousLive.length===0;
+  const anchor=newNarration&&!freshRoom
+    ?[...el.children].find(node=>node.dataset?.messageId===newestNarration)
+    :freshRoom?el.lastElementChild:null;
+  if(anchor){
+    const top=anchor.getBoundingClientRect().top-el.getBoundingClientRect().top;
+    el.scrollTop=Math.max(0,previousScroll+top-6);
+  }else if(nearBottom)el.scrollTop=el.scrollHeight;
+  else el.scrollTop=previousScroll;
 }
 async function openRoom(id,expectedGeneration=null){
- closeChatPanel();endLive();archiveReviewSnapshot=null;archiveReviewRoom=null;narratorPreparing=false;roomTyping=[];roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
+ closeChatPanel();endLive();roomMessages=[];archiveReviewSnapshot=null;archiveReviewRoom=null;narratorPreparing=false;roomTyping=[];roomConnection='CONNECTING';renderRoomStatus();room=id;const {data,error}=await db.from('rooms').select('id,title,session_state,session_generation').eq('id',id).maybeSingle();
  if(error)throw error;if(data&&portalIdentity.is_admin&&data.session_state==='ended'){await openConcludedRoom(id);return true;}if(!data||(!portalIdentity.is_admin&&(data.session_state!=='active'||(expectedGeneration&&data.session_generation!==expectedGeneration)))){returnToStart();return false;}
- activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');
+ activeGeneration=data.session_generation;$('roomTitle').textContent=data.title;$('inviteBox').classList.add('hidden');show('chat');setRoomAddress(id);
  try{$('msg').value=localStorage.getItem(draftKey())||'';setChatMode(localStorage.getItem(modeKey())||'player');}catch{setChatMode('player');}
  resizeComposer();await fetchMembers();if(room!==id)return false;await fetchMessages();
  subscription=db.channel('cloudveil-'+id).on('postgres_changes',{event:'*',schema:'public',table:'messages',filter:'room_id=eq.'+id},()=>{fetchMessages().catch(console.warn);}).subscribe(status=>{if(room!==id)return;roomConnection=status;renderRoomStatus();});
@@ -1059,7 +1083,7 @@ async function enterPortal(){if(!db)throw Error('The entrance is still loading.'
 function openCodeDialog(){renderPlayerSessions([]);invalidateScene();$('sessionCode').value=inviteCode||'';$('codeOverlay').classList.remove('hidden');document.body.classList.add('authOpen');$('sessionCode').focus();}
 function closeCodeDialog(){$('codeOverlay').classList.add('hidden');document.body.classList.remove('authOpen');}
 function returnToStart(options={}){
- endLive();room=null;activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';webTyping.stop();resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
+ endLive();room=null;setRoomAddress(null);activeGeneration=null;members=[];roomMessages=[];$('feed').replaceChildren();$('msg').value='';webTyping.stop();resizeComposer();pending=null;pendingMode=null;pendingText=null;pendingCharacter=null;
  try{if(options.clearResume===true)localStorage.removeItem('paths.activeSession');}catch{}closeHeaderMenu(false);closeCodeDialog();closeAuthDialog();clearInviteAddress();$('sessionCode').value='';invalidateScene();clear();show('welcome');
 }
 async function chooseAdministrator(){
@@ -1135,7 +1159,7 @@ $('menuBack').onclick=()=>safe(returnFromPage);
 $('menuSignout').onclick=()=>safe(async()=>{closeHeaderMenu(false);await portalSignout();});
 $('headerMenuOverlay').addEventListener('click',e=>{if(e.target===$('headerMenuOverlay'))closeHeaderMenu();});
 $('headerMenu').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const buttons=[...$('headerMenu').querySelectorAll('button')].filter(x=>!x.disabled&&!x.classList.contains('hidden'));if(!buttons.length){e.preventDefault();return;}const first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
-async function portalSignout(){endLive();++playerSessionsRequest;++sidebarRoomsRequest;sidebarRoomsLoadedFor=null;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;syncHeaderAuth();room=null;members=[];portalIdentity={is_admin:false};registry=[];sidebarRoomSignin();$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
+async function portalSignout(){endLive();setRoomAddress(null);++playerSessionsRequest;++sidebarRoomsRequest;sidebarRoomsLoadedFor=null;renderPlayerSessions([]);try{localStorage.removeItem('paths.activeSession');}catch{}if(user){const {error}=await db.auth.signOut();if(error)throw error;}user=null;syncHeaderAuth();room=null;members=[];portalIdentity={is_admin:false};registry=[];sidebarRoomSignin();$('registeredPlayers').replaceChildren();$('rosterSummary').textContent='';clearInviteAddress();$('sessionCode').value='';invalidateScene();show('welcome');}
 $('sessionCode').addEventListener('input',invalidateScene);
 $('generateScene').onclick=()=>safe(generateSession);$('sessionCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();safe(generateSession);}});
 $('portalNav').addEventListener('click',()=>{if(matchMedia('(max-width:760px)').matches){document.querySelector('.app').classList.remove('sidebarOpen');$('pti-shade').hidden=true;$('pti-nav-toggle').setAttribute('aria-expanded','false');}});
@@ -1177,7 +1201,13 @@ async function boot(){try{
  if(sessionStorage.getItem('paths.adminAuth')){
     sessionStorage.removeItem('paths.adminAuth');
     await finishAdministratorSignIn();
-  }else if(user&&!portalIdentity.is_admin){await resumeOngoingSession();}
+  }
+  let openedDirectRoom=false;
+  if(user&&/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(requestedRoomId)){
+    try{openedDirectRoom=await openRoom(requestedRoomId);}
+    catch(error){console.warn('Room shortcut unavailable',error);notice('Could not open this room. Check your membership and try Rooms again.','error');}
+  }
+  if(!openedDirectRoom&&user&&!portalIdentity.is_admin&&!requestedRoomId)await resumeOngoingSession();
   const shelf=document.getElementById('pti-rooms-shelf');
   if(sessionStorage.getItem('paths.sidebarRoomsAfterAuth')){
     sessionStorage.removeItem('paths.sidebarRoomsAfterAuth');
