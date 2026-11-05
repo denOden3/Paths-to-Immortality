@@ -1411,7 +1411,7 @@ function createTypingNotifier(send,context){
     const feed=$('feed'),el=$('feed-messages');
     const room=selectedRoom?.id||null,sameRoom=!!room&&chatScrollRenderedRoom===room;
     const prevTop=feed.scrollTop,nearBottom=feed.scrollHeight-feed.clientHeight-prevTop<70;
-    const oldIds=new Set([...el.querySelectorAll('.pm-bubble[data-message-id]')].map(node=>node.dataset.messageId));
+    const oldIds=new Set([...el.querySelectorAll('.pm-bubble[data-scroll-id]')].map(node=>node.dataset.scrollId));
     const latestNarration=[...messages].reverse().find(msg=>msg.kind==='narrator'&&!msg.deleted_at)?.id;
     const newNarration=!!latestNarration&&oldIds.size>0&&!oldIds.has(latestNarration);
     const freshRoom=!sameRoom||oldIds.size===0;
@@ -1420,7 +1420,7 @@ function createTypingNotifier(send,context){
     if (!messages.some(msg=>!msg.deleted_at)) {el.textContent='The hall is quiet. Nothing posted yet.';updateMessageSelection();updateChatScrollbar();return;}
     for (const msg of messages) {
       if(msg.deleted_at)continue;
-      const bubble=document.createElement('div');bubble.dataset.messageId=msg.id;
+      const bubble=document.createElement('div');bubble.dataset.scrollId=msg.id;
       bubble.className='pm-bubble '+messageAlignmentClass(msg)+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
