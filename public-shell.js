@@ -34,25 +34,83 @@ if(shelf){
     host.replaceChildren(categories);
   }
 }
-// Sidebar room shortcuts appear beneath Home throughout the public Codex.
-// Only the authenticated home app fetches room names; static Codex pages link
-// back to it instead of caching/displaying private room data.
+// Room shortcuts work on every page. Static Codex pages authenticate against the
+// existing Paths Web session on this origin, without storing room names publicly.
 const home=[...side.querySelectorAll('nav>a')].find(a=>a.textContent.trim()==='Home');
 if(home&&!side.querySelector('#pti-rooms-shelf')){
  const rooms=document.createElement('details');rooms.id='pti-rooms-shelf';
  rooms.className='ptiRoomsShelf';
  const summary=document.createElement('summary');summary.textContent='Rooms';summary.setAttribute('aria-label','Expand your active rooms');
  const contents=document.createElement('div');contents.id='pti-rooms-list';contents.setAttribute('aria-live','polite');
- if(document.getElementById('roomList')){
-  const status=document.createElement('p');status.className='ptiRoomsStatus';status.textContent='Open to load your active rooms.';
-  contents.append(status);
- }else{
-  const link=document.createElement('a');link.href=location.pathname.includes('/codex/')?'../index.html#rooms':'index.html#rooms';
-  link.textContent='Open your rooms on Home';contents.append(link);
- }
+ const isHome=!!document.getElementById('roomList');
+ const homeHref=location.pathname.includes('/codex/')?'../index.html':'index.html';
+ const status=(message)=>{contents.replaceChildren();const p=document.createElement('p');p.className='ptiRoomsStatus';p.textContent=message;contents.append(p);};
+ const homeLink=(message)=>{const a=document.createElement('a');a.href=homeHref+'#rooms';a.textContent=message;contents.append(a);};
+ if(isHome)status('Open to load your active rooms.');
+ else status('Open to load your active rooms.');
  rooms.append(summary,contents);home.insertAdjacentElement('afterend',rooms);
- rooms.addEventListener('toggle',()=>{if(rooms.open)document.dispatchEvent(new CustomEvent('pti:rooms-open'));});
- if(location.hash==='#rooms'){rooms.open=true;if(document.getElementById('roomList'))history.replaceState(null,'',location.pathname+location.search);}
+ let loadingGeneration=0,clientPromise=null;
+ async function loadStaticRooms(){
+  if(isHome||!rooms.open)return;
+  const generation=++loadingGeneration;status('Loading your active rooms…');
+  try{
+   if(!clientPromise)clientPromise=import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm').then(mod=>
+    mod.createClient('https://fhjsoldgtqfizkwpehud.supabase.co','sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t',
+     {auth:{persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}}));
+   const db=await clientPromise;
+   const {data:auth,error:authError}=await db.auth.getUser();
+   if(authError||!auth?.user){
+    if(generation!==loadingGeneration)return;
+    status('Sign in on Paths Web to see your rooms.');homeLink('Open Paths Web to sign in');return;
+   }
+   const context=await db.rpc('portal_context');
+   if(context.error)throw context.error;
+   let items=[];
+   if(context.data?.is_admin){
+    const result=await db.rpc('portal_room_log');
+    if(result.error)throw result.error;
+    items=(result.data||[]).filter(item=>item.session_state==='active');
+   }else{
+    const membership=await db.from('room_members').select('room_id').eq('user_id',auth.user.id);
+    if(membership.error)throw membership.error;
+    const ids=[...new Set((membership.data||[]).map(item=>item.room_id))];
+    if(ids.length){
+     const found=await db.from('rooms').select('id,title,session_state,session_generation')
+       .in('id',ids).eq('session_state','active').order('created_at',{ascending:false});
+     if(found.error)throw found.error;
+     items=found.data||[];
+    }
+   }
+   if(generation!==loadingGeneration||!rooms.open)return;
+   if(!items.length){status('No active rooms for this account.');return;}
+   status(items.length+' active room'+(items.length===1?'':'s'));
+   for(const item of items){
+    if(!/^[0-9a-f-]{36}$/i.test(item.id||''))continue;
+    const link=document.createElement('a');
+    link.className='ptiRoomButton';
+    link.href=homeHref+'?room='+encodeURIComponent(item.id);
+    link.title='Open '+item.title+' in the chatroom';
+    const dot=document.createElement('span');dot.className='ptiRoomDot';dot.textContent='●';
+    const name=document.createElement('span');name.className='ptiRoomName';name.textContent=item.title;
+    link.append(dot,name);contents.append(link);
+   }
+  }catch(error){
+   if(generation!==loadingGeneration)return;
+   console.warn('Could not load private room shortcuts',error);
+   status('Could not load rooms here.');homeLink('Open rooms on Paths Web');
+   // An unavailable CDN or expired session must not block public Codex browsing.
+  }
+ }
+ rooms.addEventListener('toggle',()=>{
+  if(!rooms.open){loadingGeneration++;return;}
+  if(isHome)document.dispatchEvent(new CustomEvent('pti:rooms-open'));
+  else loadStaticRooms().catch(console.warn);
+ });
+ if(location.hash==='#rooms'){
+  rooms.open=true;
+  if(isHome)history.replaceState(null,'',location.pathname+location.search);
+  else loadStaticRooms().catch(console.warn);
+ }
 }
 
 // Character dossier tabs — content stays directly beneath the buttons.
