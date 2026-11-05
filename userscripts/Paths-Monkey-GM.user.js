@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Paths of Immortality HUD
 // @namespace    paths-to-immortality.monkey
-// @version      0.8.31
+// @version      0.8.32
 // @description  Separate Cloudveil GM HUD around ChatGPT; post Xiao Lan's actions to Supabase, review room messages and prepare a short narrator command.
 // @author       Paths to Immortality
 // @match        https://chatgpt.com/*
@@ -24,7 +24,7 @@
 
   if (window.top !== window.self || document.getElementById('paths-monkey-root')) return;
 
-  const VERSION = '0.8.31';
+  const VERSION = '0.8.32';
   const SUPABASE = 'https://fhjsoldgtqfizkwpehud.supabase.co';
   // This is a publishable browser key, NOT a secret/service-role credential.
   const PUBLIC_KEY = 'sb_publishable_hWZGWQyF7xNe90x8kSFESw_2k4AHU5t';
@@ -845,29 +845,75 @@
       });
     });
   }
-  async function refreshAuth() {
-    if (!account?.refresh_token) throw new Error('Monkey needs to reconnect.');
-    if (!refreshPromise) refreshPromise = (async () => {
-      const r = await http('POST', '/auth/v1/token?grant_type=refresh_token', {body:{refresh_token:account.refresh_token}});
-      if (!r.access_token || !r.refresh_token) throw new Error('Could not renew Monkey session.');
-      account = {access_token:r.access_token, refresh_token:r.refresh_token, expires_at:Date.now() + (r.expires_in || 3600) * 1000, user_id:r.user?.id || account.user_id};
-      put('account', account);
-      return account.access_token;
-    })().finally(() => { refreshPromise = null; });
+  // GM storage is shared between HUD tabs, while each tab's JavaScript memory
+  // is not. Always re-read the newest tokens before authenticated requests.
+  function syncSavedMonkeyAccount(){
+    const saved=get('account',null);
+    if(!saved){if(account){account=null;paired=false;}return;}
+    if(!account||account.user_id!==saved.user_id||
+      account.access_token!==saved.access_token||account.refresh_token!==saved.refresh_token){
+      if(!account||account.user_id!==saved.user_id)paired=false;
+      account=saved;
+    }
+  }
+  async function refreshAuth({rejectedToken=null}={}) {
+    syncSavedMonkeyAccount();
+    if(!account?.refresh_token)throw new Error('Monkey guest session is missing. Open ⚙ Connections to reconnect.');
+    if(!refreshPromise)refreshPromise=(async()=>{
+      const expectedUser=account.user_id;
+      const renew=async()=>{
+        syncSavedMonkeyAccount();
+        if(!account||account.user_id!==expectedUser)
+          throw new Error('Monkey identity changed in another tab. Reload this HUD.');
+        // Another tab may have refreshed while this tab was waiting for the lock.
+        if(account.expires_at&&Date.now()<account.expires_at-90000&&
+          (!rejectedToken||account.access_token!==rejectedToken))
+          return account.access_token;
+        const oldRefresh=account.refresh_token;
+        try{
+          const r=await http('POST','/auth/v1/token?grant_type=refresh_token',
+            {body:{refresh_token:oldRefresh}});
+          if(!r.access_token||!r.refresh_token)throw new Error('Could not renew Monkey session.');
+          const newest=get('account',null);
+          if(!newest||newest.user_id!==expectedUser)
+            throw new Error('Monkey identity changed during renewal. Reload this HUD.');
+          if(newest.refresh_token!==oldRefresh){account=newest;return account.access_token;}
+          account={access_token:r.access_token,refresh_token:r.refresh_token,
+            expires_at:Date.now()+(r.expires_in||3600)*1000,user_id:r.user?.id||expectedUser};
+          put('account',account);
+          return account.access_token;
+        }catch(error){
+          // If a different tab won the race, use its fresh credentials instead
+          // of endlessly retrying a single-use refresh token.
+          const newest=get('account',null);
+          if(newest?.user_id===expectedUser&&newest.refresh_token!==oldRefresh){
+            account=newest;return account.access_token;
+          }
+          if(/Invalid Refresh Token|Already Used|Refresh Token Not Found/i.test(error.message||''))
+            throw new Error('Monkey session expired. Close other ChatGPT tabs, then open ⚙ Connections → Forget Monkey guest identity and pair again.');
+          throw error;
+        }
+      };
+      // The Web Locks API serializes renewal across ChatGPT tabs on this origin.
+      if(typeof navigator!=='undefined'&&navigator.locks?.request)
+        return navigator.locks.request('paths-monkey-auth-refresh',renew);
+      return renew(); // Best-effort fallback for browsers without Web Locks.
+    })().finally(()=>{refreshPromise=null;});
     return refreshPromise;
   }
   async function validToken() {
-    if (!account) throw new Error('Open ⚙ and create a Monkey guest identity first.');
-    if (!account.expires_at || Date.now() > account.expires_at - 90000) return refreshAuth();
+    syncSavedMonkeyAccount();
+    if(!account)throw new Error('Open ⚙ and create a Monkey guest identity first.');
+    if(!account.expires_at||Date.now()>account.expires_at-90000)return refreshAuth();
     return account.access_token;
   }
-  async function authed(method, path, options = {}) {
-    let token = await validToken();
-    try { return await http(method, path, {...options, token}); }
-    catch (e) {
-      if (e.status !== 401) throw e;
-      token = await refreshAuth();
-      return http(method, path, {...options, token});
+  async function authed(method,path,options={}){
+    let token=await validToken();
+    try{return await http(method,path,{...options,token});}
+    catch(error){
+      if(error.status!==401)throw error;
+      token=await refreshAuth({rejectedToken:token});
+      return http(method,path,{...options,token});
     }
   }
   async function refreshPairing(){
@@ -1093,6 +1139,7 @@
     await loadRooms();await refreshScene();feedback(action==='reset'?'Session reset. Open Edit session details to prepare it again, then issue fresh invitations.':action==='end'?'Session ended. Players return to the starting page.':'Player removed.');
   }
   async function makeIdentity() {
+    syncSavedMonkeyAccount();
     if (account) throw new Error('Monkey already has an identity. Use it or reset explicitly.');
     const r = await http('POST','/auth/v1/signup',{body:{data:{app:'Paths Monkey'},gotrue_meta_security:{}}});
     if (!r.access_token || !r.refresh_token || !r.user?.id) throw new Error('Supabase did not return an anonymous session. Enable Anonymous Sign-Ins first.');
@@ -1176,6 +1223,7 @@
     feedback('');
     rememberHudPage(previousPage);setInfoVisible(false);
     if(!$('rooms-page').classList.contains('pm-hide'))closeRoomPage();
+    requestAnimationFrame(()=>{if(selectedRoom?.id===info.id)showLatestHudBubble();});
   }
   async function refreshScene({refreshSidebar=true}={}) {
     if (!selectedRoom || !account) return;
@@ -1363,12 +1411,16 @@ function createTypingNotifier(send,context){
     const feed=$('feed'),el=$('feed-messages');
     const room=selectedRoom?.id||null,sameRoom=!!room&&chatScrollRenderedRoom===room;
     const prevTop=feed.scrollTop,nearBottom=feed.scrollHeight-feed.clientHeight-prevTop<70;
+    const oldIds=new Set([...el.querySelectorAll('.pm-bubble[data-message-id]')].map(node=>node.dataset.messageId));
+    const latestNarration=[...messages].reverse().find(msg=>msg.kind==='narrator'&&!msg.deleted_at)?.id;
+    const newNarration=!!latestNarration&&oldIds.size>0&&!oldIds.has(latestNarration);
+    const freshRoom=!sameRoom||oldIds.size===0;
     el.replaceChildren();chatScrollRenderedRoom=room;
     if (!selectedRoom) {el.textContent='Connect to a room to see its messages.';updateChatScrollbar();return;}
     if (!messages.some(msg=>!msg.deleted_at)) {el.textContent='The hall is quiet. Nothing posted yet.';updateMessageSelection();updateChatScrollbar();return;}
     for (const msg of messages) {
       if(msg.deleted_at)continue;
-      const bubble=document.createElement('div');
+      const bubble=document.createElement('div');bubble.dataset.messageId=msg.id;
       bubble.className='pm-bubble '+messageAlignmentClass(msg)+(msg.kind==='ooc'?' pm-oocBubble':'');
       const by=document.createElement('div');by.className='pm-by';
       const character=msg.character_name||members.find(x=>x.user_id===msg.sender_id)?.character_name || 'Player';
@@ -1390,9 +1442,22 @@ function createTypingNotifier(send,context){
       bubble.append(heading,content);installMessageLongPress(bubble,msg);el.append(bubble);
     }
     updateMessageSelection();
-    // Preserve the reader's place when messages are refreshed. Auto-follow
-    // the latest only if they were already near the bottom, or entered a room.
-    feed.scrollTop=!sameRoom||nearBottom?feed.scrollHeight:prevTop;
+    // Entering a room or reloading the HUD starts at the TOP of the latest
+    // bubble. New narrations also open at their beginning instead of their end.
+    const target=newNarration&&!freshRoom
+      ?[...el.children].find(node=>node.dataset?.messageId===latestNarration)
+      :freshRoom?el.lastElementChild:null;
+    if(target){
+      const top=target.getBoundingClientRect().top-feed.getBoundingClientRect().top;
+      feed.scrollTop=Math.max(0,prevTop+top-6);
+    }else if(nearBottom)feed.scrollTop=feed.scrollHeight;
+    else feed.scrollTop=prevTop;
+    updateChatScrollbar();
+  }
+  function showLatestHudBubble(){
+    const feed=$('feed'),last=$('feed-messages').querySelector('.pm-bubble:last-child');
+    if(!last)return;
+    feed.scrollTop=Math.max(0,feed.scrollTop+last.getBoundingClientRect().top-feed.getBoundingClientRect().top-6);
     updateChatScrollbar();
   }
   let chatScrollRenderedRoom=null;
