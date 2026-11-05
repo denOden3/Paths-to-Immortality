@@ -29,7 +29,7 @@ assert.equal(address,location.pathname);
 
 const scrollWeb=excerpt(web,'  const freshRoom=previousLive.length===0;','  else el.scrollTop=previousScroll;');
 const scrollHud=excerpt(hud,'    const target=newNarration&&!freshRoom','    else feed.scrollTop=prevTop;');
-const bubble=(id,top)=>({dataset:{messageId:id},getBoundingClientRect:()=>({top})});
+const bubble=(id,top)=>({dataset:{messageId:id,scrollId:id},getBoundingClientRect:()=>({top})});
 const children=[bubble('old',35),bubble('narrator',460),bubble('last',1450)];
 const el={children,lastElementChild:children[2],scrollTop:0,scrollHeight:2000,getBoundingClientRect:()=>({top:0})};
 const showWeb=new Function('el','previousLive','newNarration','newestNarration','previousScroll','nearBottom',scrollWeb+'\nreturn el.scrollTop;');
