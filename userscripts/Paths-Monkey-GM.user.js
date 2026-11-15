@@ -754,7 +754,9 @@
   $('forget').before($('legacy-invite')); // Legacy joining belongs in Settings, not a current room’s tools.
 
   function feedback(message, bad = false) {
-    $('feedback').textContent = message;
+    // Keep routine success/instruction messages out of the compact chat composer.
+    // Errors still appear here; the administration sidebar retains full feedback.
+    $('feedback').textContent = bad ? message : '';
     $('feedback').style.color = bad ? '#ffbbb2' : '';
     $('admin-feedback').textContent=message;$('admin-feedback').style.color=bad?'#ffbbb2':'';
   }
