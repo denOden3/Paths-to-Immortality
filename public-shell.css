@@ -520,3 +520,49 @@
 .ptiRelationNew{border:1px solid #8d6c78;border-radius:12px;padding:15px}
 .ptiRelationsList summary:focus-visible,.ptiRelationsList button:focus-visible{outline:2px solid #f1be7a;outline-offset:2px}
 @media(max-width:600px){.ptiRelationGroupBody{padding:0 8px 8px}.ptiRelationPersonSummary{gap:8px;padding:9px}.ptiRelationDetails{padding:12px}}
+
+
+/* Scene-aware sidebar NPC roster. Visible only inside an active room. */
+.ptiSidebar .ptiNpcShelf>summary{font-weight:700;color:#f6cf9d;line-height:1.45}
+.ptiSidebar .ptiNpcShelf[open]>summary{background:#3c2b36}
+.ptiSidebar .ptiNpcShelf .ptiNpcCount{float:none;display:inline-flex;justify-content:center;align-items:center;
+  min-width:22px;height:22px;margin-left:5px;padding:1px 6px;border-radius:50%;
+  background:#504053;border:1px solid #907487;font-size:11px;color:#f8e6d9;vertical-align:middle}
+.ptiSidebar .ptiNpcShelf>div.ptiNpcInterior{
+ margin:5px 0 9px 8px;padding:5px 4px 10px 11px;border-left:1px solid #705867;min-width:0
+}
+.ptiSidebar .ptiNpcPlace{font-size:11px;font-weight:700;color:#f0c990;line-height:1.55;margin:2px 6px 10px;overflow-wrap:anywhere}
+.ptiSidebar .ptiNpcList{display:grid;gap:7px;min-width:0}
+.ptiSidebar .ptiNpcItem{min-width:0;border:1px solid #715568;border-radius:11px;background:#1c1821;overflow:hidden}
+.ptiSidebar .ptiNpcItem>summary.ptiNpcItemSummary{display:flex;align-items:center;gap:9px;padding:9px 8px;min-height:51px;list-style:none}
+.ptiSidebar .ptiNpcItemSummary::-webkit-details-marker{display:none}
+.ptiSidebar .ptiNpcItemSummary::after{display:none;content:none}
+.ptiSidebar .ptiNpcItemSummary:hover{background:#48313f}
+.ptiSidebar .ptiNpcAvatar{flex:0 0 29px;width:29px;height:29px;border-radius:50%;
+ display:grid;place-items:center;background:#4a4055;border:1px solid #836e83;color:#e8d3e9;font-size:14px;overflow:hidden}
+.ptiSidebar .ptiNpcAvatar img{width:100%;height:100%;object-fit:cover}
+.ptiSidebar .ptiNpcName{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px;color:#e6bbf3;line-height:1.35}
+.ptiSidebar .ptiNpcArrow{font-size:16px;color:#d0b5ca;transition:transform .14s}
+.ptiSidebar .ptiNpcItem[open] .ptiNpcArrow{transform:rotate(180deg)}
+.ptiSidebar .ptiNpcItem>div.ptiNpcDetails{margin:0;padding:10px 10px 12px;border:0;border-top:1px solid #634f61;background:#27212e}
+.ptiSidebar .ptiNpcDescription{margin:0 0 6px;color:#d7c8d3;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.ptiSidebar .ptiNpcLink{display:inline-block;padding:6px 0;font-size:11px;color:#f2ca96}
+.ptiSidebar .ptiNpcStatus,.ptiSidebar .ptiNpcEmpty{font-size:11px;line-height:1.5;margin:8px 5px;color:#ccb7c4}
+.ptiSidebar .ptiNpcAdd,.ptiSidebar .ptiNpcEdit,.ptiSidebar .ptiNpcForm button{
+ border:1px solid #b58b88;border-radius:7px;background:#45303e;color:#ffdbb2;
+ cursor:pointer;font-weight:700;padding:6px 8px;font-size:12px
+}
+.ptiSidebar .ptiNpcAdd{margin:10px 3px 0;max-width:calc(100% - 6px)}
+.ptiSidebar .ptiNpcEdit{margin-top:5px;width:30px;height:30px;border-radius:50%;font-size:17px}
+.ptiSidebar .ptiNpcAdd:hover,.ptiSidebar .ptiNpcEdit:hover,.ptiSidebar .ptiNpcForm button:hover{background:#694257}
+.ptiSidebar .ptiNpcAdd.hidden{display:none!important}
+.ptiSidebar #pti-npc-editor{margin:0;border:0;padding:0}
+.ptiSidebar .ptiNpcForm{padding:10px 8px;border-radius:10px;border:1px solid #927084;background:#2f2532;margin:8px 0}
+.ptiSidebar .ptiNpcField{display:block;margin:7px 0;color:#f1d8bd;font-size:11px;font-weight:700;line-height:1.5}
+.ptiSidebar .ptiNpcField input,.ptiSidebar .ptiNpcField textarea{margin:4px 0 0;
+ width:100%;min-width:0;box-sizing:border-box;background:#16131b;color:#fff0dc;
+ border:1px solid #8c6a85;border-radius:7px;padding:7px 8px;font:12px/1.45 system-ui}
+.ptiSidebar .ptiNpcField textarea{min-height:88px;resize:vertical}
+.ptiSidebar .ptiNpcFormActions{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:7px}
+.ptiSidebar .ptiNpcForm .ptiNpcDepart{border-color:#b47172;color:#ffd3c9}
+.ptiSidebar .ptiNpcFormStatus{font-size:11px;color:#ffd6a6;margin:8px 0 0;overflow-wrap:anywhere}
