@@ -567,7 +567,8 @@ function npcEditForm(info,host){
  };
  host.append(form);
 }
-async function refreshNpcSidebar(){
+async function refreshNpcSidebar(force=false){
+ if(!force&&(npcAdding||npcEditorId))return; // Don't erase an unsaved NPC edit during polling.
  const shelf=npcShelf();
  if(!shelf||shelf.classList.contains('hidden')||!shelf.open||!room||currentView!=='chat')return;
  const id=room,character=activeCharacter,seq=++npcSerial;
@@ -641,7 +642,7 @@ async function refreshNpcSidebar(){
 }
 $('pti-npc-add').onclick=()=>{
  npcAdding=!npcAdding;npcEditorId=null;
- refreshNpcSidebar().catch(console.warn);
+ refreshNpcSidebar(true).catch(console.warn);
 };
 $('pti-npcs-shelf').addEventListener('toggle',()=>{
  if($('pti-npcs-shelf').open)refreshNpcSidebar().catch(console.warn);
