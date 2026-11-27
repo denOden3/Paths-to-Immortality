@@ -40,15 +40,144 @@ button,textarea,input{font:inherit}button{cursor:pointer;color:inherit}button:fo
 .shade{display:none}.note{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);pointer-events:none;opacity:0}
 @media(max-width:1050px){.ranges{display:none}.gate{grid-template-columns:minmax(156px,var(--left)) minmax(0,1fr) minmax(156px,var(--right))}.wing-content{padding:11px 9px}.bubble{font-size:14px;padding:13px}}
 @media(max-width:740px){.app{min-height:0}.header{flex-basis:42px;padding:0 9px;font-size:13px}.preview-tag{font-size:9px;letter-spacing:0}.gate{display:block;position:relative}.wing{position:absolute;top:0;bottom:0;width:min(290px,84vw);z-index:5;box-shadow:0 0 24px #000a;transition:transform .2s ease}.left{left:0;transform:translateX(-105%)}.right{right:0;transform:translateX(105%)}.app.open-left .left,.app.open-right .right{transform:none}.grip{display:none}.shade{position:absolute;inset:0;background:#08040a99;z-index:4}.app.open-left .shade,.app.open-right .shade{display:block}.stage{height:100%}.room-head{padding:0 8px;gap:6px;font-size:12px;flex-basis:44px}.mobile-open{display:inline-block}.chat{padding:9px}.bubble{font-size:13px;padding:12px 13px;margin:12px auto}.bubble.player{max-width:87%}.web-compose{padding:5px 7px 9px}.identity{font-size:11px;padding:0 5px}.send{padding:0 9px}.tools button{font-size:11px}}
+
+/* Populated Gate Web panel prototype: distinct profile, world and calendar views. */
+.panel-view[hidden],.panel-view [hidden]{display:none!important}
+.wing-content{overscroll-behavior:contain;scrollbar-color:#735464 #1b171e;scrollbar-width:thin}
+.wing-heading{display:flex;gap:9px;align-items:start;justify-content:space-between}
+.sample-tag{border-radius:5px;border:1px solid #755b62;background:#342632;color:#e8c091;padding:3px 5px;font-size:9px;letter-spacing:.05em;flex-shrink:0}
+.section-label{font-size:10px;font-weight:800;letter-spacing:.11em;color:#e7b87e;margin-bottom:9px}
+.space-top{margin-top:19px}
+.panel-view{display:grid;gap:9px;align-content:start;min-width:0;padding-bottom:24px}
+.panel-view p{font-size:12px;line-height:1.65;margin:5px 0;color:#ddc9d1;overflow-wrap:anywhere}
+.panel-view strong{line-height:1.35}
+.flex-one{flex:1;min-width:0}
+.character-feature{display:flex;align-items:center;gap:10px;padding:12px 10px;background:#382a37;border:1px solid #826172;border-radius:10px}
+.character-feature .flex-one{display:flex;flex-direction:column;gap:5px}
+.character-feature strong{font-size:14px;color:#ffe3c0}
+.small-muted,.character-card small,.npc-card small{display:block;font-size:10px;color:#c9b5bd;line-height:1.45}
+.tiny-pill{font-size:10px;padding:3px 7px;border-radius:16px;align-self:flex-start;background:#574035;border:1px solid #977353;color:#ffe0ba}
+.portrait-coin{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:50%;font-size:22px;background:#624454;border:1.5px solid #c8a37d;color:#fce9d7}
+.portrait-coin.small{flex-basis:32px;width:32px;height:32px;font-size:15px}
+.portrait-coin.violet{background:#45415c;border-color:#a29ace}
+.character-card,.npc-card,.fold{border-radius:10px;border:1px solid #664e5c;overflow:hidden;background:#211a24;min-width:0}
+.character-card>summary,.npc-card>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;min-height:58px;padding:9px 10px}
+.character-card>summary::-webkit-details-marker,.npc-card>summary::-webkit-details-marker,.fold>summary::-webkit-details-marker,.item-fold>summary::-webkit-details-marker{display:none}
+.character-card>summary:hover,.npc-card>summary:hover,.fold>summary:hover,.item-fold>summary:hover{background:#46313e}
+.character-card>summary strong,.npc-card>summary strong{display:block;font-size:12px;color:#f5dbc6}
+.chevron{margin-left:auto;color:#e3b985;font-size:17px;line-height:1;transition:transform .17s}
+details[open]>summary>.chevron{transform:rotate(180deg)}
+.fold-body{border-top:1px solid #664e5c;padding:10px 10px 12px;background:#2c222e;min-width:0}
+.fold-body p{margin:4px 0 9px}
+.detail-kv{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:8px 0;font-size:11px}
+.detail-kv span{color:#cdb7c2;flex:0 1 45%}
+.detail-kv strong{text-align:right;color:#f5e1ce;font-size:11px;overflow-wrap:anywhere}
+.subtle-link{display:inline-block;margin-top:6px;color:#f0c38c;font-size:11px;text-underline-offset:2px}
+.quiet-note{color:#bca9b4!important;font-size:10px!important;margin-top:8px!important;line-height:1.55!important}
+.intro-small{font-size:11px!important}
+.fold>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;padding:11px 10px;font-size:12px;font-weight:750;color:#f0d0a4;cursor:pointer;min-height:43px}
+.fold .count,.panel-heading .count{border:1px solid #7b6370;border-radius:20px;padding:2px 7px;font-size:10px;color:#ddc7d0;min-width:22px;text-align:center}
+.item-fold{border-radius:7px;border:1px solid #68515c;margin:6px 0;background:#1d1821;overflow:hidden}
+.item-fold summary{display:flex;justify-content:space-between;gap:8px;padding:10px 9px;cursor:pointer;list-style:none;font-size:11px;color:#f2d2a8}
+.item-fold summary b{white-space:nowrap;color:#eab780}
+.item-fold p{padding:8px 9px 11px;border-top:1px solid #5e4a56;font-size:11px;margin:0}
+.item-fold p span{color:#e7bd88}
+.muted-text{color:#c6aebd!important}
+.small-card{padding:11px;background:#2a222d;border:1px solid #715769;border-radius:10px}
+.small-card.accent{border-left:3px solid #d7ab71}
+.card-title{font-size:12px;font-weight:750;color:#f0c38b;margin-bottom:7px}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;gap:7px;font-size:11px;margin:13px 0;color:#f2e0d5}
+.toggle-row span{display:flex;flex-direction:column;gap:3px}
+.toggle-row small{font-size:10px;line-height:1.45;color:#c9b2ba}
+.toggle-row input{accent-color:#d6a274;flex:0 0 auto;width:16px;height:16px}
+.placeholder-actions{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0}
+.placeholder-actions button{padding:7px;border:1px solid #70535e;background:#392832;color:#d2b4b6;border-radius:7px;font-size:10px;opacity:.65;cursor:not-allowed}
+.micro-status{font-size:10px!important;color:#f0c58c!important}
+.world-location{display:flex;gap:11px;align-items:center;border:1px solid #aa815d;background:linear-gradient(140deg,#3d2c30,#2a222e);padding:12px 10px;border-radius:10px}
+.world-symbol{font-size:24px;color:#f0bf7d}
+.world-location div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.world-location strong{font-size:14px;color:#ffe0b7}
+.world-location span:not(.world-symbol){font-size:10px;color:#dac6bc;line-height:1.45}
+.world-ambient{font-style:italic}
+.panel-divider{height:1px;background:#5c4754;margin:10px 0 5px}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:7px;font-size:12px;font-weight:750;color:#f2c184;margin:2px 0 4px}
+.scene-focus{display:grid;grid-template-columns:29px 1fr;gap:0 8px;background:#372933;border:1px solid #7b5b63;border-radius:9px;padding:11px}
+.scene-mark{font-size:20px;color:#ecc48f;grid-row:span 2}
+.scene-focus strong{font-size:12px;color:#f3dbc5}
+.scene-focus small{font-size:10px;color:#cfb7c0}
+.tight-list{margin:4px 0 2px;padding-left:18px;font-size:11px;line-height:1.7;color:#e2c9c8}
+.date-card{display:flex;flex-direction:column;gap:6px;border:1px solid #947053;border-radius:10px;padding:13px 12px;background:linear-gradient(145deg,#422f34,#261d29)}
+.date-card>span{font-size:10px;letter-spacing:.15em;color:#f0c38a}
+.date-card strong{font-size:18px;color:#ffe0b6}
+.date-card small{font-size:10px;color:#dec7c2;line-height:1.5}
+.time-line{margin-left:8px;padding-left:12px;border-left:1px solid #886579;display:grid;gap:15px;margin-top:5px;margin-bottom:10px}
+.time-event{position:relative;display:flex;align-items:start;gap:8px}
+.event-dot{position:absolute;top:4px;left:-17px;width:9px;height:9px;border-radius:50%;border:2px solid #ddaa78;background:#794e58}
+.event-dot.gold{background:#edbe82}
+.event-dot.hollow{background:#211a24}
+.time-event strong{font-size:11px;color:#f4d5aa;display:block}
+.time-event small{font-size:10px;color:#d3b7be;line-height:1.45;display:block;margin-top:3px}
+.panel-view summary:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+@media(max-width:740px){.panel-view{gap:10px}.wing-content{padding:13px 11px}.wing-heading{margin-bottom:3px}.small-card,.fold-body{padding:11px}}
+
 </style>
 </head>
 <body>
 <div class="app" id="app">
-<header class="header"><span class="logo">☯</span><span>Paths to Immortality</span><span class="grow"></span><div class="ranges"><label for="leftWidth">Left width</label><input id="leftWidth" type="range" min="185" max="385" value="286"><label for="rightWidth">Right width</label><input id="rightWidth" type="range" min="185" max="385" value="268"></div><span class="preview-tag">GATE WEB · PREVIEW</span></header>
+<header class="header"><span class="logo">☯</span><span>Paths to Immortality</span><span class="grow"></span><div class="ranges"><label for="leftWidth">Left width</label><input id="leftWidth" type="range" min="185" max="385" value="286"><label for="rightWidth">Right width</label><input id="rightWidth" type="range" min="185" max="385" value="268"></div><span class="preview-tag">GATE WEB · PANEL PREVIEW</span></header>
 <div class="gate">
-<aside class="wing left" aria-label="Left panel">
-<div class="wing-content"><div class="wing-title" id="left-title">Characters</div><div class="wing-sub" id="left-sub">Current session</div><div class="wing-rule"></div><div class="placeholder"><div><span class="symbol">♟</span>Space reserved for your chosen panel</div></div></div>
-<nav class="tabs" aria-label="Left panel tabs"><button class="tab" data-side="left" data-title="Characters" data-sub="Current session" aria-pressed="true">♟<small>PC</small></button><button class="tab" data-side="left" data-title="Inventory" data-sub="Shared and personal items" aria-pressed="false">▤<small>Bag</small></button><button class="tab" data-side="left" data-title="Administration" data-sub="Owner controls" aria-pressed="false">⚙<small>Admin</small></button></nav>
+<aside class="wing left" aria-label="Character and player tools">
+<div class="wing-content">
+ <div class="wing-heading"><div><div class="wing-title" id="left-title">Characters</div><div class="wing-sub" id="left-sub">Players in this session</div></div><span class="sample-tag">DEMO</span></div>
+ <div class="wing-rule"></div>
+ <section class="panel-view" id="left-characters" data-side="left" aria-label="Characters panel">
+  <div class="section-label">ACTIVE SPEAKER</div>
+  <div class="character-feature"><span class="portrait-coin">萧</span><div class="flex-one"><strong>Xiao Lan</strong><span class="small-muted">Provisional applicant · Mortal</span><span class="tiny-pill">At Dining Hall · sample scene</span></div></div>
+  <div class="section-label space-top">CHARACTERS IN THE ROOM</div>
+  <details class="character-card" open><summary><span class="portrait-coin small">萧</span><span class="flex-one"><strong>Xiao Lan</strong><small>Player character · current speaker</small></span><span class="chevron">⌄</span></summary>
+   <div class="fold-body"><div class="detail-kv"><span>Standing</span><strong>Provisional applicant</strong></div><div class="detail-kv"><span>Roots</span><strong>Unexamined</strong></div><p>Easygoing street orphan whose grand ambition is three meals a day.</p><a class="subtle-link" href="../codex/xiao-lan.html">Open character dossier ↗</a></div>
+  </details>
+  <details class="character-card"><summary><span class="portrait-coin small violet">徐</span><span class="flex-one"><strong>Xu Yi</strong><small>Player character · separate whereabouts</small></span><span class="chevron">⌄</span></summary>
+   <div class="fold-body"><div class="detail-kv"><span>Standing</span><strong>Provisional applicant</strong></div><div class="detail-kv"><span>Last recorded lodging</span><strong>East Hall · Room 6</strong></div><p>Her Day 1 recruitment trials are complete. Her current location is not inferred from Xiao Lan's scene.</p><a class="subtle-link" href="../codex/xu-yi.html">Open character dossier ↗</a></div>
+  </details>
+  <p class="quiet-note">A live version will show only the characters this account may access.</p>
+ </section>
+ <section class="panel-view" id="left-bag" data-side="left" aria-label="Inventory panel" hidden>
+  <div class="section-label">XIAO LAN · SAMPLE BELONGINGS</div>
+  <p class="intro-small">Grouped like the Codex. Tap a category, then an item, to see its history.</p>
+  <details class="fold"><summary><span>Currency &amp; funds</span><span class="count">0</span></summary><div class="fold-body"><p class="muted-text">No confirmed currency balance.</p></div></details>
+  <details class="fold"><summary><span>Artifacts &amp; weapons</span><span class="count">0</span></summary><div class="fold-body"><p class="muted-text">No confirmed artifacts or weapons.</p></div></details>
+  <details class="fold"><summary><span>Clothing &amp; accessories</span><span class="count">1</span></summary><div class="fold-body">
+   <details class="item-fold"><summary>Plain cotton robe <b>× 1</b></summary><p>Borrowed, oversized robe worn after bathing.<br><span>Obtained: Day 1 · borrowed from a senior.</span></p></details>
+  </div></details>
+  <details class="fold"><summary><span>Other possessions</span><span class="count">2</span></summary><div class="fold-body">
+   <details class="item-fold"><summary>Sewing needle <b>× 1</b></summary><p>Gift from Grandpa at the bathhouse.<br><span>Obtained: Day 1.</span></p></details>
+   <details class="item-fold"><summary>Thread (length) <b>× 1</b></summary><p>Thread for repairing clothes.<br><span>Obtained: Day 1 · gift from Grandpa.</span></p></details>
+  </div></details>
+  <details class="fold" open><summary><span>Recordkeeping</span><span class="count">3</span></summary><div class="fold-body">
+   <details class="item-fold"><summary>Examination token 137 <b>× 1</b></summary><p>Wooden applicant token, issued by Elder Shen.<br><span>Obtained: Day 1.</span></p></details>
+   <details class="item-fold"><summary>Day 2 schedule slip <b>× 1</b></summary><p>Gather at Central Assembly Hall by 07:45.<br><span>Obtained: Day 1.</span></p></details>
+   <details class="item-fold"><summary>Provisional lodging slip <b>× 1</b></summary><p>Temporary lodging record for the recruitment period.<br><span>Obtained: Day 1.</span></p></details>
+  </div></details>
+  <p class="quiet-note">Illustrative inventory only. Quantities will come from the existing live inventory API after integration.</p>
+ </section>
+ <section class="panel-view" id="left-admin" data-side="left" aria-label="Administration panel" hidden>
+  <div class="section-label">JADE EMPEROR · OWNER VIEW</div>
+  <div class="small-card"><div class="card-title">Room administration</div><p>Prototype controls below show how owner-only settings will fit in this panel. They do not alter a room.</p>
+   <label class="toggle-row"><span>Show NPC roster<small>Appearance in the World panel</small></span><input type="checkbox" data-setting="NPC roster" checked></label>
+   <label class="toggle-row"><span>Show scene cues<small>Visual scene prompts</small></span><input type="checkbox" data-setting="Scene cues" checked></label>
+   <p id="demo-settings-status" class="micro-status" role="status">Display toggles affect this preview only.</p>
+  </div>
+  <div class="small-card"><div class="card-title">Session management</div><div class="detail-kv"><span>Session</span><strong>2nd Day Recruitment Trials</strong></div><div class="detail-kv"><span>Visibility</span><strong>Invited players</strong></div>
+   <div class="placeholder-actions"><button type="button" disabled>Manage members</button><button type="button" disabled>Session settings</button></div><p class="quiet-note">Live owner checks and write actions will be connected during integration.</p>
+  </div>
+ </section>
+</div>
+<nav class="tabs" aria-label="Left panel tabs">
+ <button class="tab" data-side="left" data-view="left-characters" data-title="Characters" data-sub="Players in this session" aria-label="Characters" aria-controls="left-characters" aria-pressed="true">♟<small>PC</small></button>
+ <button class="tab" data-side="left" data-view="left-bag" data-title="Inventory" data-sub="Belongings and records" aria-label="Inventory" aria-controls="left-bag" aria-pressed="false">▤<small>Bag</small></button>
+ <button class="tab" data-side="left" data-view="left-admin" data-title="Administration" data-sub="Owner controls" aria-label="Administration" aria-controls="left-admin" aria-pressed="false">⚙<small>Admin</small></button>
+</nav>
 <div class="grip" data-side="left" role="separator" aria-label="Resize left panel" title="Drag to resize left panel"></div></aside>
 <main class="stage">
 <div class="room-head"><button class="mobile-open" id="open-left" aria-label="Open left drawer">☷</button><strong>2nd Day Recruitment Trials</strong><span class="live">Live</span><span class="grow"></span><button class="mobile-open" id="open-right" aria-label="Open right drawer">◧</button></div>
@@ -57,17 +186,73 @@ button,textarea,input{font:inherit}button{cursor:pointer;color:inherit}button:fo
 <div class="bottom" id="footer"><div class="web-compose"><div class="tools"><button class="selected">Narrate</button><button>Session tools</button><button>Session Info</button><button>Scene</button><button>Inventory</button><button>Personal Time</button><button class="end">End session</button></div><div class="entry"><textarea aria-label="PTI Web preview composer" placeholder="What does Xiao Lan do?"></textarea><button class="identity">♟ Xiao Lan</button><button class="send" title="Preview only; no live message sent">Send</button></div></div>
 </div>
 </main>
-<aside class="wing right" aria-label="Right panel"><div class="grip" data-side="right" role="separator" aria-label="Resize right panel" title="Drag to resize right panel"></div><nav class="tabs" aria-label="Right panel tabs"><button class="tab" data-side="right" data-title="World" data-sub="Location and atmosphere" aria-pressed="true">◈<small>World</small></button><button class="tab" data-side="right" data-title="Scene" data-sub="Current location" aria-pressed="false">⌖<small>Scene</small></button><button class="tab" data-side="right" data-title="Calendar" data-sub="Heavenly chronology" aria-pressed="false">◷<small>Time</small></button></nav><div class="wing-content"><div class="wing-title" id="right-title">World</div><div class="wing-sub" id="right-sub">Location and atmosphere</div><div class="wing-rule"></div><div class="placeholder"><div><span class="symbol">◈</span>Space reserved for your chosen panel</div></div></div></aside>
+<aside class="wing right" aria-label="World and scene tools"><div class="grip" data-side="right" role="separator" aria-label="Resize right panel" title="Drag to resize right panel"></div>
+<nav class="tabs" aria-label="Right panel tabs">
+ <button class="tab" data-side="right" data-view="right-world" data-title="World" data-sub="Where your character is" aria-label="World" aria-controls="right-world" aria-pressed="true">◈<small>World</small></button>
+ <button class="tab" data-side="right" data-view="right-scene" data-title="Scene" data-sub="What's happening now" aria-label="Scene" aria-controls="right-scene" aria-pressed="false">⌖<small>Scene</small></button>
+ <button class="tab" data-side="right" data-view="right-time" data-title="Calendar" data-sub="Heavenly chronology" aria-label="Calendar" aria-controls="right-time" aria-pressed="false">◷<small>Time</small></button>
+</nav>
+<div class="wing-content"><div class="wing-heading"><div><div class="wing-title" id="right-title">World</div><div class="wing-sub" id="right-sub">Where your character is</div></div><span class="sample-tag">DEMO</span></div><div class="wing-rule"></div>
+ <section class="panel-view" id="right-world" data-side="right" aria-label="World panel">
+  <div class="section-label">CURRENT LOCATION · SAMPLE SCENE</div>
+  <div class="world-location"><span class="world-symbol">◈</span><div><strong>Dining Hall</strong><span>Cloudveil Sect · Recruitment grounds</span></div></div>
+  <p class="world-ambient">Morning breakfast is underway. A bell sounds farther up the mountain.</p>
+  <div class="panel-divider"></div>
+  <div class="panel-heading"><span>NPCs in Location</span><span class="count" id="world-npc-count">1</span></div>
+  <div id="world-npc-preview">
+   <details class="npc-card"><summary><span class="portrait-coin small">?</span><span class="flex-one"><strong>Dining Hall auntie</strong><small>Food service · present in scene</small></span><span class="chevron">⌄</span></summary>
+    <div class="fold-body"><p>The attendant serving breakfast. She holds out her hand for Xiao Lan's lodging slip, with an empty bowl beside the ladle.</p><div class="detail-kv"><span>Avatar</span><strong>Not uploaded</strong></div><p class="quiet-note">Only what the player has seen is shown here.</p></div>
+   </details>
+   <p class="quiet-note">Other applicants are present, but no additional named NPC is confirmed here.</p>
+  </div>
+  <p id="world-npc-hidden" class="quiet-note" hidden>NPC roster hidden in this local preview.</p>
+  <div class="panel-divider"></div>
+  <details class="fold"><summary><span>Nearby places</span><span class="chevron">⌄</span></summary><div class="fold-body"><p>Central Assembly Hall is the scheduled Day 2 gathering point. The current scene does not establish a journey there yet.</p></div></details>
+ </section>
+ <section class="panel-view" id="right-scene" data-side="right" aria-label="Scene panel" hidden>
+  <div class="section-label">CURRENT SCENE · SAMPLE</div>
+  <div class="scene-focus"><span class="scene-mark">⌖</span><strong>Breakfast before the trials</strong><small>Dining Hall · Day 2</small></div>
+  <div class="small-card"><div class="card-title">Current beat</div><p>The auntie awaits the lodging slip before serving breakfast. The examination is drawing closer.</p></div>
+  <div id="scene-cues-preview" class="small-card accent"><div class="card-title">Visible scene cues</div><ul class="tight-list"><li>Breakfast tables with applicants</li><li>Serving bowl and ladle</li><li>A bell sounds from farther uphill</li></ul></div>
+  <p id="scene-cues-hidden" class="quiet-note" hidden>Scene cues hidden in this local preview.</p>
+  <details class="fold"><summary><span>Present in scene</span><span class="chevron">⌄</span></summary><div class="fold-body"><p>Xiao Lan, the Dining Hall auntie, and unnamed nearby applicants.</p><p class="quiet-note">Showing those confirmed in this sample—not the entire location population.</p></div></details>
+  <details class="fold"><summary><span>Unresolved moment</span><span class="chevron">⌄</span></summary><div class="fold-body"><p>The story is awaiting Xiao Lan's next action. No new action or outcome has been added by the preview.</p></div></details>
+ </section>
+ <section class="panel-view" id="right-time" data-side="right" aria-label="Calendar panel" hidden>
+  <div class="section-label">HEAVENLY CHRONOLOGY · SAMPLE</div>
+  <div class="date-card"><span>YEAR 312</span><strong>Early Spring · 2nd</strong><small>Morning · exact in-world clock time unconfirmed</small></div>
+  <div class="panel-heading"><span>Today's known schedule</span></div>
+  <div class="time-line"><div class="time-event"><span class="event-dot"></span><div><strong>Breakfast</strong><small>Dining Hall · ongoing sample scene</small></div></div>
+   <div class="time-event"><span class="event-dot gold"></span><div><strong>07:45 · Scheduled gathering</strong><small>Central Assembly Hall · from Day 2 schedule slip</small></div></div>
+   <div class="time-event"><span class="event-dot hollow"></span><div><strong>Recruitment examinations</strong><small>Upcoming · results not yet established in this preview</small></div></div>
+  </div>
+  <details class="fold"><summary><span>Calendar notes</span><span class="chevron">⌄</span></summary><div class="fold-body"><p>Message timestamps in the chat are not in-world clock readings. Calendar changes will follow confirmed scene events.</p></div></details>
+ </section>
+</div></aside>
 <div id="shade" class="shade"></div></div></div>
 <script>
 const app=document.getElementById('app');
 const byId=id=>document.getElementById(id);
 for(const side of ['left','right']){const range=byId(side+'Width');range.addEventListener('input',()=>document.documentElement.style.setProperty('--'+side,range.value+'px'))}
-document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{const side=button.dataset.side;document.querySelectorAll('.tab[data-side="'+side+'"]').forEach(b=>b.setAttribute('aria-pressed',b===button?'true':'false'));byId(side+'-title').textContent=button.dataset.title;byId(side+'-sub').textContent=button.dataset.sub}));
+document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{
+ const side=button.dataset.side;
+ document.querySelectorAll('.tab[data-side="'+side+'"]').forEach(b=>b.setAttribute('aria-pressed',b===button?'true':'false'));
+ document.querySelectorAll('.panel-view[data-side="'+side+'"]').forEach(panel=>{panel.hidden=panel.id!==button.dataset.view});
+ byId(side+'-title').textContent=button.dataset.title;
+ byId(side+'-sub').textContent=button.dataset.sub;
+ button.closest('.wing').querySelector('.wing-content').scrollTop=0;
+}));
 const closeDrawers=()=>app.classList.remove('open-left','open-right');
 byId('open-left').addEventListener('click',()=>{app.classList.toggle('open-left');app.classList.remove('open-right')});
 byId('open-right').addEventListener('click',()=>{app.classList.toggle('open-right');app.classList.remove('open-left')});
 byId('shade').addEventListener('click',closeDrawers);
 document.querySelectorAll('.grip').forEach(grip=>{const side=grip.dataset.side;let origin=null;const range=byId(side+'Width');grip.addEventListener('pointerdown',e=>{origin={x:e.clientX,width:parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--'+side))};grip.setPointerCapture(e.pointerId);e.preventDefault()});grip.addEventListener('pointermove',e=>{if(!origin)return;const d=(e.clientX-origin.x)*(side==='left'?1:-1);const width=Math.max(185,Math.min(385,origin.width+d));document.documentElement.style.setProperty('--'+side,width+'px');range.value=width});grip.addEventListener('pointerup',()=>origin=null);grip.addEventListener('pointercancel',()=>origin=null)});
 document.querySelectorAll('.send,.identity,.tools button').forEach(button=>button.addEventListener('click',()=>{button.title='Visual preview only — no live action'}));
+document.querySelectorAll('[data-setting]').forEach(input=>input.addEventListener('change',()=>{
+ const isNpc=input.dataset.setting==='NPC roster';
+ if(isNpc){byId('world-npc-preview').hidden=!input.checked;byId('world-npc-hidden').hidden=input.checked;byId('world-npc-count').textContent=input.checked?'1':'—'}
+ else {byId('scene-cues-preview').hidden=!input.checked;byId('scene-cues-hidden').hidden=input.checked}
+ byId('demo-settings-status').textContent=input.dataset.setting+(input.checked?' shown':' hidden')+' in this preview only.';
+}));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeDrawers()});
 </script></body></html>
